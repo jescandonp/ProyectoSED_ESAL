@@ -1,8 +1,6 @@
 spring:
-  main:
-    banner-mode: "off"
   datasource:
-    url: jdbc:h2:mem:localdevdb;DB_CLOSE_DELAY=-1;MODE=Oracle;NON_KEYWORDS=VALUE;INIT=CREATE SCHEMA IF NOT EXISTS SED_ESAL
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Oracle;NON_KEYWORDS=VALUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -11,10 +9,12 @@ spring:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: false
+    properties:
+      hibernate:
+        default_schema: SED_ESAL
   h2:
     console:
       enabled: false
-
-logging:
-  level:
-    co.gov.bogota.sed.esal: INFO
+  sql:
+    init:
+      mode: always

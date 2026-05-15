@@ -15,7 +15,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 |---|---|---|
 | T1 - Bootstrap Backend | Completado | `sed-esal-backend`; `mvn test`; `mvn package -DskipTests`; WAR `target/sed-esal-backend.war` |
 | T2 - Bootstrap Frontend | Completado | `sed-esal-angular`; `npm run build` OK; `npm test` 2/2 SUCCESS |
-| T3 - Modelo Oracle Y Dominio Backend | Pendiente |  |
+| T3 - Modelo Oracle Y Dominio Backend | Completado | `db/00_setup.sql`; entidades JPA; repositorios; `mvn test` 9/9 SUCCESS |
 | T4 - Seguridad Local-Dev | Pendiente |  |
 | T5 - Importacion Diccionario | Pendiente |  |
 | T6 - Importacion Base Historica | Pendiente |  |
@@ -123,3 +123,43 @@ Resultado:
 
 - `npm run build`: BUILD SUCCESS. Bundle generado en `dist/sed-esal-angular/`.
 - `npm test`: 2 of 2 SUCCESS (ChromeHeadless 148.0.0.0 Windows 10).
+
+---
+
+### T3 - Modelo Oracle Y Dominio Backend
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- DDL Oracle en `db/00_setup.sql`: 10 secuencias, 10 tablas con prefijo `ESAL_`, esquema `SED_ESAL`, constraints FK e índices.
+- 6 enums en `domain/enums/`: `EstadoEsal`, `EstadoCompletitud`, `TipoNombramiento`, `TipoActuacion`, `TipoAdvertencia`, `EstadoValidacionDocumento`.
+- 10 entidades JPA en `domain/`: `Esal`, `PersoneriaJuridica`, `ReformaEstatutaria`, `Nombramiento`, `OrganoAdministracion`, `ActuacionAdministrativa`, `DocumentoSoporte`, `CampoObligatoriedad`, `AdvertenciaCompletitud`, `Auditoria`.
+- 10 repositorios JPA en `repository/` con métodos de consulta específicos.
+- H2 agregado como dependencia `test` en `pom.xml`.
+- `application-test.yml` con H2 en memoria, modo Oracle, `default_schema=SED_ESAL`.
+- `src/test/resources/schema.sql` con `CREATE SCHEMA IF NOT EXISTS SED_ESAL`.
+- `application-local-dev.yml` actualizado con H2 para arranque sin Oracle real.
+- `SedEsalBackendApplication.java`: eliminada exclusión de `DataSourceAutoConfiguration`.
+- `EsalRepositoryTest.java`: 6 tests de repositorio con `@DataJpaTest` + `@ActiveProfiles("test")`.
+
+Decisiones técnicas:
+
+- El esquema `SED_ESAL` se crea en H2 mediante `schema.sql` en test resources (ejecutado antes del DDL de Hibernate).
+- Se usa `hibernate.default_schema=SED_ESAL` en el perfil test para que Hibernate genere las tablas en el esquema correcto.
+- El perfil `local-dev` usa H2 en memoria para que el contexto arranque sin Oracle real instalado.
+- Las entidades usan `@Table(schema = "SED_ESAL", name = "ESAL_...")` para mantener compatibilidad con Oracle en producción.
+
+Verificación ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `mvn test`: BUILD SUCCESS, 9 tests (3 existentes + 6 nuevos de T3).
+- `mvn package -DskipTests`: BUILD SUCCESS.
+- WAR generado: `target/sed-esal-backend.war`.
