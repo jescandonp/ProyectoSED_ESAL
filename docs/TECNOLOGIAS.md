@@ -25,6 +25,7 @@
 | Spring Boot | 2.7.18 | No subir a Spring Boot 3.x |
 | Spring Framework | 5.3.x | Transitivo de Spring Boot 2.7.18 |
 | Spring Security | 5.7.x | Compatible con Spring Boot 2.7.x |
+| Spring OAuth2 Resource Server | 2.7.x | Validacion JWT Azure AD en perfil `weblogic` |
 | Spring Data JPA | 2.7.x | Persistencia principal |
 | Hibernate | 5.6.x | ORM provider |
 | SpringDoc OpenAPI | 1.7.0 | Swagger UI siempre activo |
@@ -44,8 +45,8 @@
 | Tailwind CSS | 3.4.x | Utilidades de layout y espaciado |
 | RxJS | 7.8.x | Observables Angular |
 | Angular CDK | 20.x | Overlay, teclado y utilidades |
-| `@azure/msal-angular` | 3.x | Integracion Office 365 futura |
-| `@azure/msal-browser` | 3.x | Cliente OAuth2/OIDC futuro |
+| `@azure/msal-angular` | 3.x | Integracion Office 365 / Azure AD |
+| `@azure/msal-browser` | 3.x | Cliente OAuth2/OIDC con PKCE |
 | Node.js | 20 LTS | Solo build/desarrollo |
 | npm | Version incluida con Node 20 LTS | Gestor de paquetes por defecto |
 
@@ -68,7 +69,7 @@
 | Perfil local | `local-dev` |
 | Auth local | HTTP Basic con usuarios de prueba |
 | Perfil servidor | `weblogic` |
-| Auth servidor | Azure AD JWT / Office 365 |
+| Auth servidor | Azure AD JWT / Office 365 con MSAL + OAuth2 Resource Server |
 | Swagger | Siempre activo |
 | Health | Actuator health accesible |
 | Docker/nginx/Keycloak | Fuera de arquitectura inicial |
@@ -92,4 +93,3 @@ Cambios de version deben actualizar, en este orden:
 2. `docs/ARCHITECTURE.md` si cambia una decision tecnica.
 3. Este `docs/TECNOLOGIAS.md`.
 4. Specs o plans afectados antes de tocar codigo.
-

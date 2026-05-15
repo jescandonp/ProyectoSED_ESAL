@@ -30,8 +30,8 @@ Estos valores deben confirmarse en Spec 0 antes de codificar.
 
 ## 3. Stack Tecnologico
 
-- Frontend: Angular 20, TypeScript strict, PrimeNG 20, Tailwind CSS 3.4, RxJS 7.8, Angular CDK 20.
-- Backend: Java 8, Spring Boot 2.7.18, Spring Security 5.7, Spring Data JPA 2.7, Hibernate 5.6, SpringDoc OpenAPI 1.7.0.
+- Frontend: Angular 20, TypeScript strict, PrimeNG 20, Tailwind CSS 3.4, RxJS 7.8, Angular CDK 20, MSAL Angular 3.x.
+- Backend: Java 8, Spring Boot 2.7.18, Spring Security 5.7, Spring OAuth2 Resource Server, Spring Data JPA 2.7, Hibernate 5.6, SpringDoc OpenAPI 1.7.0.
 - Base de datos: Oracle Database 19c+.
 - Servidor objetivo: Oracle WebLogic 12.2.1.4.
 - Empaquetado backend: WAR.
@@ -47,9 +47,11 @@ Usuario interno SED
    v
 Angular 20 SPA
    |
-   | REST / Bearer JWT futuro / Basic local-dev
+   | REST / Authorization: Bearer JWT / Basic solo local-dev
    v
 Spring Boot API - WAR en WebLogic
+   |
+   | valida JWT contra Azure AD JWKS en perfil weblogic
    |
    | JDBC / JPA
    v
@@ -76,6 +78,10 @@ src/main/java/co/gov/bogota/sed/esal/
 |   |-- controller/
 |   |-- exception/
 |-- config/
+|   |-- SecurityConfig.java
+|   |-- DevSecurityConfig.java
+|   |-- AuditConfig.java
+|   |-- OpenApiConfig.java
 ```
 
 Reglas:
@@ -85,6 +91,10 @@ Reglas:
 - Dominio conserva invariantes de ESAL, certificado, estado, documentos y auditoria.
 - Repositorios usan Spring Data JPA.
 - Errores funcionales se exponen con `GlobalExceptionHandler`.
+- `SecurityConfig` gobierna Azure AD JWT en perfil `weblogic`.
+- `DevSecurityConfig` gobierna HTTP Basic solo en perfil `local-dev`.
+- `AuditConfig` resuelve usuario actual desde `preferred_username` o usuario local-dev.
+- `OpenApiConfig` mantiene Swagger activo con esquema `BearerAuth`.
 
 ## 6. Frontend
 
@@ -136,7 +146,42 @@ Entidades base:
 
 ## 9. Seguridad
 
-La seguridad de `SED_ESAL` se define por perfiles de ambiente. La regla base es que el frontend nunca es fuente de autorizacion: toda decision efectiva de acceso se valida en backend.
+La seguridad de `SED_ESAL` toma como referencia la arquitectura SIGCON/SED y se adapta al dominio ESAL. La regla base es que el frontend nunca es fuente de autorizacion: toda decision efectiva de acceso se valida en backend.
+
+Objetivo de cumplimiento: nivel N2 para aplicacion web interna con datos confidenciales, transacciones de negocio, trazabilidad de expedicion y documentos/PDFs controlados.
+
+### 9.0. Arquitectura De Autenticacion
+
+```text
+Usuario interno SED
+   |
+   | HTTPS
+   v
+Angular SPA
+   |
+   | OAuth2 Authorization Code + PKCE
+   v
+Azure AD / Office 365 - Tenant SED
+   |
+   | access_token JWT
+   v
+Angular MsalInterceptor
+   |
+   | Authorization: Bearer <JWT>
+   v
+Spring Boot API - WebLogic
+   |
+   | OAuth2 Resource Server valida firma, issuer, audience y expiracion
+   v
+Servicios SED_ESAL + Oracle
+```
+
+Estrategia por ambiente:
+
+| Ambiente | Backend | Frontend | Uso |
+|---|---|---|---|
+| `local-dev` | `DevSecurityConfig` + HTTP Basic | `DevSessionService` o equivalente | Desarrollo local sin dependencia de Azure |
+| `weblogic` | `SecurityConfig` + OAuth2 Resource Server | MSAL Angular 3.x | Operacion institucional |
 
 ### 9.1. Perfiles
 
@@ -146,6 +191,8 @@ La seguridad de `SED_ESAL` se define por perfiles de ambiente. La regla base es 
 - Usuarios de prueba definidos por spec activa.
 - CORS local para el frontend.
 - Swagger activo para validacion tecnica.
+- HSTS deshabilitado porque local-dev corre sobre HTTP.
+- No usar usuarios local-dev en despliegue institucional.
 
 `weblogic`:
 
@@ -153,6 +200,9 @@ La seguridad de `SED_ESAL` se define por perfiles de ambiente. La regla base es 
 - Integracion prevista con Azure AD / Office 365 o proveedor que confirme SED.
 - Configuracion externa de issuer, audience, JWKS y origenes permitidos.
 - Sin usuarios locales de operacion.
+- Sesion stateless en backend.
+- CSRF deshabilitado para API REST stateless con Bearer JWT.
+- HTTPS obligatorio en infraestructura institucional.
 
 ### 9.2. Roles
 
@@ -165,9 +215,19 @@ Rol candidato:
 
 - `AUDITOR`: consulta auditoria y trazas sin modificar datos ni generar certificados.
 
+Roles propuestos para App Registration:
+
+| App Role Azure AD | Rol Aplicativo | Uso |
+|---|---|---|
+| `ESAL_ADMINISTRADOR` | `ADMINISTRADOR` | Gestion administrativa de ESAL, reglas, documentos, firmantes, numeracion y auditoria |
+| `ESAL_EXPEDIDOR` | `EXPEDIDOR` | Busqueda, vista previa, generacion y descarga de certificados |
+| `ESAL_AUDITOR` | `AUDITOR` | Consulta de trazas y certificados, si la DIV lo confirma |
+
 ### 9.3. Autenticacion Institucional
 
-El backend debe validar:
+El frontend institucional usa MSAL Angular 3.x y MSAL Browser 3.x. Debe usar OAuth2 Authorization Code con PKCE, `MsalGuard` para rutas autenticadas y `MsalInterceptor` para adjuntar `Authorization: Bearer` en llamadas a la API.
+
+El backend debe validar cada request protegida como OAuth2 Resource Server:
 
 - Firma del token.
 - Emisor (`issuer`).
@@ -178,12 +238,20 @@ El backend debe validar:
 
 Claims esperados:
 
-- Identificador unico.
-- Correo institucional.
-- Nombre visible.
-- Grupos o roles institucionales.
+- `preferred_username`: correo corporativo O365, usado como principal y auditor.
+- `name`: nombre visible.
+- `oid` o identificador estable equivalente.
+- `roles`: App Roles asignados en Azure AD.
+- `tid`: tenant.
 
 Los nombres exactos de claims y grupos quedan pendientes de confirmacion SED.
+
+Reglas:
+
+- El backend no confia en roles calculados en frontend.
+- El claim `roles` se convierte a autoridades Spring con prefijo `ROLE_`.
+- `preferred_username` se usa como `Authentication.getName()` y como base para `CREATED_BY` / `UPDATED_BY`.
+- Si el token no contiene usuario identificable, se rechaza la peticion.
 
 ### 9.4. Autorizacion
 
@@ -195,6 +263,21 @@ Reglas:
 - Auditoria global requiere `ADMINISTRADOR` o futuro `AUDITOR`.
 - Documentos y certificados no se sirven por ruta fisica; toda descarga pasa por backend autenticado.
 
+Matriz base:
+
+| Modulo | ADMINISTRADOR | EXPEDIDOR | AUDITOR candidato |
+|---|---:|---:|---:|
+| Carga inicial Excel | Si | No | No |
+| CRUD ESAL | Si | No | No |
+| Documentos soporte | Si | No | Consulta |
+| Busqueda | Si | Si | Si |
+| Vista previa | Si | Si | Si |
+| Generacion certificado | Si | Si | No |
+| Descarga certificado | Si | Si | Consulta |
+| Numeracion | Si | No | No |
+| Firmantes | Si | No | Consulta |
+| Auditoria global | Si | No | Si |
+
 ### 9.5. CORS Y Cabeceras
 
 Reglas iniciales:
@@ -202,7 +285,22 @@ Reglas iniciales:
 - CORS se configura por ambiente.
 - No se permite wildcard `*` con credenciales.
 - Respuestas sensibles y descargas deben usar cache restrictivo.
-- Cabeceras minimas: `X-Content-Type-Options`, `X-Frame-Options` o equivalente, `Referrer-Policy` y politica de cache.
+- CORS local permite `http://localhost:4200`.
+- CORS institucional permite solo origenes SED confirmados.
+
+Cabeceras minimas:
+
+| Header | Valor base | Proposito |
+|---|---|---|
+| `X-Frame-Options` | `DENY` | Previene clickjacking |
+| `X-Content-Type-Options` | `nosniff` | Previene MIME sniffing |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'` | Restringe recursos externos |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Fuerza HTTPS en `weblogic`; no aplica en local-dev |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limita informacion enviada como referer |
+| `Permissions-Policy` | `geolocation=(), camera=(), microphone=()` | Deshabilita APIs browser no usadas |
+| `Cache-Control` | `no-cache, no-store, max-age=0, must-revalidate` | Evita cache de respuestas sensibles y PDFs |
+
+Nota: `unsafe-inline` en `style-src` se acepta inicialmente por compatibilidad con Angular/PrimeNG; debe revisarse si el despliegue institucional exige CSP mas estricta.
 
 ### 9.6. Auditoria De Seguridad
 
@@ -216,6 +314,64 @@ Eventos minimos:
 - Errores de seguridad.
 
 La auditoria no debe persistir secretos, tokens completos ni passwords.
+
+Auditoria de datos:
+
+- Toda tabla principal debe incluir `CREATED_AT`, `CREATED_BY`, `UPDATED_AT`, `UPDATED_BY` cuando aplique y campo de borrado logico si la entidad lo requiere.
+- `CREATED_BY` y `UPDATED_BY` deben tomar `preferred_username` en ambiente institucional.
+- En `local-dev`, deben tomar el usuario Basic autenticado.
+- JPA debe usar `@EnableJpaAuditing` y `AuditorAware<String>`.
+
+### 9.7. Swagger Y OpenAPI
+
+Swagger se mantiene activo para validacion de contratos, alineado con la referencia SED/SIGCON.
+
+Reglas:
+
+- SpringDoc OpenAPI 1.7.0.
+- OpenAPI debe declarar esquema `BearerAuth`.
+- Endpoints deben documentar roles, codigos 401/403 y errores funcionales.
+- Si infraestructura SED exige restriccion adicional para Swagger en ambiente institucional, se documenta como cambio de arquitectura y se ajusta la spec afectada.
+
+### 9.8. Configuracion Requerida Azure AD
+
+Pendiente con TI SED:
+
+```text
+AZURE_TENANT_ID
+AZURE_CLIENT_ID
+AZURE_ISSUER_URI
+AZURE_JWKS_URI o issuer-uri resoluble
+API_SCOPE de SED_ESAL
+Redirect URI produccion: https://[servidor]/sed-esal
+Redirect URI desarrollo: http://localhost:4200
+App Roles: ESAL_ADMINISTRADOR, ESAL_EXPEDIDOR, ESAL_AUDITOR candidato
+```
+
+### 9.9. Checklist De Implementacion Seguridad
+
+Backend:
+
+- Configurar `spring-boot-starter-oauth2-resource-server`.
+- Crear `SecurityConfig` con perfil `weblogic`.
+- Crear `DevSecurityConfig` con perfil `local-dev`.
+- Crear conversor de roles desde claim `roles`.
+- Usar `preferred_username` como principal.
+- Configurar `AuditConfig` con `AuditorAware`.
+- Proteger endpoints por rol.
+- Configurar CORS por ambiente.
+- Configurar headers HTTP de seguridad.
+- Documentar `BearerAuth` en OpenAPI.
+
+Frontend:
+
+- Instalar `@azure/msal-angular` y `@azure/msal-browser`.
+- Configurar MSAL con `tenantId`, `clientId` y scopes.
+- Usar `MsalGuard` para rutas autenticadas.
+- Usar `roleGuard` propio para RBAC granular.
+- Usar `MsalInterceptor` para `Authorization: Bearer`.
+- Mantener mecanismo local-dev separado.
+- No registrar tokens en consola ni persistir secretos.
 
 ## 10. Documentos Y PDFs
 
