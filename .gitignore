@@ -1,0 +1,36 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# Build outputs
+target/
+dist/
+build/
+out/
+coverage/
+.angular/
+node_modules/
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Reference inputs from user area.
+# Keep these local until publication/privacy is explicitly approved.
+Documentos_Referencia/*
+!Documentos_Referencia/README.md
+
+# Generated documents and certificates expected in later increments
+storage/
+uploads/
+certificados-generados/
+*.pdf

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Estratégica: Decisiones de Transformación Digital DIV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --sed-blue: #003366;
+            --sed-gold: #C5A059;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #003366 0%, #001a33 100%);
+        }
+
+        .decision-card {
+            transition: all 0.3s ease;
+        }
+
+        .decision-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-900 leading-relaxed">
+
+    <header class="gradient-bg text-white py-14 px-6 shadow-2xl">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-4xl font-extrabold mb-4 tracking-tight">Hoja de Ruta Estratégica DIV</h1>
+            <p class="text-xl opacity-90 max-w-2xl mx-auto">Análisis de alternativas técnicas para la Dirección de
+                Inspección y Vigilancia en el marco del PETI</p>
+            <div class="mt-8 flex justify-center gap-4 flex-wrap">
+                <span class="bg-white/10 border border-white/20 px-4 py-1 rounded-full text-sm">Emisión de
+                    Certificados</span>
+                <span class="bg-white/10 border border-white/20 px-4 py-1 rounded-full text-sm">Gestión PAS / SID
+                    4</span>
+                <span class="bg-white/10 border border-white/20 px-4 py-1 rounded-full text-sm">Acuerdos Marco</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto py-12 px-6">
+
+        <section class="mb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-10 w-2 bg-blue-600 rounded-full"></div>
+                <h2 class="text-3xl font-bold text-gray-800 uppercase tracking-wide">Módulo 1: Emisión de Certificados
+                    ESAL</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="decision-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-100 p-6 border-b">
+                        <h3 class="text-xl font-bold text-gray-700">A. Roadmap Oficial SGDEA</h3>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Implementación vía
+                            Proveedor</p>
+                    </div>
+                    <div class="p-8">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold text-gray-400 block mb-1 uppercase">Disponibilidad
+                                Estimada</span>
+                            <p class="text-2xl font-bold text-gray-800">Primer Semestre 2027</p>
+                        </div>
+                        <ul class="space-y-4 text-sm text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 font-bold">●</span>
+                                <span>Basado en la finalización de fase del contrato macro.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 font-bold">●</span>
+                                <span>Funcionalidad de correspondencia masiva (Mail Merge).</span>
+                            </li>
+                            <li class="flex items-start gap-3 font-semibold text-gray-800">
+                                <span class="text-blue-500 font-bold">●</span>
+                                <span>Requiere X meses adicionales de operación manual. </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="decision-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-100 p-6 border-b">
+                        <h3 class="text-xl font-bold text-gray-700">B. Piloto Funcional SED_ESAL</h3>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Desarrollo a Medida
+                            (MVP)</p>
+                    </div>
+                    <div class="p-8">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold text-gray-400 block mb-1 uppercase">Disponibilidad
+                                Estimada</span>
+                            <p class="text-2xl font-bold text-gray-800">Corto Plazo</p>
+                        </div>
+                        <ul class="space-y-4 text-sm text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 font-bold">●</span>
+                                <span>Carga automática desde el Excel histórico actual.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 font-bold">●</span>
+                                <span>Arquitectura compatible con estándares SED (SIGCON).</span>
+                            </li>
+                            <li class="flex items-start gap-3 font-semibold text-gray-800">
+                                <span class="text-blue-500 font-bold">●</span>
+                                <span>Elimina el riesgo de error humano en la transcripción inmediata.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-10 w-2 bg-amber-500 rounded-full"></div>
+                <h2 class="text-3xl font-bold text-gray-800 uppercase tracking-wide">Módulo 2: Procesos Administrativos
+                    (PAS)</h2>
+            </div>
+
+            <div class="bg-amber-50 p-6 rounded-xl border border-amber-200 mb-8">
+                <p class="text-sm text-amber-800">
+                    <strong>Contexto Jurídico:</strong> Existe un acuerdo marco interadministrativo con la Secretaría
+                    Jurídica para el uso del sistema <strong>SID 4</strong>. La viabilidad técnica está confirmada, pero
+                    el escenario de implementación depende del roadmap normativo de la entidad fuente.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="decision-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-100 p-6 border-b">
+                        <h3 class="text-xl font-bold text-gray-700">Opción 1: Integración SID4 Actual</h3>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Implementación
+                            Inmediata</p>
+                    </div>
+                    <div class="p-8">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold text-gray-400 block mb-1 uppercase">Estado del Sistema</span>
+                            <p class="text-xl font-bold text-gray-800 text-pretty">Versión Actual sin ajustes normativos
+                            </p>
+                        </div>
+                        <ul class="space-y-4 text-sm text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <span class="text-amber-500 font-bold">●</span>
+                                <span>Permite iniciar la migración y uso del sistema de forma pronta.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-amber-500 font-bold">●</span>
+                                <span><strong>Desafío:</strong> Requiere adaptaciones manuales significativas al marco
+                                    de actuación SED.</span>
+                            </li>
+                            <li class="flex items-start gap-3 font-semibold text-red-700">
+                                <span class="text-amber-500 font-bold">●</span>
+                                <span>Actualmente no se cuenta con recursos técnicos/presupuestales asignados para estos
+                                    ajustes.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="decision-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-100 p-6 border-b">
+                        <h3 class="text-xl font-bold text-gray-700">Opción 2: Adhesión a Roadmap Jurídico</h3>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Estrategia de Mediano
+                            Plazo</p>
+                    </div>
+                    <div class="p-8">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold text-gray-400 block mb-1 uppercase">Fecha Objetivo</span>
+                            <p class="text-xl font-bold text-gray-800">Finalización Año Actual</p>
+                        </div>
+                        <ul class="space-y-4 text-sm text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <span class="text-amber-500 font-bold">●</span>
+                                <span>Espera a que la Secretaría Jurídica complete la implementación del nuevo marco
+                                    normativo.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-amber-500 font-bold">●</span>
+                                <span>Garantiza que el sistema llegue a la SED con las actualizaciones legales
+                                    vigentes.</span>
+                            </li>
+                            <li class="flex items-start gap-3 font-semibold text-gray-800">
+                                <span class="text-amber-500 font-bold">●</span>
+                                <span><strong>Impacto:</strong> Dependencia total del cronograma de una entidad
+                                    externa.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-gray-800 text-white p-10 rounded-2xl shadow-inner mt-12">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Arquitectura</h4>
+                    <p class="text-sm opacity-80">Alineada a estándares institucionales: Angular 20, Spring Boot y
+                        Oracle DB.</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Metodología</h4>
+                    <p class="text-sm opacity-80">Spec-Driven Development (SDD) para entregas incrementales y trazables.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Auditoría</h4>
+                    <p class="text-sm opacity-80">Trazabilidad completa de acciones, usuarios y versiones de datos (Hash
+                        PDF).</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-12 text-center text-gray-500 border-t mt-12 bg-white">
+        <p class="text-sm font-semibold text-gray-800">Secretaría de Educación del Distrito - Dirección de Inspección y
+            Vigilancia</p>
+        <p class="text-xs mt-1 italic">Documento de discusión técnica y estratégica | Mayo 2026</p>
+    </footer>
+
+</body>
+
+</html>
