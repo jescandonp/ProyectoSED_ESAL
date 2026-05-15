@@ -1,0 +1,57 @@
+<div class="shell-layout">
+  <!-- Sidebar -->
+  <aside class="shell-sidebar" role="navigation" aria-label="Navegación principal">
+    <div class="sidebar-brand">
+      <span class="sidebar-brand-icon" aria-hidden="true">🏛️</span>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-title">SED ESAL</span>
+        <span class="sidebar-brand-sub">Secretaría de Educación</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="sidebar-nav-list" role="list">
+        @for (item of visibleNavItems(); track item.route) {
+          <li>
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="sidebar-nav-link--active"
+              class="sidebar-nav-link"
+              [attr.aria-label]="item.label"
+            >
+              <span class="sidebar-nav-icon" aria-hidden="true">{{ item.icon }}</span>
+              <span class="sidebar-nav-label">{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <span class="sidebar-user-name">{{ currentUser()?.nombre }}</span>
+        <span class="sidebar-user-rol">{{ currentUser()?.rol }}</span>
+      </div>
+      <button class="sidebar-logout-btn" (click)="logout()" type="button" aria-label="Cerrar sesión">
+        <span aria-hidden="true">🚪</span> Salir
+      </button>
+    </div>
+  </aside>
+
+  <!-- Contenido principal -->
+  <div class="shell-main">
+    <header class="shell-header">
+      <div class="shell-header-left">
+        <span class="shell-header-title">SED ESAL</span>
+      </div>
+      <div class="shell-header-right">
+        <span class="shell-header-user">{{ currentUser()?.nombre }}</span>
+        <span class="shell-header-rol sed-chip sed-chip--activo">{{ currentUser()?.rol }}</span>
+      </div>
+    </header>
+
+    <main class="shell-content" id="main-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

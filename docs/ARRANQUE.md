@@ -29,7 +29,7 @@
 
 ## Estado Del Proyecto
 
-`SED_ESAL` esta en fase de implementacion I1 con I0-I4 aprobados como base documental. El backend base `sed-esal-backend` ya fue creado como bootstrap Spring Boot WAR. El frontend aun no se ha creado. La implementacion funcional sigue I1, segun la spec y el plan aprobados.
+`SED_ESAL` esta en fase de implementacion I1 con I0-I4 aprobados como base documental. El backend base `sed-esal-backend` ya fue creado como bootstrap Spring Boot WAR. El frontend `sed-esal-angular` fue creado con Angular 20.3, PrimeNG 20.4.0, rutas base, autenticacion local-dev, shell layout institucional y pantalla de login. La implementacion funcional sigue I1, segun la spec y el plan aprobados.
 
 - Spec 0 de fundacion documental y arquitectura: aprobado.
 - Spec I1 de modelo base, carga inicial y completitud: aprobado como incremento activo.

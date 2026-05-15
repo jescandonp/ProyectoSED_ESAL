@@ -14,7 +14,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | Tarea | Estado | Evidencia |
 |---|---|---|
 | T1 - Bootstrap Backend | Completado | `sed-esal-backend`; `mvn test`; `mvn package -DskipTests`; WAR `target/sed-esal-backend.war` |
-| T2 - Bootstrap Frontend | Pendiente |  |
+| T2 - Bootstrap Frontend | Completado | `sed-esal-angular`; `npm run build` OK; `npm test` 2/2 SUCCESS |
 | T3 - Modelo Oracle Y Dominio Backend | Pendiente |  |
 | T4 - Seguridad Local-Dev | Pendiente |  |
 | T5 - Importacion Diccionario | Pendiente |  |
@@ -76,3 +76,50 @@ Observacion de ambiente:
 ## 5. Cierre
 
 Pendiente.
+
+---
+
+### T2 - Bootstrap Frontend
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- PrimeNG 20.4.0 y primeicons instalados como dependencias.
+- `proxy.conf.json` configurado hacia `http://localhost:8080/api`.
+- `angular.json` actualizado con `proxyConfig`.
+- `src/index.html` actualizado: `lang="es"`, título institucional, Google Fonts Public Sans.
+- `src/styles.css` con tokens visuales completos de `docs/DESIGN.md` (colores, tipografía, espaciado, componentes).
+- `src/app/core/models/user.model.ts`: modelo `User` con rol `ADMINISTRADOR`/`EXPEDIDOR`.
+- `src/app/core/auth/auth.service.ts`: servicio con login local-dev, usuarios hardcoded, signal y localStorage.
+- `src/app/core/auth/auth.guard.ts`: `authGuard` y `adminGuard` funcionales.
+- `src/app/features/login/`: `LoginComponent` con formulario reactivo, validación, estilo institucional SED.
+- `src/app/shared/layout/shell.component.*`: layout con sidebar azul oscuro `#001e40`, navegación por rol, header, logout.
+- Componentes placeholder con mensaje "En desarrollo - I1":
+  - `DashboardComponent`
+  - `CargaInicialComponent`
+  - `AdminEsalesListComponent`, `AdminEsalesDetailComponent`
+  - `AuditoriaComponent`
+  - `EsalesListComponent`, `EsalesDetailComponent`
+- `src/app/app.routes.ts`: rutas base con lazy loading, `authGuard`, `adminGuard`.
+- `src/app/app.config.ts`: `provideHttpClient` agregado.
+- `src/app/app.ts` y `app.html` limpiados (solo `<router-outlet />`).
+- `src/app/app.spec.ts` actualizado para el nuevo componente simplificado.
+
+Decisiones técnicas:
+
+- PrimeNG 20.4.0 instalado (compatible con Angular 20.3). No se usó en T2 bootstrap; se usará en T9 para UI completa.
+- Se usó CSS puro institucional (variables CSS) en lugar de Tailwind CSS para el bootstrap, por simplicidad de setup. Tailwind puede agregarse en T9 si se requiere.
+- Analytics de Angular CLI deshabilitado globalmente (`%APPDATA%\@angular\config.json`) para evitar prompt interactivo en CI/scripts.
+
+Verificación ejecutada:
+
+```powershell
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" test -- --watch=false --browsers=ChromeHeadless
+```
+
+Resultado:
+
+- `npm run build`: BUILD SUCCESS. Bundle generado en `dist/sed-esal-angular/`.
+- `npm test`: 2 of 2 SUCCESS (ChromeHeadless 148.0.0.0 Windows 10).
