@@ -19,7 +19,10 @@
 11. Spec I2: `docs/specs/2026-05-15-sed-esal-i2-spec.md`
 12. Plan I2: `docs/plans/2026-05-15-sed-esal-i2-plan.md`
 13. Log I2: `docs/plans/2026-05-15-sed-esal-i2-execution-log.md`
-14. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+14. Spec I3: `docs/specs/2026-05-15-sed-esal-i3-spec.md`
+15. Plan I3: `docs/plans/2026-05-15-sed-esal-i3-plan.md`
+16. Log I3: `docs/plans/2026-05-15-sed-esal-i3-execution-log.md`
+17. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Estado Del Proyecto
 
@@ -28,6 +31,7 @@
 - Spec 0 de fundacion documental y arquitectura.
 - Spec I1 de modelo base, carga inicial y completitud.
 - Spec I2 de busqueda operativa y vista previa certificable.
+- Spec I3 de generacion PDF, numeracion, firmante y trazabilidad.
 - Plan de implementacion correspondiente al incremento activo.
 
 ## Artefactos Fuente
@@ -72,9 +76,10 @@ Estas coordenadas deben confirmarse o ajustarse en Spec 0.
 1. Revisar y aprobar Spec 0.
 2. Revisar y aprobar Spec I1.
 3. Revisar y aprobar Spec I2.
-4. Cerrar preguntas tecnicas de coordenadas, almacenamiento documental y contexto WebLogic.
-5. Actualizar `docs/ARCHITECTURE.md` con la seccion ampliada de seguridad cuando sea confirmada.
-6. Solo despues iniciar implementacion funcional del incremento aprobado.
+4. Revisar y aprobar Spec I3.
+5. Cerrar preguntas tecnicas de coordenadas, almacenamiento documental y contexto WebLogic.
+6. Actualizar `docs/ARCHITECTURE.md` con la seccion ampliada de seguridad cuando sea confirmada.
+7. Solo despues iniciar implementacion funcional del incremento aprobado.
 
 ## Prerrequisitos Locales Esperados
 

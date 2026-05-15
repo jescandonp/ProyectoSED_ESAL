@@ -136,15 +136,39 @@ Estado: especificado, pendiente de implementacion.
 | I2-PREV-06 | Validar faltante opcional | Campo opcional vacio o `NR` | No bloquea generacion |
 | I2-PREV-07 | Consultar trazas | Eventos de busqueda/preview | Auditoria registra usuario, rol, accion y resultado |
 
-## 10. Incrementos Posteriores
+## 10. Incremento 3 - Certificado PDF
 
-### I3 - Certificado PDF
+Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i3-spec.md`.
 
-- Generar numero unico.
-- Aplicar firmante vigente.
-- Generar PDF desde plantilla.
-- Calcular hash.
-- Registrar traza.
+Estado: especificado, pendiente de implementacion.
+
+### I3 - Numeracion Y Firmante
+
+| ID | Accion | Datos | Esperado |
+|---|---|---|---|
+| I3-NUM-01 | Consultar configuracion inicial | Prefijo `ESAL` | Numeracion activa disponible |
+| I3-NUM-02 | Generar primer certificado del anio | Anio 2026 | Numero `ESAL-2026-000001` |
+| I3-NUM-03 | Generar segundo certificado del anio | Anio 2026 | Numero `ESAL-2026-000002` |
+| I3-FIR-01 | Crear firmante vigente | Nombre, cargo, vigencia | Firmante queda activo |
+| I3-FIR-02 | Generar sin firmante vigente | Sin firmante activo | Bloquea generacion |
+| I3-FIR-03 | Crear vigencias solapadas | Dos firmantes activos misma fecha | Bloquea configuracion |
+
+### I3 - Generacion Y Descarga
+
+| ID | Accion | Datos | Esperado |
+|---|---|---|---|
+| I3-PDF-01 | Generar PDF desde preview habilitada | ESAL completa | Certificado generado con numero unico |
+| I3-PDF-02 | Generar desde preview bloqueada | ESAL con faltante obligatorio | No genera PDF ni asigna numero |
+| I3-PDF-03 | Generar PDF activa | ESAL `ACTIVO` | PDF refleja informacion vigente |
+| I3-PDF-04 | Generar PDF suspendida | ESAL `SUSPENDIDO` | PDF incluye alerta y tiempo de suspension |
+| I3-PDF-05 | Generar PDF en liquidacion | ESAL `EN_LIQUIDACION` | PDF incluye leyenda y parrafo |
+| I3-PDF-06 | Generar PDF cancelada | ESAL `CANCELADO` | PDF limita informacion segun regla |
+| I3-PDF-07 | Calcular hash | PDF generado | Hash SHA-256 queda registrado |
+| I3-PDF-08 | Descargar certificado | Certificado generado | Descarga PDF y registra auditoria |
+| I3-PDF-09 | Consultar historial por ESAL | ESAL con certificados | Lista certificados generados |
+| I3-AUD-01 | Consultar trazas de expedicion | Eventos I3 | Auditoria registra generacion, bloqueo, fallo y descarga |
+
+## 11. Incrementos Posteriores
 
 ### I4 - Seguridad Institucional
 

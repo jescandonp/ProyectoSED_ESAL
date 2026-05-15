@@ -19,7 +19,8 @@ No hay implementacion backend/frontend todavia. El repositorio contiene la base 
 7. `docs/specs/2026-05-15-sed-esal-i0-spec.md`
 8. `docs/specs/2026-05-15-sed-esal-i1-spec.md`
 9. `docs/specs/2026-05-15-sed-esal-i2-spec.md`
-10. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+10. `docs/specs/2026-05-15-sed-esal-i3-spec.md`
+11. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Incrementos Especificados
 
@@ -28,6 +29,7 @@ No hay implementacion backend/frontend todavia. El repositorio contiene la base 
 | I0 | Especificado | Base documental, arquitectura y metodologia |
 | I1 | Especificado | Modelo base, carga inicial, estados y completitud |
 | I2 | Especificado | Busqueda operativa y vista previa certificable |
+| I3 | Especificado | Generacion PDF, numeracion, firmante y trazabilidad |
 
 ## Coordenadas Propuestas
 
