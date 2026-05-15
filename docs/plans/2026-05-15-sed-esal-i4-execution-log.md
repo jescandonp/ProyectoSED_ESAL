@@ -1,8 +1,8 @@
 # Execution Log I4 - Seguridad Institucional, Autorizacion Y Hardening
 
-> Spec: `docs/specs/2026-05-15-sed-esal-i4-spec.md`  
-> Plan: `docs/plans/2026-05-15-sed-esal-i4-plan.md`  
-> Estado: especificado, pendiente de implementacion.  
+> Spec: `docs/specs/2026-05-15-sed-esal-i4-spec.md`
+> Plan: `docs/plans/2026-05-15-sed-esal-i4-plan.md`
+> Estado: aprobado como incremento futuro, pendiente de implementacion.
 > Fecha: 2026-05-15.
 
 ## Resumen
@@ -17,9 +17,10 @@ Se crea la especificacion y el plan de I4 para cubrir autenticacion instituciona
 | 2026-05-15 | Creacion de Plan I4 | Define tareas T1-T10 y gates de calidad |
 | 2026-05-15 | Actualizacion documental | Arquitectura, README, ARRANQUE y guia de pruebas deben apuntar a I4 |
 
-## Pendientes
+## Decisiones De Arranque Aprobadas
 
-- Aprobar I4 antes de implementacion.
-- Confirmar tenant, issuer, audience y JWKS.
-- Confirmar grupos institucionales y rol `AUDITOR`.
-- Confirmar politica institucional de Swagger, CORS, logs y cabeceras.
+- I4 no inicia hasta completar o estabilizar I1-I3.
+- Azure AD / Office 365 es la referencia institucional esperada.
+- El backend sera la fuente efectiva de autorizacion; el frontend solo oculta o muestra opciones.
+- `AUDITOR` queda como rol candidato extensible y no entra al MVP operativo inicial salvo decision posterior de DIV/SED.
+- Tenant, issuer, audience, JWKS, scopes, grupos/app roles, CORS institucional, politica Swagger, logs y cabeceras se cierran con TI SED antes de implementar I4.

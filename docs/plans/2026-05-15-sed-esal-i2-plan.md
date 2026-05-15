@@ -1,8 +1,8 @@
 # Plan I2 - Busqueda Operativa Y Vista Previa De Certificado
 
-> Estado: propuesta ejecutable, pendiente aprobacion.  
-> Fecha: 2026-05-15.  
-> Spec: `docs/specs/2026-05-15-sed-esal-i2-spec.md`.  
+> Estado: aprobado como plan futuro.
+> Fecha: 2026-05-15.
+> Spec: `docs/specs/2026-05-15-sed-esal-i2-spec.md`.
 > Sistema: `SED_ESAL`.
 
 ## 1. Objetivo
@@ -14,7 +14,7 @@ Implementar el segundo incremento funcional de `SED_ESAL`: buscador interno, det
 - I1 implementado o aprobado como base.
 - Modelo de ESAL, completitud, estados y auditoria disponibles.
 - Roles `ADMINISTRADOR` y `EXPEDIDOR` configurados en local-dev.
-- `docs/ARCHITECTURE.md` pendiente de seccion ampliada de seguridad; si se confirma antes de implementar, revisar plan.
+- `docs/ARCHITECTURE.md` aprobado como referencia de seguridad; si SED confirma lineamientos adicionales antes de implementar, revisar plan.
 
 ## 3. Tareas
 

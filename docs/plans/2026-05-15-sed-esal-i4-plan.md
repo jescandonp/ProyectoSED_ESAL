@@ -1,8 +1,8 @@
 # Plan I4 - Seguridad Institucional, Autorizacion Y Hardening
 
-> Estado: propuesta ejecutable, pendiente aprobacion.  
-> Fecha: 2026-05-15.  
-> Spec: `docs/specs/2026-05-15-sed-esal-i4-spec.md`.  
+> Estado: aprobado como plan futuro.
+> Fecha: 2026-05-15.
+> Spec: `docs/specs/2026-05-15-sed-esal-i4-spec.md`.
 > Sistema: `SED_ESAL`.
 
 ## 1. Objetivo

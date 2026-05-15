@@ -1,10 +1,10 @@
 # Spec I2 - Busqueda Operativa Y Vista Previa De Certificado
 
-> Estado: propuesta para revision.  
-> Fecha: 2026-05-15.  
-> Sistema: `SED_ESAL`.  
-> Metodologia: SDD Spec-Anchored.  
-> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.  
+> Estado: aprobado como incremento futuro.
+> Fecha: 2026-05-15.
+> Sistema: `SED_ESAL`.
+> Metodologia: SDD Spec-Anchored.
+> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.
 > Depende de: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 
 ## 1. Objetivo
@@ -47,7 +47,7 @@ Excluye:
 - El Expedidor no puede editar informacion.
 - La vista previa debe usar la version vigente de datos de la ESAL.
 - La validacion de bloqueos se basa en campos requeridos por plantilla, diccionario de obligatoriedad y reglas activas por estado.
-- La seccion ampliada de seguridad de `docs/ARCHITECTURE.md` sigue pendiente. Si se confirma antes de implementar I2, debe revisarse autorizacion, auditoria, CORS y proteccion de endpoints.
+- La seccion ampliada de seguridad de `docs/ARCHITECTURE.md` queda aprobada como referencia. Si SED entrega lineamientos adicionales antes de implementar I2, debe revisarse autorizacion, auditoria, CORS y proteccion de endpoints.
 
 ## 4. Actores Y Permisos
 

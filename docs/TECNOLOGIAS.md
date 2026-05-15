@@ -1,7 +1,7 @@
 # TECNOLOGIAS SED_ESAL
 
-> Estado: base inicial pre-implementacion.  
-> Fuente rectora: `docs/CONSTITUTION.md` y `docs/ARCHITECTURE.md`.  
+> Estado: base tecnica aprobada para iniciar I1.
+> Fuente rectora: `docs/CONSTITUTION.md` y `docs/ARCHITECTURE.md`.
 > Alcance: versiones canonicas para implementar `SED_ESAL` bajo SDD Spec-Anchored.
 
 ## Coordenadas Del Sistema
@@ -12,10 +12,10 @@
 | Backend | `sed-esal-backend` |
 | Frontend | `sed-esal-angular` |
 | WAR | `sed-esal-backend.war` |
-| Contexto WebLogic propuesto | `/sed-esal` |
-| Paquete Java base propuesto | `co.gov.bogota.sed.esal` |
-| Esquema Oracle MVP propuesto | `SED_ESAL` |
-| Prefijo Oracle propuesto | `ESAL_` |
+| Contexto WebLogic | `/sed-esal` |
+| Paquete Java base | `co.gov.bogota.sed.esal` |
+| Esquema Oracle MVP | `SED_ESAL` |
+| Prefijo Oracle | `ESAL_` |
 
 ## Backend
 
@@ -56,8 +56,8 @@
 |---|---|
 | Oracle Database | 19c+ |
 | Dialecto Hibernate | `org.hibernate.dialect.Oracle12cDialect` |
-| Esquema local/prod propuesto | `SED_ESAL` |
-| Prefijo de tablas propuesto | `ESAL_` |
+| Esquema local/prod | `SED_ESAL` |
+| Prefijo de tablas | `ESAL_` |
 | DDL | Scripts SQL en `db/` |
 | Datos de prueba | Scripts separados para `local-dev` |
 

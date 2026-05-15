@@ -1,10 +1,10 @@
 # Spec I4 - Seguridad Institucional, Autorizacion Y Hardening
 
-> Estado: propuesta para revision.  
-> Fecha: 2026-05-15.  
-> Sistema: `SED_ESAL`.  
-> Metodologia: SDD Spec-Anchored.  
-> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.  
+> Estado: aprobado como incremento futuro.
+> Fecha: 2026-05-15.
+> Sistema: `SED_ESAL`.
+> Metodologia: SDD Spec-Anchored.
+> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.
 > Depende de: `docs/specs/2026-05-15-sed-esal-i1-spec.md`, `docs/specs/2026-05-15-sed-esal-i2-spec.md`, `docs/specs/2026-05-15-sed-esal-i3-spec.md`.
 
 ## 1. Objetivo
@@ -46,7 +46,7 @@ Excluye:
 - Los roles funcionales iniciales son `ADMINISTRADOR` y `EXPEDIDOR`.
 - En `local-dev` se permite HTTP Basic solo para desarrollo.
 - En `weblogic` no se debe usar usuario/clave local para operacion real.
-- El proveedor institucional esperado es Azure AD / Office 365, pendiente de confirmacion tecnica definitiva.
+- El proveedor institucional esperado es Azure AD / Office 365. Los datos tecnicos concretos de tenant, issuer, audience, JWKS, scopes y roles quedan pendientes de entrega por TI SED antes de implementar I4.
 - Si la SED entrega una seccion de seguridad base distinta, esta spec debe ajustarse antes de implementacion.
 
 ## 4. Roles Y Permisos

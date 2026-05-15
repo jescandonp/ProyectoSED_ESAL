@@ -1,7 +1,7 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: guia inicial pre-implementacion.  
-> Fecha: 2026-05-15.  
+> Estado: guia base aprobada, pre-implementacion funcional.
+> Fecha: 2026-05-15.
 > Marco: SDD Spec-Anchored por incrementos.
 
 ## 1. Objetivo
@@ -67,7 +67,7 @@ Pendiente de implementar. Cuando existan backend y frontend, validar:
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 
-Estado: especificado, pendiente de implementacion.
+Estado: aprobado como incremento activo, pendiente de implementacion.
 
 Casos previstos:
 
@@ -108,7 +108,7 @@ Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i2-spec.md`.
 
-Estado: especificado, pendiente de implementacion.
+Estado: aprobado como incremento futuro, pendiente de implementacion.
 
 ### I2 - Busqueda
 
@@ -140,7 +140,7 @@ Estado: especificado, pendiente de implementacion.
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i3-spec.md`.
 
-Estado: especificado, pendiente de implementacion.
+Estado: aprobado como incremento futuro, pendiente de implementacion.
 
 ### I3 - Numeracion Y Firmante
 
@@ -172,7 +172,7 @@ Estado: especificado, pendiente de implementacion.
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i4-spec.md`.
 
-Estado: especificado, pendiente de implementacion.
+Estado: aprobado como incremento futuro, pendiente de implementacion.
 
 ### I4 - Autenticacion Y Roles
 

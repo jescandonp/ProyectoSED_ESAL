@@ -1,9 +1,9 @@
 # Spec I0 - Fundacion Documental Y Arquitectura SED_ESAL
 
-> Estado: propuesta inicial.  
-> Fecha: 2026-05-15.  
-> Sistema: `SED_ESAL`.  
-> Metodologia: SDD Spec-Anchored.  
+> Estado: aprobado.
+> Fecha: 2026-05-15.
+> Sistema: `SED_ESAL`.
+> Metodologia: SDD Spec-Anchored.
 > PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.
 
 ## 1. Objetivo
@@ -22,7 +22,7 @@ Incluye:
 - Crear `docs/ARRANQUE.md`.
 - Crear `docs/GUIA_PRUEBAS_FUNCIONALES.md`.
 - Confirmar que el PRD vigente apunte a documentos propios de `SED_ESAL`.
-- Definir coordenadas tecnicas propuestas para specs posteriores.
+- Definir coordenadas tecnicas canonicas para specs posteriores.
 - Dejar preguntas abiertas para cerrar antes de codificacion.
 
 Excluye:
@@ -36,7 +36,7 @@ Excluye:
 
 ## 3. Decisiones
 
-Coordenadas propuestas:
+Coordenadas aprobadas:
 
 | Elemento | Valor |
 |---|---|
@@ -48,7 +48,7 @@ Coordenadas propuestas:
 | Esquema Oracle | `SED_ESAL` |
 | Prefijo Oracle | `ESAL_` |
 
-Estas coordenadas quedan propuestas, no congeladas, hasta revision de lider tecnico/arquitectura.
+Estas coordenadas quedan aprobadas para iniciar I1. Si infraestructura SED exige cambios posteriores, deben actualizarse los documentos rectores, specs y planes afectados antes de tocar codigo.
 
 ## 4. Requisitos Funcionales
 
@@ -83,14 +83,15 @@ Estas coordenadas quedan propuestas, no congeladas, hasta revision de lider tecn
 10. Arranque indica que aun no hay implementacion y que I1 no debe iniciar sin spec y plan.
 11. Guia de pruebas incluye formato de evidencia e incremento 0.
 
-## 7. Preguntas Abiertas Para Cierre Posterior
+## 7. Decisiones De Cierre
 
-1. Confirmar contexto WebLogic definitivo: `/sed-esal` u otro.
-2. Confirmar esquema Oracle definitivo: `SED_ESAL` u otro.
-3. Confirmar prefijo de tablas: `ESAL_` u otro.
-4. Confirmar estrategia de almacenamiento documental/PDF.
-5. Confirmar si `sed-esal-angular` y `sed-esal-backend` seran los nombres finales de carpetas.
-6. Confirmar politica de retencion de documentos soporte.
+1. Contexto WebLogic definitivo para MVP: `/sed-esal`.
+2. Esquema Oracle definitivo para MVP: `SED_ESAL`.
+3. Prefijo de tablas definitivo para MVP: `ESAL_`.
+4. Carpetas finales: `sed-esal-angular` y `sed-esal-backend`.
+5. Los archivos fuente en `Documentos_Referencia/` se mantienen ignorados por Git salvo aprobacion explicita de publicacion.
+6. La estrategia definitiva de almacenamiento documental/PDF queda diferida para I3; I1 usara almacenamiento local-dev abstraido por servicio.
+7. La politica de retencion queda diferida para cierre con lineamientos institucionales.
 
 ## 8. Verificacion
 
@@ -98,4 +99,3 @@ Estas coordenadas quedan propuestas, no congeladas, hasta revision de lider tecn
 - Revision de encabezados y coordenadas.
 - Busqueda de referencias heredadas incorrectas a SIGCON.
 - Confirmacion de que el PRD vigente queda alineado con la base documental.
-

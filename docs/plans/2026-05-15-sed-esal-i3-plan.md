@@ -1,8 +1,8 @@
 # Plan I3 - Generacion PDF, Numeracion, Firmante Y Trazabilidad
 
-> Estado: propuesta ejecutable, pendiente aprobacion.  
-> Fecha: 2026-05-15.  
-> Spec: `docs/specs/2026-05-15-sed-esal-i3-spec.md`.  
+> Estado: aprobado como plan futuro.
+> Fecha: 2026-05-15.
+> Spec: `docs/specs/2026-05-15-sed-esal-i3-spec.md`.
 > Sistema: `SED_ESAL`.
 
 ## 1. Objetivo
@@ -14,7 +14,7 @@ Implementar el tercer incremento funcional de `SED_ESAL`: emision PDF desde prev
 - I1 implementado: modelo, estados, completitud y auditoria.
 - I2 implementado: busqueda, detalle y preview certificable.
 - Plantilla oficial disponible localmente: `Documentos_Referencia/Plantilla Certificado EYRL.docx`.
-- Politica de seguridad ampliada pendiente; si se confirma antes de implementar, revisar descarga, headers, auditoria y almacenamiento.
+- Politica de seguridad ampliada aprobada como referencia; si SED confirma lineamientos adicionales antes de implementar, revisar descarga, headers, auditoria y almacenamiento.
 
 ## 3. Tareas
 

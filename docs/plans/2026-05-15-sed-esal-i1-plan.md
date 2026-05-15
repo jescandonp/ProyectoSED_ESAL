@@ -1,8 +1,8 @@
 # Plan I1 - Modelo Base, Carga Inicial, Estados Y Completitud
 
-> Estado: propuesta ejecutable, pendiente aprobacion.  
-> Fecha: 2026-05-15.  
-> Spec: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.  
+> Estado: aprobado para ejecucion.
+> Fecha: 2026-05-15.
+> Spec: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 > Sistema: `SED_ESAL`.
 
 ## 1. Objetivo
@@ -14,8 +14,8 @@ Implementar el primer incremento funcional de `SED_ESAL`: base tecnica, modelo d
 - PRD V2 disponible.
 - `docs/CONSTITUTION.md`, `docs/ARCHITECTURE.md`, `docs/TECNOLOGIAS.md` disponibles.
 - Spec I1 revisada.
-- Coordenadas tecnicas propuestas aceptadas o ajustadas.
-- Seccion ampliada de seguridad de `ARCHITECTURE.md` pendiente; si se confirma antes de codificar, actualizar spec/plan.
+- Coordenadas tecnicas aprobadas.
+- Seccion ampliada de seguridad de `ARCHITECTURE.md` aprobada como referencia; Azure AD real queda para I4.
 
 ## 3. Tareas
 
@@ -204,4 +204,3 @@ No cerrar I1 hasta que:
 - No implementar QR.
 - No integrar Azure AD real.
 - No abrir consulta publica.
-

@@ -1,8 +1,8 @@
 # Arquitectura de Referencia - SED_ESAL
 
-> Estado: base inicial para especificaciones SDD.  
-> Sistema: `SED_ESAL` - Certificados de Existencia y Representacion Legal ESAL con fines educativos.  
-> Fecha base: 2026-05-15.  
+> Estado: base arquitectonica aprobada para iniciar I1.
+> Sistema: `SED_ESAL` - Certificados de Existencia y Representacion Legal ESAL con fines educativos.
+> Fecha base: 2026-05-15.
 > Referencia reutilizada: arquitectura SED/SIGCON, adaptada a coordenadas propias de `SED_ESAL`.
 
 ## 1. Vision General
@@ -19,14 +19,14 @@ El sistema se construye bajo SDD Spec-Anchored: las especificaciones vivas son l
 | Backend | `sed-esal-backend` |
 | Frontend | `sed-esal-angular` |
 | WAR | `sed-esal-backend.war` |
-| Contexto WebLogic propuesto | `/sed-esal` |
-| Paquete Java base propuesto | `co.gov.bogota.sed.esal` |
-| Esquema Oracle MVP propuesto | `SED_ESAL` |
-| Prefijo Oracle propuesto | `ESAL_` |
+| Contexto WebLogic | `/sed-esal` |
+| Paquete Java base | `co.gov.bogota.sed.esal` |
+| Esquema Oracle MVP | `SED_ESAL` |
+| Prefijo Oracle | `ESAL_` |
 | Perfil local | `local-dev` |
 | Perfil servidor | `weblogic` |
 
-Estos valores deben confirmarse en Spec 0 antes de codificar.
+Estos valores quedan aprobados para iniciar I1. Si infraestructura SED exige ajustes posteriores, el cambio debe reflejarse primero en arquitectura, tecnologias, spec y plan afectados.
 
 ## 3. Stack Tecnologico
 
@@ -215,13 +215,13 @@ Rol candidato:
 
 - `AUDITOR`: consulta auditoria y trazas sin modificar datos ni generar certificados.
 
-Roles propuestos para App Registration:
+Roles base para App Registration:
 
 | App Role Azure AD | Rol Aplicativo | Uso |
 |---|---|---|
 | `ESAL_ADMINISTRADOR` | `ADMINISTRADOR` | Gestion administrativa de ESAL, reglas, documentos, firmantes, numeracion y auditoria |
 | `ESAL_EXPEDIDOR` | `EXPEDIDOR` | Busqueda, vista previa, generacion y descarga de certificados |
-| `ESAL_AUDITOR` | `AUDITOR` | Consulta de trazas y certificados, si la DIV lo confirma |
+| `ESAL_AUDITOR` | `AUDITOR` | Consulta de trazas y certificados en incremento posterior, salvo confirmacion expresa de MVP |
 
 ### 9.3. Autenticacion Institucional
 
@@ -375,9 +375,9 @@ Frontend:
 
 ## 10. Documentos Y PDFs
 
-Decisiones pendientes:
+Decisiones diferidas:
 
-- Almacenamiento: base de datos, filesystem institucional o gestor documental.
+- Almacenamiento definitivo: base de datos, filesystem institucional o gestor documental. No bloquea I1 porque el almacenamiento se abstrae por servicio y usa filesystem local-dev controlado.
 - Ruta local-dev para documentos soporte y certificados.
 - Politica de retencion.
 - Acceso a descarga y auditoria.

@@ -1,7 +1,7 @@
 # Plan I0 - Fundacion Documental Y Arquitectura SED_ESAL
 
-> Estado: ejecutable para cierre documental inicial.  
-> Fecha: 2026-05-15.  
+> Estado: cerrado.
+> Fecha: 2026-05-15.
 > Spec: `docs/specs/2026-05-15-sed-esal-i0-spec.md`.
 
 ## 1. Objetivo
@@ -43,7 +43,6 @@ I0 se considera cerrado cuando:
 
 ## 5. Riesgos
 
-- Las coordenadas tecnicas propuestas pueden cambiar por decision de infraestructura SED.
+- Las coordenadas tecnicas quedan aprobadas; solo cambiaran por decision posterior de infraestructura SED con actualizacion documental previa.
 - El almacenamiento documental/PDF aun no esta definido.
 - La integracion Azure AD queda diferida; no debe bloquear I1 local-dev.
-

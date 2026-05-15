@@ -1,10 +1,10 @@
 # Spec I3 - Generacion PDF, Numeracion, Firmante Y Trazabilidad
 
-> Estado: propuesta para revision.  
-> Fecha: 2026-05-15.  
-> Sistema: `SED_ESAL`.  
-> Metodologia: SDD Spec-Anchored.  
-> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.  
+> Estado: aprobado como incremento futuro.
+> Fecha: 2026-05-15.
+> Sistema: `SED_ESAL`.
+> Metodologia: SDD Spec-Anchored.
+> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.
 > Depende de: `docs/specs/2026-05-15-sed-esal-i1-spec.md`, `docs/specs/2026-05-15-sed-esal-i2-spec.md`.
 
 ## 1. Objetivo
@@ -47,8 +47,8 @@ Excluye:
 - El PDF se genera usando los datos vigentes al momento de expedicion.
 - El numero de certificado se asigna solo si la generacion pasa validacion funcional.
 - Si ocurre un error tecnico despues de reservar numero, el evento debe quedar trazado y el numero no debe reutilizarse salvo regla institucional futura de anulacion.
-- La politica definitiva de almacenamiento documental esta pendiente; I3 debe implementar una abstraccion reemplazable.
-- La seccion ampliada de seguridad de `docs/ARCHITECTURE.md` sigue pendiente y puede modificar controles de descarga, auditoria o cabeceras.
+- La politica definitiva de almacenamiento documental queda diferida para cierre antes de I3; I3 debe implementar una abstraccion reemplazable.
+- La seccion ampliada de seguridad de `docs/ARCHITECTURE.md` queda aprobada como referencia y puede ajustarse si SED confirma controles adicionales de descarga, auditoria o cabeceras.
 
 ## 4. Actores Y Permisos
 

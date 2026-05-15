@@ -152,7 +152,7 @@ La emisión será directa cuando los datos requeridos por el formato del certifi
 - Para ESAL en estado `En Liquidación`, el certificado debe incluir la leyenda `EN LIQUIDACIÓN` junto al nombre y el párrafo informativo de disolución/liquidación.
 - Para ESAL en estado `Cancelado`, el certificado debe limitar la información emitida y mostrar la resolución de cancelación y su fecha.
 - Cada certificado tendrá un número único con regla de prefijo más consecutivo.
-- La regla inicial propuesta para número único es: `<PREFIJO>-<AAAA>-<CONSECUTIVO_6_DIGITOS>`.
+- La regla aprobada para número único es: `<PREFIJO>-<AAAA>-<CONSECUTIVO_6_DIGITOS>`.
 - El prefijo debe ser configurable. Valor inicial sugerido: `ESAL`.
 - Ejemplo de número: `ESAL-2026-000001`.
 - El consecutivo debe reiniciarse por año, salvo que la DIV defina una regla institucional distinta.
@@ -712,14 +712,14 @@ Stack de referencia:
 - Auth local MVP: usuarios de desarrollo.
 - Swagger/OpenAPI: activo.
 
-Decisiones pendientes para documento técnico:
+Decisiones cerradas en documentos técnicos:
 
-- Nombre de contexto WebLogic.
-- Paquete Java base.
-- Prefijo definitivo de tablas Oracle.
-- Esquema Oracle local/prod.
-- Convención de nombres de módulos frontend.
-- Ubicación definitiva de plantillas y PDFs generados.
+- Contexto WebLogic: `/sed-esal`.
+- Paquete Java base: `co.gov.bogota.sed.esal`.
+- Prefijo definitivo de tablas Oracle: `ESAL_`.
+- Esquema Oracle local/prod MVP: `SED_ESAL`.
+- Modulos: `sed-esal-backend` y `sed-esal-angular`.
+- Ubicacion definitiva de plantillas y PDFs generados: diferida para I3; I1 usara servicio de almacenamiento abstraido con filesystem local-dev controlado.
 
 ## 11. Testing Decisions
 
@@ -822,21 +822,24 @@ Queda fuera del MVP:
 
 ## 13. Open Questions
 
-1. ¿Cuál será el contexto WebLogic definitivo para `SED_ESAL`?
-2. ¿Cuál será el prefijo Oracle de tablas? Propuesta: `ESAL_`.
-3. ¿Cuál será el esquema Oracle MVP? Propuesta: `SED_ESAL`.
-4. ¿El consecutivo debe reiniciarse anualmente o debe ser global permanente?
-5. ¿Debe existir anulación de certificados expedidos?
-6. ¿Los PDFs generados se almacenarán en base de datos, filesystem institucional o gestor documental?
-7. ¿Debe conservarse también el DOCX intermedio o solo el PDF final?
-8. ¿Qué vigencia legal tiene cada certificado expedido?
-9. ¿Qué texto exacto debe mostrarse cuando falten campos obligatorios?
-10. ¿La plantilla puede convertirse a una plantilla técnica con variables o debe mantenerse como DOCX base editable por negocio?
-11. ¿Cuál será la lista cerrada de estados administrativos permitidos además de los cuatro iniciales?
-12. ¿El tiempo de suspensión se registra como rango de fechas, número de días/meses o texto administrativo?
-13. ¿Qué información exacta debe mostrarse en certificado para una ESAL cancelada?
-14. ¿La carga histórica debe exigir saneamiento previo de los 23 campos obligatorios o puede operar con semáforo de incompletitud?
-15. ¿Cuál será la política de retención, consulta y descarga de documentos soporte?
+1. ¿Debe existir anulación de certificados expedidos?
+2. ¿Los PDFs generados se almacenarán en base de datos, filesystem institucional o gestor documental?
+3. ¿Debe conservarse también el DOCX intermedio o solo el PDF final?
+4. ¿Qué vigencia legal tiene cada certificado expedido?
+5. ¿Qué texto exacto debe mostrarse cuando falten campos obligatorios?
+6. ¿La plantilla puede convertirse a una plantilla técnica con variables o debe mantenerse como DOCX base editable por negocio?
+7. ¿Cuál será la lista cerrada de estados administrativos permitidos además de los cuatro iniciales?
+8. ¿El tiempo de suspensión se registra como rango de fechas, número de días/meses o texto administrativo?
+9. ¿Qué información exacta debe mostrarse en certificado para una ESAL cancelada?
+10. ¿Cuál será la política de retención, consulta y descarga de documentos soporte?
+
+Preguntas cerradas:
+
+- Contexto WebLogic definitivo para MVP: `/sed-esal`.
+- Prefijo Oracle de tablas: `ESAL_`.
+- Esquema Oracle MVP: `SED_ESAL`.
+- El consecutivo se reinicia anualmente salvo decision institucional posterior.
+- La carga historica puede operar con semaforo de incompletitud; bloquea certificacion cuando falten campos obligatorios.
 
 ## 14. Acceptance Criteria for MVP
 

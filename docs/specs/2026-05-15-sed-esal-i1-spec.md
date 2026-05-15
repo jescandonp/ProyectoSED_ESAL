@@ -1,10 +1,10 @@
 # Spec I1 - Modelo Base, Carga Inicial, Estados Y Completitud
 
-> Estado: propuesta para revision.  
-> Fecha: 2026-05-15.  
-> Sistema: `SED_ESAL`.  
-> Metodologia: SDD Spec-Anchored.  
-> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.  
+> Estado: aprobado como incremento activo.
+> Fecha: 2026-05-15.
+> Sistema: `SED_ESAL`.
+> Metodologia: SDD Spec-Anchored.
+> PRD base: `docs/specs/2026-05-09-sed-esal-certificados-prd.md`.
 > Documentos rectores: `docs/CONSTITUTION.md`, `docs/ARCHITECTURE.md`, `docs/TECNOLOGIAS.md`.
 
 ## 1. Objetivo
@@ -43,8 +43,8 @@ Excluye:
 
 ## 3. Supuestos
 
-- Las coordenadas tecnicas propuestas se mantienen mientras no haya decision contraria: esquema `SED_ESAL`, prefijo `ESAL_`, paquete `co.gov.bogota.sed.esal`, contexto `/sed-esal`.
-- La seccion ampliada de seguridad en `docs/ARCHITECTURE.md` esta pendiente de confirmacion. I1 implementa seguridad minima local-dev y debe quedar preparada para actualizarse cuando esa seccion sea aprobada.
+- Las coordenadas tecnicas quedan aprobadas para I1: esquema `SED_ESAL`, prefijo `ESAL_`, paquete `co.gov.bogota.sed.esal`, contexto `/sed-esal`.
+- La seccion ampliada de seguridad en `docs/ARCHITECTURE.md` queda aprobada como base arquitectonica. I1 implementa seguridad minima local-dev y debe dejar preparada la separacion de perfiles para I4.
 - La carga historica puede importar registros incompletos y registrar advertencias.
 - Los registros nuevos creados por formulario deben validar obligatoriedad y reglas documentales que correspondan al flujo implementado.
 - El almacenamiento documental definitivo esta pendiente; para I1 se permite una estrategia local-dev controlada y abstraida por servicio.
@@ -478,11 +478,10 @@ Manual:
 - QR.
 - Consulta publica.
 
-## 14. Preguntas Abiertas
+## 14. Decisiones De Cierre
 
-1. Confirmar almacenamiento documental/PDF definitivo.
-2. Confirmar si carga historica se ejecutara desde archivo local, upload web o ambos.
-3. Confirmar si registros historicos incompletos deben quedar bloqueados para certificacion hasta saneamiento.
-4. Confirmar textos exactos de mensajes de completitud.
-5. Confirmar seccion ampliada de seguridad de `docs/ARCHITECTURE.md`.
-
+1. Almacenamiento definitivo de documentos/PDFs queda diferido para I3; I1 implementa servicio abstraido con filesystem local-dev controlado.
+2. La carga historica soportara upload web y lectura desde ruta local-dev para administrador tecnico.
+3. Los registros historicos incompletos se importan con advertencias, pero quedan bloqueados para certificacion cuando falte un campo obligatorio o documento requerido.
+4. Los mensajes exactos de completitud se definen inicialmente como textos funcionales ajustables durante I1 y se validan en pruebas funcionales.
+5. La seguridad ampliada de `docs/ARCHITECTURE.md` queda aprobada como referencia; Azure AD real se implementa en I4.
