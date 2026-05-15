@@ -136,16 +136,86 @@ Entidades base:
 
 ## 9. Seguridad
 
-MVP:
+La seguridad de `SED_ESAL` se define por perfiles de ambiente. La regla base es que el frontend nunca es fuente de autorizacion: toda decision efectiva de acceso se valida en backend.
 
-- HTTP Basic en `local-dev`.
-- Roles: `ADMINISTRADOR`, `EXPEDIDOR`.
+### 9.1. Perfiles
 
-Evolucion:
+`local-dev`:
 
-- Azure AD / Office 365.
-- JWT validado en backend.
-- Autorizacion por rol en backend.
+- HTTP Basic solo para desarrollo.
+- Usuarios de prueba definidos por spec activa.
+- CORS local para el frontend.
+- Swagger activo para validacion tecnica.
+
+`weblogic`:
+
+- Bearer JWT institucional.
+- Integracion prevista con Azure AD / Office 365 o proveedor que confirme SED.
+- Configuracion externa de issuer, audience, JWKS y origenes permitidos.
+- Sin usuarios locales de operacion.
+
+### 9.2. Roles
+
+Roles funcionales iniciales:
+
+- `ADMINISTRADOR`: administra base ESAL, documentos, estados, firmantes, numeracion, certificados y auditoria.
+- `EXPEDIDOR`: consulta, previsualiza, genera y descarga certificados; no edita datos base.
+
+Rol candidato:
+
+- `AUDITOR`: consulta auditoria y trazas sin modificar datos ni generar certificados.
+
+### 9.3. Autenticacion Institucional
+
+El backend debe validar:
+
+- Firma del token.
+- Emisor (`issuer`).
+- Audiencia (`audience`).
+- Expiracion.
+- Tenant permitido.
+- Usuario institucional identificable.
+
+Claims esperados:
+
+- Identificador unico.
+- Correo institucional.
+- Nombre visible.
+- Grupos o roles institucionales.
+
+Los nombres exactos de claims y grupos quedan pendientes de confirmacion SED.
+
+### 9.4. Autorizacion
+
+Reglas:
+
+- Endpoints administrativos requieren `ADMINISTRADOR`.
+- Busqueda y vista previa permiten `ADMINISTRADOR` y `EXPEDIDOR`.
+- Generacion y descarga de certificados permiten `ADMINISTRADOR` y `EXPEDIDOR` si la regla funcional habilita expedicion.
+- Auditoria global requiere `ADMINISTRADOR` o futuro `AUDITOR`.
+- Documentos y certificados no se sirven por ruta fisica; toda descarga pasa por backend autenticado.
+
+### 9.5. CORS Y Cabeceras
+
+Reglas iniciales:
+
+- CORS se configura por ambiente.
+- No se permite wildcard `*` con credenciales.
+- Respuestas sensibles y descargas deben usar cache restrictivo.
+- Cabeceras minimas: `X-Content-Type-Options`, `X-Frame-Options` o equivalente, `Referrer-Policy` y politica de cache.
+
+### 9.6. Auditoria De Seguridad
+
+Eventos minimos:
+
+- Acceso denegado.
+- Token invalido o expirado cuando sea viable.
+- Descarga de documento soporte.
+- Descarga de certificado.
+- Cambios de firmante y numeracion.
+- Errores de seguridad.
+
+La auditoria no debe persistir secretos, tokens completos ni passwords.
 
 ## 10. Documentos Y PDFs
 
@@ -190,4 +260,3 @@ Cambios de version deben actualizar, en este orden:
 4. PRD/spec afectada.
 5. Plan de implementacion.
 6. Codigo.
-

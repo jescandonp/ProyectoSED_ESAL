@@ -168,10 +168,39 @@ Estado: especificado, pendiente de implementacion.
 | I3-PDF-09 | Consultar historial por ESAL | ESAL con certificados | Lista certificados generados |
 | I3-AUD-01 | Consultar trazas de expedicion | Eventos I3 | Auditoria registra generacion, bloqueo, fallo y descarga |
 
-## 11. Incrementos Posteriores
+## 11. Incremento 4 - Seguridad Institucional
 
-### I4 - Seguridad Institucional
+Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i4-spec.md`.
 
-- Integracion Azure AD / Office 365.
-- Roles definitivos.
-- Permisos por backend.
+Estado: especificado, pendiente de implementacion.
+
+### I4 - Autenticacion Y Roles
+
+| ID | Accion | Datos | Esperado |
+|---|---|---|---|
+| I4-AUTH-01 | Acceder sin token en ambiente institucional | Request anonimo | Respuesta 401 |
+| I4-AUTH-02 | Acceder con token expirado | JWT expirado | Respuesta 401 y evento auditable si aplica |
+| I4-AUTH-03 | Acceder con audience incorrecta | JWT invalido | Respuesta 401 |
+| I4-AUTH-04 | Consultar `/api/auth/me` | JWT valido | Retorna usuario, roles y permisos |
+| I4-ROL-01 | Acceder como Administrador | Rol `ADMINISTRADOR` | Acceso a modulos administrativos |
+| I4-ROL-02 | Acceder como Expedidor a admin | Rol `EXPEDIDOR` | Respuesta 403 |
+| I4-ROL-03 | Acceder como Expedidor a busqueda | Rol `EXPEDIDOR` | Acceso permitido |
+
+### I4 - Hardening Y Auditoria
+
+| ID | Accion | Datos | Esperado |
+|---|---|---|---|
+| I4-CORS-01 | Consumir API desde origen permitido | Dominio institucional/local | Request permitido |
+| I4-CORS-02 | Consumir API desde origen no permitido | Dominio no autorizado | Request rechazado por CORS |
+| I4-DESC-01 | Descargar certificado sin autenticacion | Certificado existente | Respuesta 401 |
+| I4-DESC-02 | Descargar certificado con rol permitido | Admin o Expedidor | Descarga y auditoria |
+| I4-ERR-01 | Forzar error tecnico | Endpoint con error controlado | No expone stack trace ni rutas fisicas |
+| I4-AUD-01 | Consultar evento de acceso denegado | 403 generado | Auditoria registra usuario/recurso/resultado |
+
+## 12. Incrementos Posteriores
+
+### I5 - Verificacion Externa Futura
+
+- QR o codigo de verificacion.
+- Pagina publica o interna de validacion si la DIV lo aprueba.
+- Control de vigencia publica del certificado.
