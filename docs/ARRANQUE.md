@@ -29,7 +29,7 @@
 
 ## Estado Del Proyecto
 
-`SED_ESAL` esta en fase de especificacion SDD con I0-I4 aprobados como base documental. Aun no hay codigo fuente backend/frontend. La implementacion funcional inicia por I1, siguiendo la spec y el plan aprobados.
+`SED_ESAL` esta en fase de implementacion I1 con I0-I4 aprobados como base documental. El backend base `sed-esal-backend` ya fue creado como bootstrap Spring Boot WAR. El frontend aun no se ha creado. La implementacion funcional sigue I1, segun la spec y el plan aprobados.
 
 - Spec 0 de fundacion documental y arquitectura: aprobado.
 - Spec I1 de modelo base, carga inicial y completitud: aprobado como incremento activo.
@@ -92,6 +92,8 @@ Estas coordenadas quedan aprobadas para iniciar I1. Cualquier cambio posterior p
 | Node.js | 20 LTS | `node -v` |
 | npm | 9+ | `npm -v` |
 | Oracle DB | 19c compatible | validar con DBA |
+
+Nota de ambiente actual: en esta maquina se verifico Maven 3.9.15 con Java 21 y Node.js 22. El backend queda configurado con `java.version=1.8` para compatibilidad objetivo con WebLogic 12.2.1.4; se recomienda validar tambien con Oracle JDK 8 antes de despliegue institucional.
 
 ## Usuarios Local-Dev Aprobados Para I1
 

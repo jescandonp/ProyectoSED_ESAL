@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: sed-esal-backend
+  profiles:
+    default: local-dev
+
+server:
+  servlet:
+    context-path: /sed-esal
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

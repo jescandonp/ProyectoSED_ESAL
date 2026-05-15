@@ -13,7 +13,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 
 | Tarea | Estado | Evidencia |
 |---|---|---|
-| T1 - Bootstrap Backend | Pendiente |  |
+| T1 - Bootstrap Backend | Completado | `sed-esal-backend`; `mvn test`; `mvn package -DskipTests`; WAR `target/sed-esal-backend.war` |
 | T2 - Bootstrap Frontend | Pendiente |  |
 | T3 - Modelo Oracle Y Dominio Backend | Pendiente |  |
 | T4 - Seguridad Local-Dev | Pendiente |  |
@@ -38,7 +38,40 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 
 ## 4. Evidencia De Verificacion
 
-Pendiente de ejecucion tecnica I1.
+### T1 - Bootstrap Backend
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- Proyecto Maven `sed-esal-backend`.
+- Spring Boot 2.7.18, Java target 1.8 y empaquetado WAR.
+- Dependencias base: Web, Security, JPA, Actuator, SpringDoc OpenAPI, Oracle JDBC y Tomcat provided.
+- Clase principal `co.gov.bogota.sed.esal.SedEsalBackendApplication` preparada para WAR.
+- Perfil `local-dev`.
+- Health endpoint disponible.
+- Swagger/OpenAPI con esquema `BearerAuth`.
+- Usuarios local-dev aprobados:
+  - `admin@educacionbogota.edu.co` / `admin123` / `ADMINISTRADOR`
+  - `expedidor@educacionbogota.edu.co` / `expedidor123` / `EXPEDIDOR`
+
+Verificacion ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `mvn test`: BUILD SUCCESS, 3 tests.
+- `mvn package -DskipTests`: BUILD SUCCESS.
+- WAR generado: `target/sed-esal-backend.war`.
+
+Observacion de ambiente:
+
+- La maquina actual ejecuta Maven con Java 21. El proyecto compila con `java.version=1.8`; se mantiene pendiente validar con Oracle JDK 8 antes de despliegue WebLogic.
 
 ## 5. Cierre
 

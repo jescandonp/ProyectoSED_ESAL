@@ -4,9 +4,9 @@ Aplicativo interno para la Direccion de Inspeccion y Vigilancia de la Secretaria
 
 ## Estado
 
-Fase actual: especificacion bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
+Fase actual: I1 en ejecucion bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
 
-No hay implementacion backend/frontend todavia. El repositorio contiene la base documental, PRD, arquitectura propia del proyecto, specs por incremento, planes de implementacion y guia funcional de pruebas.
+El backend base `sed-esal-backend` ya existe como bootstrap Spring Boot WAR para I1. El frontend aun no se ha creado. El repositorio contiene la base documental, PRD, arquitectura propia del proyecto, specs por incremento, planes de implementacion y guia funcional de pruebas.
 
 ## Orden De Lectura
 
@@ -27,13 +27,13 @@ No hay implementacion backend/frontend todavia. El repositorio contiene la base 
 
 | Incremento | Estado | Foco |
 |---|---|---|
-| I0 | Especificado | Base documental, arquitectura y metodologia |
-| I1 | Especificado | Modelo base, carga inicial, estados y completitud |
-| I2 | Especificado | Busqueda operativa y vista previa certificable |
-| I3 | Especificado | Generacion PDF, numeracion, firmante y trazabilidad |
-| I4 | Especificado | Seguridad institucional, autorizacion y hardening |
+| I0 | Cerrado | Base documental, arquitectura y metodologia |
+| I1 | En ejecucion | Modelo base, carga inicial, estados y completitud |
+| I2 | Aprobado futuro | Busqueda operativa y vista previa certificable |
+| I3 | Aprobado futuro | Generacion PDF, numeracion, firmante y trazabilidad |
+| I4 | Aprobado futuro | Seguridad institucional, autorizacion y hardening |
 
-## Coordenadas Propuestas
+## Coordenadas Canonicas
 
 | Elemento | Valor |
 |---|---|
@@ -49,6 +49,25 @@ No hay implementacion backend/frontend todavia. El repositorio contiene la base 
 ## Referencias Locales
 
 Los archivos fuente del area usuaria se mantienen localmente en `Documentos_Referencia/`. Por cautela, esos archivos no se versionan inicialmente en GitHub hasta confirmar politica de publicacion o privacidad.
+
+## Backend I1
+
+El bootstrap backend se encuentra en `sed-esal-backend`.
+
+Comandos de verificacion:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+```
+
+Resultados esperados:
+
+- Tests de arranque local-dev pasan.
+- Health expone `/actuator/health`.
+- OpenAPI expone `BearerAuth`.
+- El WAR se genera como `target/sed-esal-backend.war`.
 
 ## Flujo De Actualizacion Del Repo
 
