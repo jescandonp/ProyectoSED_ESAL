@@ -1,6 +1,7 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: I1 completado. I2 pendiente de implementacion.
+> Estado: I2 completado. I3 es el siguiente incremento activo.
+> Tests backend: 70 (BUILD SUCCESS). Frontend Angular: build en verde.
 > Fecha: 2026-05-16.
 > Marco: SDD Spec-Anchored por incrementos.
 
@@ -138,33 +139,59 @@ Estado: **implementado**.
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i2-spec.md`.
 
-Estado: aprobado como incremento futuro, pendiente de implementacion.
+Estado: **implementado**. Backend: 70 tests en verde. Frontend: build en verde.
 
-### I2 - Busqueda
+### I2 - Busqueda Backend
 
-| ID | Accion | Datos | Esperado |
-|---|---|---|---|
-| I2-BUS-01 | Buscar por `ID SIPEJ` exacto | `ID SIPEJ` existente | Retorna la ESAL correcta |
-| I2-BUS-02 | Buscar por `ID SIPEJ` parcial | Fragmento de `ID SIPEJ` | Retorna coincidencias paginadas |
-| I2-BUS-03 | Buscar por nombre exacto | Nombre completo existente | Retorna la ESAL correcta |
-| I2-BUS-04 | Buscar por nombre parcial | Fragmento de nombre | Retorna coincidencias paginadas |
-| I2-BUS-05 | Buscar sin coincidencias | Texto inexistente | Muestra mensaje sin resultados |
-| I2-BUS-06 | Filtrar por estado | `ACTIVO`, `SUSPENDIDO`, `EN_LIQUIDACION` o `CANCELADO` | Lista solo registros del estado seleccionado |
-| I2-BUS-07 | Filtrar por semaforo | Completitud seleccionada | Lista registros segun completitud |
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I2-BUS-01 | Buscar sin filtros | `GET /api/busquedas/esales?page=0&size=10` | Rol admin o expedidor | Lista paginada con todos los registros |
+| I2-BUS-02 | Buscar por `q` en nombre | `GET /api/busquedas/esales?q=Fund` | Texto parcial existente | Retorna ESALes cuyo nombre contiene `Fund` |
+| I2-BUS-03 | Buscar por `q` en idSipej | `GET /api/busquedas/esales?q=SIP-001` | Fragmento de idSipej | Retorna ESALes con coincidencia en idSipej |
+| I2-BUS-04 | Buscar por `idSipej` exacto | `GET /api/busquedas/esales?idSipej=SIP-001` | idSipej existente | Retorna la ESAL con ese idSipej |
+| I2-BUS-05 | Buscar por `nit` | `GET /api/busquedas/esales?nit=900` | Fragmento de NIT | Retorna ESALes cuyo nit contiene `900` |
+| I2-BUS-06 | Filtrar por `estado` | `GET /api/busquedas/esales?estado=ACTIVO` | Estado valido | Lista solo registros con `estado = ACTIVO` |
+| I2-BUS-07 | Filtrar por `estadoCompletitud` | `GET /api/busquedas/esales?estadoCompletitud=LISTO_PARA_CERTIFICAR` | Semaforo valido | Lista solo registros con completitud indicada |
+| I2-BUS-08 | Combinar filtros | `GET /api/busquedas/esales?estado=ACTIVO&q=Fund` | Multifiltro | Aplica AND entre filtros activos |
+| I2-BUS-09 | Sin coincidencias | `GET /api/busquedas/esales?q=XYZINEXISTENTE` | Texto que no existe | `content: []`, `totalElements: 0` |
+| I2-BUS-10 | Sin autenticacion | `GET /api/busquedas/esales` | Sin cabecera Authorization | 401 Unauthorized |
 
-### I2 - Detalle Y Vista Previa
+### I2 - Detalle Backend
 
-| ID | Accion | Datos | Esperado |
-|---|---|---|---|
-| I2-DET-01 | Abrir detalle desde resultado | ESAL encontrada | Muestra informacion por secciones |
-| I2-DET-02 | Abrir detalle como Expedidor | Usuario `EXPEDIDOR` | No muestra controles de edicion |
-| I2-PREV-01 | Abrir vista previa activa | ESAL `ACTIVO` completa | Muestra datos certificables y generacion habilitada para I3 |
-| I2-PREV-02 | Abrir vista previa suspendida | ESAL `SUSPENDIDO` | Muestra alerta y tiempo de suspension |
-| I2-PREV-03 | Abrir vista previa en liquidacion | ESAL `EN_LIQUIDACION` | Muestra leyenda y parrafo de liquidacion |
-| I2-PREV-04 | Abrir vista previa cancelada | ESAL `CANCELADO` | Muestra solo informacion permitida y datos de cancelacion |
-| I2-PREV-05 | Validar faltante obligatorio | Campo requerido vacio o `NR` | Bloquea generacion y muestra campo/seccion |
-| I2-PREV-06 | Validar faltante opcional | Campo opcional vacio o `NR` | No bloquea generacion |
-| I2-PREV-07 | Consultar trazas | Eventos de busqueda/preview | Auditoria registra usuario, rol, accion y resultado |
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I2-DET-01 | Obtener detalle completo | `GET /api/busquedas/esales/{id}` | id de ESAL existente, rol admin | Objeto con campos ESAL, personeria, reformas, nombramientos, organos, actuaciones, documentos, completitud |
+| I2-DET-02 | Detalle como Expedidor | `GET /api/busquedas/esales/{id}` | id existente, rol expedidor | 200, mismo detalle sin controles de edicion (frontend) |
+| I2-DET-03 | Detalle ESAL inexistente | `GET /api/busquedas/esales/99999` | id que no existe | 404 Not Found |
+| I2-DET-04 | Auditoria detalle | Obtener detalle y consultar auditoria | - | Registro `accion: DETALLE_ESAL_CONSULTADO`, `resultado: EXITO` |
+
+### I2 - Vista Previa Backend
+
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I2-PREV-01 | Preview ESAL completa activa | `GET /api/certificados/preview/esales/{id}` | ESAL ACTIVO con todos los campos | `generacionHabilitada: true`, `bloqueos: []` |
+| I2-PREV-02 | Preview ESAL con campos faltantes | `GET /api/certificados/preview/esales/{id}` | ESAL con obligatorios vacios | `generacionHabilitada: false`, `bloqueos` con entradas |
+| I2-PREV-03 | Preview ESAL cancelada | `GET /api/certificados/preview/esales/{id}` | ESAL CANCELADO completa | `generacionHabilitada: false` independiente de completitud |
+| I2-PREV-04 | Preview ESAL suspendida | `GET /api/certificados/preview/esales/{id}` | ESAL SUSPENDIDO | `alertaEstado` con texto de suspension, `generacionHabilitada` segun completitud |
+| I2-PREV-05 | Preview ESAL en liquidacion | `GET /api/certificados/preview/esales/{id}` | ESAL EN_LIQUIDACION | `alertaEstado` con texto de liquidacion |
+| I2-PREV-06 | Validar preview no habilitada | `POST /api/certificados/preview/esales/{id}/validar` | ESAL con bloqueos | `generacionHabilitada: false`; auditoria `ERROR_VALIDACION_PREVIEW` |
+| I2-PREV-07 | Preview ESAL inexistente | `GET /api/certificados/preview/esales/99999` | id que no existe | 404 Not Found |
+| I2-PREV-08 | Auditoria preview consultado | Consultar preview y revisar auditoria | - | Registro `accion: PREVIEW_CERTIFICADO_CONSULTADO` o `PREVIEW_CERTIFICADO_BLOQUEADO` |
+| I2-PREV-09 | Sin autenticacion preview | `GET /api/certificados/preview/esales/{id}` | Sin cabecera Authorization | 401 Unauthorized |
+
+### I2 - UI Angular
+
+| ID | Accion | URL | Datos | Esperado |
+|---|---|---|---|---|
+| I2-UI-01 | Abrir buscador | `http://localhost:4200/busqueda` | Rol admin o expedidor | Formulario con filtros q, idSipej, nit, estado, completitud |
+| I2-UI-02 | Buscar y ver resultados | `/busqueda` con filtro activo | Texto existente | Tabla de resultados con columnas nombre, idSipej, nit, estado, semaforo |
+| I2-UI-03 | Navegar a detalle | Clic en "Detalle" desde resultados | ESAL encontrada | Carga `/busqueda/:id` con 8 pestanas |
+| I2-UI-04 | Ver detalle como Expedidor | `/busqueda/:id` con rol expedidor | ESAL existente | Sin controles de edicion ni acciones admin |
+| I2-UI-05 | Navegar a preview | Clic en "Preview" desde resultados o detalle | ESAL encontrada | Carga `/certificados/preview/:id` |
+| I2-UI-06 | Preview habilitada | `/certificados/preview/:id` | ESAL completa activa | Badge verde "Generacion habilitada", sin bloqueos |
+| I2-UI-07 | Preview bloqueada | `/certificados/preview/:id` | ESAL con faltantes obligatorios | Badge rojo, tabla de bloqueos con campos/secciones |
+| I2-UI-08 | Alerta de estado | `/certificados/preview/:id` | ESAL SUSPENDIDO o EN_LIQUIDACION | Banner de alerta con texto legal del estado |
+| I2-UI-09 | Nav "Buscar ESAL" visible | Shell con rol expedidor | Usuario expedidor autenticado | Item "Buscar ESAL" aparece en navegacion lateral |
 
 ## 10. Incremento 3 - Certificado PDF
 

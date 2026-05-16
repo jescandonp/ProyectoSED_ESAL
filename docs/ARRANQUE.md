@@ -1,6 +1,6 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I1 completado. I2 es el siguiente incremento activo.
+> Estado: I2 completado. I3 es el siguiente incremento activo.
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
 > Ultima actualizacion: 2026-05-16.
 
@@ -29,14 +29,14 @@
 
 ## Estado Del Proyecto
 
-`SED_ESAL` tiene I1 completado. El backend `sed-esal-backend` tiene 52 tests en verde (BUILD SUCCESS). El frontend `sed-esal-angular` compila y tiene tests en verde. Ambos artefactos quedan listos para ejecucion local-dev.
+`SED_ESAL` tiene I2 completado. El backend tiene 70 tests en verde (BUILD SUCCESS). El frontend Angular compila sin errores. Ambos artefactos listos para ejecucion local-dev.
 
 | Incremento | Estado | Foco |
 |---|---|---|
 | I0 | Cerrado | Base documental, arquitectura y metodologia |
 | I1 | Completado | Modelo base, carga inicial, estados y completitud |
-| I2 | Proximo activo | Busqueda operativa y vista previa certificable |
-| I3 | Aprobado futuro | Generacion PDF, numeracion, firmante y trazabilidad |
+| I2 | Completado | Busqueda operativa y vista previa certificable |
+| I3 | Proximo activo | Generacion PDF, numeracion, firmante y trazabilidad |
 | I4 | Aprobado futuro | Seguridad institucional, autorizacion y hardening |
 
 ### Artefactos I1 entregados
