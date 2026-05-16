@@ -17,7 +17,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | T2 - Bootstrap Frontend | Completado | `sed-esal-angular`; `npm run build` OK; `npm test` 2/2 SUCCESS |
 | T3 - Modelo Oracle Y Dominio Backend | Completado | `db/00_setup.sql`; entidades JPA; repositorios; `mvn test` 9/9 SUCCESS |
 | T4 - Seguridad Local-Dev | Completado | `DevSecurityConfig.java` actualizado; `JwtAuthenticationFilter.java` creado; `SecurityConfigTest.java` 9/9; `mvn test` 18/18 SUCCESS |
-| T5 - Importacion Diccionario | Pendiente |  |
+| T5 - Importacion Diccionario | Completado | `DiccionarioImportService.java`; `DiccionarioController.java`; `DiccionarioImportResultDto.java`; `DiccionarioImportServiceTest.java`; `mvn test` 23/23 SUCCESS |
 | T6 - Importacion Base Historica | Pendiente |  |
 | T7 - Completitud Y Estados | Pendiente |  |
 | T8 - Documentos Soporte Iniciales | Pendiente |  |
@@ -124,6 +124,70 @@ Resultado:
 ## 5. Cierre
 
 Pendiente.
+
+---
+
+### T5 - Importacion Diccionario
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- Apache POI 5.2.5 (`poi-ooxml`) agregado al `pom.xml`.
+- `DiccionarioImportResultDto.java` en `dto/`: campos `totalLeidos`, `totalPersistidos`, `totalObligatorios`, `totalOpcionales`, `advertencias`.
+- `DiccionarioImportService.java` en `service/`:
+  - Lee `Base excel.xlsx` con `XSSFWorkbook` (Apache POI).
+  - Fila 0 (encabezado `TÍTULOS`) se omite; filas 1-117 son los 117 registros de datos.
+  - Columna 0: nombre del campo. Columna 1: `OBLIGACIÓN`/`OPCIONAL`. Columna 2: nota/contexto.
+  - Normaliza `OBLIGACIÓN` → `obligatorio = true`, `OPCIONAL` → `obligatorio = false`.
+  - Asigna `orden` secuencial (1-117).
+  - Usa `contexto` = nota cuando está presente (campos con nota en col3: fila 18, 109, 114).
+  - Operación idempotente: `repository.deleteAll()` antes de recargar.
+  - Retorna `DiccionarioImportResultDto` con conteos y advertencias.
+- `DiccionarioController.java` en `controller/`:
+  - `POST /api/admin/diccionario/inicializar` con `@RequestParam("archivo") MultipartFile`.
+  - Solo accesible por `ADMINISTRADOR` (protegido por `DevSecurityConfig`).
+  - Documentado con SpringDoc/Swagger.
+- `DiccionarioImportServiceTest.java` en `test/service/`:
+  - 5 tests con `@SpringBootTest @ActiveProfiles("test") @Transactional`.
+  - Todos usan `assumeTrue(f.exists(), ...)` para omitirse si el archivo no está disponible.
+  - `importaDiccionarioCompleto`: verifica 117 persistidos, 23 obligatorios, 94 opcionales.
+  - `importacionEsIdempotente`: importar dos veces no duplica registros.
+  - `camposDuplicadosPreservanContexto`: verifica que nombres duplicados (ENTIDAD QUE EXPIDE, FECHA, etc.) se preservan como registros separados.
+  - `camposTienenOrdenSecuencial`: todos los 117 campos tienen orden > 0.
+  - `findByObligatorioRetornaConteosCorrecto`: verifica `findByObligatorio(true)` = 23 y `findByObligatorio(false)` = 94.
+
+Estructura del Excel inspeccionada:
+
+- Hoja: `Hoja1`.
+- 118 filas usadas, 3 columnas.
+- Fila 1: encabezado (`TÍTULOS`, vacío, vacío).
+- Filas 2-118: 117 registros de datos.
+- 23 filas con `OBLIGACIÓN`, 94 con `OPCIONAL`.
+- 3 filas con nota en col3: fila 18 (reformas indefinidas), fila 109 (CANCELADO), fila 114 (SUSPENDIDO).
+
+Verificación ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `mvn test`: BUILD SUCCESS, 23 tests (6 repositorio + 9 seguridad + 3 aplicación + 5 diccionario).
+- `mvn package -DskipTests`: BUILD SUCCESS.
+- WAR generado: `target/sed-esal-backend.war`.
+
+Decisiones técnicas:
+
+- Apache POI 5.2.5 es compatible con Java 8 target y Spring Boot 2.7.18.
+- La operación de importación es idempotente por diseño: `deleteAll()` antes de recargar garantiza que múltiples llamadas al endpoint no acumulen registros.
+- El campo `contexto` se popula con la nota de la columna C cuando está presente; esto permite distinguir campos con mismo nombre pero contexto diferente (CANCELADO vs SUSPENDIDO).
+- Los tests usan `assumeTrue` para que el CI/CD no falle si el archivo Excel no está en el path local (el archivo está en `Documentos_Referencia/` que no se sube a Git).
+
+
 
 ---
 
