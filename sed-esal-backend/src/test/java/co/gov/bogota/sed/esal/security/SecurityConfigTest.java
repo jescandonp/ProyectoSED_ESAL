@@ -4,15 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -20,10 +14,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Tests de seguridad por rol para T4.
+ * Tests de seguridad por rol para T4 (actualizado en T9).
  *
- * Usa controladores de prueba mínimos registrados vía @TestConfiguration
- * para verificar las reglas de autorización sin depender de T9.
+ * Verifica las reglas de autorización usando los controladores reales.
  *
  * Usuarios de prueba (perfil local-dev):
  *   admin@educacionbogota.edu.co / admin123       → ADMINISTRADOR
@@ -32,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local-dev")
+@Transactional
 class SecurityConfigTest {
 
     private static final String ADMIN_USER  = "admin@educacionbogota.edu.co";
@@ -41,50 +35,6 @@ class SecurityConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    // -------------------------------------------------------------------------
-    // Controladores de prueba mínimos — solo existen en el contexto de test
-    // -------------------------------------------------------------------------
-
-    @TestConfiguration
-    static class TestControllersConfig {
-
-        @Bean
-        AdminTestController adminTestController() {
-            return new AdminTestController();
-        }
-
-        @Bean
-        EsalesTestController esalesTestController() {
-            return new EsalesTestController();
-        }
-    }
-
-    @RestController
-    static class AdminTestController {
-        @GetMapping("/api/admin/auditoria")
-        public ResponseEntity<String> auditoria() {
-            return ResponseEntity.ok("auditoria-ok");
-        }
-
-        @PostMapping("/api/admin/importaciones")
-        public ResponseEntity<String> importar(@RequestBody(required = false) String body) {
-            return ResponseEntity.ok("importacion-ok");
-        }
-    }
-
-    @RestController
-    static class EsalesTestController {
-        @GetMapping("/api/esales")
-        public ResponseEntity<String> listar() {
-            return ResponseEntity.ok("esales-ok");
-        }
-
-        @PostMapping("/api/esales")
-        public ResponseEntity<String> crear(@RequestBody(required = false) String body) {
-            return ResponseEntity.ok("esal-creada");
-        }
-    }
 
     // =========================================================================
     // 1. Endpoints públicos — sin autenticación
@@ -159,7 +109,7 @@ class SecurityConfigTest {
     }
 
     // =========================================================================
-    // 7. ADMINISTRADOR puede crear ESAL (POST /api/esales) → 200 (no 401/403)
+    // 7. ADMINISTRADOR puede crear ESAL (POST /api/esales) → 201
     // =========================================================================
 
     @Test
@@ -167,20 +117,24 @@ class SecurityConfigTest {
         mockMvc.perform(post("/api/esales")
                         .with(httpBasic(ADMIN_USER, ADMIN_PASS))
                         .contentType("application/json")
-                        .content("{}"))
-                .andExpect(status().isOk());
+                        .content("{\"nombre\":\"ESAL Seguridad Test\"}"))
+                .andExpect(status().isCreated());
     }
 
     // =========================================================================
-    // 8. ADMINISTRADOR accede a endpoint admin POST → 200 (no 401/403)
+    // 8. ADMINISTRADOR accede a endpoint admin POST (importaciones) → no 401/403
+    //    El endpoint real requiere multipart, pero la seguridad debe pasar.
+    //    Enviamos multipart vacío para verificar que la seguridad permite el acceso.
     // =========================================================================
 
     @Test
     void adminCanPostToAdminEndpoint() throws Exception {
-        mockMvc.perform(post("/api/admin/importaciones")
+        // El endpoint real de importaciones requiere multipart/form-data con campo "archivo".
+        // Enviamos una petición sin el campo para verificar que la seguridad permite el acceso.
+        // El resultado esperado es 400 (bad request), no 401 ni 403.
+        mockMvc.perform(post("/api/admin/importaciones/esal")
                         .with(httpBasic(ADMIN_USER, ADMIN_PASS))
-                        .contentType("application/json")
-                        .content("{}"))
-                .andExpect(status().isOk());
+                        .contentType("multipart/form-data"))
+                .andExpect(status().isBadRequest());
     }
 }

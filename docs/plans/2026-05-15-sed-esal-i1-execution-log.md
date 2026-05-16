@@ -21,7 +21,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | T6 - Importacion Base Historica | Completado | `EsalImportService.java`; `ImportacionController.java`; `EsalImportResultDto.java`; `EsalImportServiceTest.java`; `mvn test` 28/28 SUCCESS |
 | T7 - Completitud Y Estados | Completado | `CompletitudService.java`; `CompletitudDto.java`; `EsalController.java`; `CompletitudServiceTest.java`; `mvn test` 36/36 SUCCESS |
 | T8 - Documentos Soporte Iniciales | Completado | `AlmacenamientoService.java`; `LocalDevAlmacenamientoService.java`; `TestAlmacenamientoService.java`; `DocumentoSoporteService.java`; `DocumentoSoporteDto.java`; `EsalController.java` actualizado; `DocumentoSoporteServiceTest.java`; `mvn test` 41/41 SUCCESS |
-| T9 - API Y UI Administrativa | Pendiente |  |
+| T9 - API Y UI Administrativa | Completado | `EsalService.java`; `EsalController.java` actualizado; `AuditoriaController.java`; DTOs nuevos; `EsalApiTest.java`; Angular: `ApiService`, `esal.model.ts`, `DashboardComponent`, `CargaInicialComponent`, `AdminEsalesListComponent`, `AdminEsalesDetailComponent`, `AuditoriaComponent`, `EsalesListComponent`, `EsalesDetailComponent`; `mvn test` 47/47 SUCCESS; `npm run build` OK; `npm test` 2/2 SUCCESS |
 | T10 - Auditoria Y Documentacion | Pendiente |  |
 
 ## 3. Decisiones De Arranque Aprobadas
@@ -450,3 +450,102 @@ Resultado:
 - `mvn test`: BUILD SUCCESS, 9 tests (3 existentes + 6 nuevos de T3).
 - `mvn package -DskipTests`: BUILD SUCCESS.
 - WAR generado: `target/sed-esal-backend.war`.
+
+---
+
+### T9 - API Y UI Administrativa
+
+Fecha: 2026-05-16.
+
+#### Backend implementado:
+
+**DTOs nuevos** en `dto/`:
+- `EsalResumenDto.java`: id, nombre, idSipej, nit, domicilio, estado, estadoCompletitud, createdAt.
+- `EsalDetalleDto.java`: todos los campos de ESAL incluyendo auditoría.
+- `EsalCreateDto.java`: campos para crear ESAL (nombre obligatorio).
+- `EsalUpdateDto.java`: mismos campos que create.
+- `CambiarEstadoDto.java`: campo estado.
+- `PageDto<T>.java`: wrapper genérico de paginación (content, page, size, totalElements, totalPages).
+- `AuditoriaDto.java`: todos los campos de Auditoria.
+
+**EsalService.java** en `service/`:
+- `listar(page, size, nombre, idSipej, estado)`: paginado con filtros opcionales usando métodos de repositorio condicionales.
+- `obtener(Long id)`: detalle completo, lanza 404 si no existe.
+- `crear(EsalCreateDto, creadoPor)`: valida nombre obligatorio, persiste con timestamps.
+- `actualizar(Long id, EsalUpdateDto, actualizadoPor)`: actualiza campos no nulos.
+- `cambiarEstado(Long id, EstadoEsal, usuario)`: cambia estado, actualiza timestamps.
+
+**EsalRepository** actualizado:
+- `findByNombreContainingIgnoreCaseAndEstado()`: JPQL con LIKE y estado.
+- `findByNombreContainingIgnoreCase()`: JPQL con LIKE.
+
+**EsalController.java** actualizado con nuevos endpoints:
+- `GET /api/esales` → `PageDto<EsalResumenDto>` (ADMINISTRADOR y EXPEDIDOR).
+- `POST /api/esales` → `EsalResumenDto` 201 (solo ADMINISTRADOR).
+- `GET /api/esales/{id}` → `EsalDetalleDto` (ADMINISTRADOR y EXPEDIDOR).
+- `PUT /api/esales/{id}` → `EsalResumenDto` (solo ADMINISTRADOR).
+- `PUT /api/esales/{id}/estado` → `EsalResumenDto` (solo ADMINISTRADOR).
+- Endpoints de completitud y documentos existentes mantenidos.
+
+**AuditoriaController.java** en `controller/`:
+- `GET /api/admin/auditoria?page=0&size=20` → `PageDto<AuditoriaDto>` (solo ADMINISTRADOR).
+
+**EsalApiTest.java** en `test/controller/`:
+- 6 tests con `@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("local-dev") @Transactional`.
+- `listarEsalesDevuelvePageVacia`: GET /api/esales → 200, content array.
+- `crearEsalComoAdmin`: POST /api/esales con admin → 201.
+- `crearEsalComoExpedidorFalla`: POST /api/esales con expedidor → 403.
+- `obtenerEsalPorId`: crear + GET /api/esales/{id} → 200.
+- `actualizarEsal`: crear + PUT /api/esales/{id} → 200.
+- `cambiarEstadoEsal`: crear + PUT /api/esales/{id}/estado → 200.
+
+**SecurityConfigTest.java** actualizado:
+- Eliminados controladores stub que conflictuaban con los reales.
+- Ahora usa los controladores reales de T9.
+- `adminCanCreateEsal` actualizado para esperar 201.
+- `adminCanPostToAdminEndpoint` actualizado para usar endpoint real de importaciones.
+
+**application-local-dev.yml** actualizado:
+- Removido `MODE=Oracle` de la URL H2 para compatibilidad con `ORDER BY ... LIMIT` de Hibernate H2Dialect.
+
+#### Frontend implementado:
+
+**`core/models/esal.model.ts`**: tipos TypeScript para EsalResumen, EsalDetalle, PageResponse, CompletitudResponse, DocumentoSoporte, ImportResultDto, AuditoriaItem.
+
+**`core/services/api.service.ts`**: servicio HTTP base con autenticación HTTP Basic local-dev, métodos `get()`, `post()`, `put()`, `postForm()`.
+
+**Componentes funcionales** (reemplazando placeholders):
+- `DashboardComponent`: cards de acceso rápido por rol (ADMINISTRADOR/EXPEDIDOR).
+- `CargaInicialComponent`: formulario upload Excel para importación histórica y diccionario, muestra resultado con conteos.
+- `AdminEsalesListComponent`: tabla paginada con filtros, formulario inline crear/editar, chips de estado y completitud, navegación a detalle.
+- `AdminEsalesDetailComponent`: tabs (Información, Estado, Completitud, Documentos), edición inline, cambio de estado, recalcular completitud, subir PDF.
+- `AuditoriaComponent`: tabla paginada de registros de auditoría.
+- `EsalesListComponent`: tabla paginada con filtros (sin acciones de edición).
+- `EsalesDetailComponent`: tabs (Información, Completitud, Documentos) solo lectura.
+
+Decisiones técnicas:
+- Se usó CSS puro institucional (variables CSS de `styles.css`) sin PrimeNG.
+- Componentes standalone con `@if`/`@for` de Angular 17+ (control flow).
+- Señales (`signal()`) para estado reactivo.
+- `ApiService` centraliza autenticación HTTP Basic con credenciales local-dev hardcoded.
+- `EsalService` usa métodos de repositorio condicionales en lugar de JPQL con parámetros nulos para compatibilidad H2/Oracle.
+
+Verificación ejecutada:
+
+```powershell
+# Backend
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+
+# Frontend
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" test -- --watch=false --browsers=ChromeHeadless
+```
+
+Resultado:
+- `mvn test`: BUILD SUCCESS, 47 tests (41 existentes + 6 nuevos de T9).
+- `mvn package -DskipTests`: BUILD SUCCESS. WAR generado: `target/sed-esal-backend.war`.
+- `npm run build`: BUILD SUCCESS. Bundle generado en `dist/sed-esal-angular/`.
+- `npm test`: 2 of 2 SUCCESS (ChromeHeadless).

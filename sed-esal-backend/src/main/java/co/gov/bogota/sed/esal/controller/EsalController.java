@@ -1,9 +1,17 @@
 package co.gov.bogota.sed.esal.controller;
 
+import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.dto.CambiarEstadoDto;
 import co.gov.bogota.sed.esal.dto.CompletitudDto;
 import co.gov.bogota.sed.esal.dto.DocumentoSoporteDto;
+import co.gov.bogota.sed.esal.dto.EsalCreateDto;
+import co.gov.bogota.sed.esal.dto.EsalDetalleDto;
+import co.gov.bogota.sed.esal.dto.EsalResumenDto;
+import co.gov.bogota.sed.esal.dto.EsalUpdateDto;
+import co.gov.bogota.sed.esal.dto.PageDto;
 import co.gov.bogota.sed.esal.service.CompletitudService;
 import co.gov.bogota.sed.esal.service.DocumentoSoporteService;
+import co.gov.bogota.sed.esal.service.EsalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +22,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +35,13 @@ import java.util.List;
 /**
  * Controlador REST para operaciones sobre ESALes.
  *
+ * Endpoints CRUD:
+ *   GET  /api/esales                             - ADMINISTRADOR y EXPEDIDOR (paginado con filtros)
+ *   POST /api/esales                             - solo ADMINISTRADOR
+ *   GET  /api/esales/{id}                        - ADMINISTRADOR y EXPEDIDOR
+ *   PUT  /api/esales/{id}                        - solo ADMINISTRADOR
+ *   PUT  /api/esales/{id}/estado                 - solo ADMINISTRADOR
+ *
  * Endpoints de completitud:
  *   GET  /api/esales/{id}/completitud            - ADMINISTRADOR y EXPEDIDOR
  *   POST /api/esales/{id}/completitud/recalcular - solo ADMINISTRADOR
@@ -33,10 +50,7 @@ import java.util.List;
  *   POST /api/esales/{id}/documentos             - solo ADMINISTRADOR
  *   GET  /api/esales/{id}/documentos             - ADMINISTRADOR y EXPEDIDOR
  *
- * La seguridad esta cubierta por DevSecurityConfig:
- *   - GET  /api/esales/**                  hasAnyRole("ADMINISTRADOR", "EXPEDIDOR")
- *   - POST /api/esales/{id}/documentos     hasRole("ADMINISTRADOR")
- *   - PUT  /api/esales/**                  hasRole("ADMINISTRADOR")
+ * La seguridad esta cubierta por DevSecurityConfig.
  */
 @RestController
 @RequestMapping("/api/esales")
@@ -44,13 +58,116 @@ import java.util.List;
 @SecurityRequirement(name = "BearerAuth")
 public class EsalController {
 
+    private final EsalService esalService;
     private final CompletitudService completitudService;
     private final DocumentoSoporteService documentoSoporteService;
 
-    public EsalController(CompletitudService completitudService,
+    public EsalController(EsalService esalService,
+                          CompletitudService completitudService,
                           DocumentoSoporteService documentoSoporteService) {
+        this.esalService = esalService;
         this.completitudService = completitudService;
         this.documentoSoporteService = documentoSoporteService;
+    }
+
+    // =========================================================================
+    // CRUD ESALes
+    // =========================================================================
+
+    /**
+     * Lista ESALes paginado con filtros opcionales.
+     * Accesible por ADMINISTRADOR y EXPEDIDOR.
+     *
+     * @param page    número de página (0-based, default 0)
+     * @param size    tamaño de página (default 20)
+     * @param nombre  filtro parcial por nombre (opcional)
+     * @param idSipej filtro parcial por idSipej (opcional)
+     * @param estado  filtro exacto por estado (opcional)
+     * @return página de EsalResumenDto
+     */
+    @GetMapping
+    @Operation(summary = "Listar ESALes paginado",
+               description = "Devuelve una página de ESALes con filtros opcionales de nombre, idSipej y estado.")
+    public ResponseEntity<PageDto<EsalResumenDto>> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String idSipej,
+            @RequestParam(required = false) EstadoEsal estado) {
+        return ResponseEntity.ok(esalService.listar(page, size, nombre, idSipej, estado));
+    }
+
+    /**
+     * Crea una nueva ESAL.
+     * Solo ADMINISTRADOR.
+     *
+     * @param dto            datos de la nueva ESAL
+     * @param authentication contexto de seguridad del usuario autenticado
+     * @return EsalResumenDto con HTTP 201
+     */
+    @PostMapping
+    @Operation(summary = "Crear ESAL",
+               description = "Crea una nueva ESAL. Solo ADMINISTRADOR.")
+    public ResponseEntity<EsalResumenDto> crear(
+            @RequestBody EsalCreateDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        EsalResumenDto result = esalService.crear(dto, usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    /**
+     * Obtiene el detalle completo de una ESAL.
+     * Accesible por ADMINISTRADOR y EXPEDIDOR.
+     *
+     * @param id ID de la ESAL
+     * @return EsalDetalleDto
+     */
+    @GetMapping("/{id}")
+    @Operation(summary = "Obtener detalle de una ESAL",
+               description = "Devuelve el detalle completo de una ESAL por su ID.")
+    public ResponseEntity<EsalDetalleDto> obtener(@PathVariable Long id) {
+        return ResponseEntity.ok(esalService.obtener(id));
+    }
+
+    /**
+     * Actualiza los datos de una ESAL.
+     * Solo ADMINISTRADOR.
+     *
+     * @param id             ID de la ESAL
+     * @param dto            datos a actualizar
+     * @param authentication contexto de seguridad del usuario autenticado
+     * @return EsalResumenDto actualizado
+     */
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar ESAL",
+               description = "Actualiza los datos de una ESAL. Solo ADMINISTRADOR.")
+    public ResponseEntity<EsalResumenDto> actualizar(
+            @PathVariable Long id,
+            @RequestBody EsalUpdateDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalService.actualizar(id, dto, usuario));
+    }
+
+    /**
+     * Cambia el estado de una ESAL.
+     * Solo ADMINISTRADOR.
+     *
+     * @param id             ID de la ESAL
+     * @param dto            nuevo estado
+     * @param authentication contexto de seguridad del usuario autenticado
+     * @return EsalResumenDto con el nuevo estado
+     */
+    @PutMapping("/{id}/estado")
+    @Operation(summary = "Cambiar estado de una ESAL",
+               description = "Cambia el estado administrativo de una ESAL. Solo ADMINISTRADOR.")
+    public ResponseEntity<EsalResumenDto> cambiarEstado(
+            @PathVariable Long id,
+            @RequestBody CambiarEstadoDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalService.cambiarEstado(id, dto.getEstado(), usuario));
     }
 
     // =========================================================================
@@ -92,7 +209,7 @@ public class EsalController {
     /**
      * Registra un documento soporte para una ESAL.
      * Solo acepta application/pdf - retorna 400 si el contentType no es PDF.
-     * Solo ADMINISTRADOR (cubierto por DevSecurityConfig: POST /api/esales/{id}/documentos).
+     * Solo ADMINISTRADOR.
      *
      * @param id             ID de la ESAL
      * @param archivo        archivo multipart a registrar
@@ -126,7 +243,7 @@ public class EsalController {
 
     /**
      * Lista los documentos soporte de una ESAL.
-     * ADMINISTRADOR y EXPEDIDOR (cubierto por DevSecurityConfig: GET /api/esales/**).
+     * ADMINISTRADOR y EXPEDIDOR.
      *
      * @param id ID de la ESAL
      * @return lista de DTOs con los documentos de la ESAL
