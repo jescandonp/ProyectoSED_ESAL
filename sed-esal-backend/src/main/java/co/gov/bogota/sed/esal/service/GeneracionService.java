@@ -7,268 +7,216 @@ import co.gov.bogota.sed.esal.dto.CertificadoDto;
 import co.gov.bogota.sed.esal.dto.PreviewCertificadoDto;
 import co.gov.bogota.sed.esal.repository.CertificadoRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Orquesta el flujo completo de expedición de un certificado:
- * 1. Valida preview (I2).
- * 2. Resuelve firmante vigente.
- * 3. Reserva número único (transaccional).
- * 4. Genera PDF.
- * 5. Calcula hash SHA-256.
- * 6. Almacena PDF.
- * 7. Registra Certificado GENERADO.
- * 8. Registra auditoría.
- */
 @Service
 public class GeneracionService {
 
-    private static final String PLANTILLA_VERSION = "I3-v1";
-
     private final PreviewService previewService;
-    private final FirmanteService firmanteService;
     private final NumeracionService numeracionService;
+    private final FirmanteService firmanteService;
     private final CertificadoPdfService pdfService;
     private final AlmacenamientoService almacenamientoService;
     private final CertificadoRepository certificadoRepository;
     private final AuditoriaService auditoriaService;
 
     public GeneracionService(PreviewService previewService,
-                             FirmanteService firmanteService,
                              NumeracionService numeracionService,
+                             FirmanteService firmanteService,
                              CertificadoPdfService pdfService,
                              AlmacenamientoService almacenamientoService,
                              CertificadoRepository certificadoRepository,
                              AuditoriaService auditoriaService) {
-        this.previewService = previewService;
-        this.firmanteService = firmanteService;
-        this.numeracionService = numeracionService;
-        this.pdfService = pdfService;
+        this.previewService       = previewService;
+        this.numeracionService    = numeracionService;
+        this.firmanteService      = firmanteService;
+        this.pdfService           = pdfService;
         this.almacenamientoService = almacenamientoService;
         this.certificadoRepository = certificadoRepository;
-        this.auditoriaService = auditoriaService;
+        this.auditoriaService     = auditoriaService;
     }
 
     @Transactional
-    public CertificadoDto generar(Long esalId) {
-        String usuario = obtenerUsuario();
-        String rol     = auditoriaService.obtenerRolActual();
+    public CertificadoDto generar(Long esalId, String usuario) {
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.CERTIFICADO_GENERACION_SOLICITADA, AuditoriaAcciones.ENTIDAD_ESAL,
+                esalId, null, null, null);
 
-        auditoriaService.registrar(usuario, rol,
-                AuditoriaAcciones.CERTIFICADO_GENERACION_SOLICITADA,
-                AuditoriaAcciones.ENTIDAD_ESAL, esalId, null,
-                AuditoriaAcciones.RESULTADO_EXITO, null);
+        // 1. Obtener y validar preview
+        PreviewCertificadoDto preview = previewService.obtenerPreview(esalId, usuario);
 
-        // 1. Validar preview
-        Authentication authCtx = SecurityContextHolder.getContext().getAuthentication();
-        PreviewCertificadoDto preview;
-        try {
-            preview = previewService.obtenerPreview(esalId, authCtx);
-        } catch (ResponseStatusException e) {
-            registrarBloqueado(esalId, usuario, rol, "Preview no disponible: " + e.getReason());
-            throw e;
-        }
-
-        if (!Boolean.TRUE.equals(preview.getGeneracionHabilitada())) {
-            String motivo = construirMotivoBloqueo(preview);
-            registrarBloqueado(esalId, usuario, rol, motivo);
+        if (Boolean.FALSE.equals(preview.getGeneracionHabilitada())) {
+            Certificado bloqueado = registrarEstado(esalId, preview, EstadoCertificado.BLOQUEADO,
+                    null, null, null, null,
+                    "Generacion bloqueada: " + formatBloqueos(preview), usuario);
+            auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                    AuditoriaAcciones.CERTIFICADO_BLOQUEADO, AuditoriaAcciones.ENTIDAD_CERTIFICADO,
+                    bloqueado.getId(), preview.getIdSipej(), AuditoriaAcciones.RESULTADO_ERROR,
+                    "Bloqueos: " + formatBloqueos(preview));
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-                    "No se puede generar el certificado. " + motivo);
+                    "La generacion del certificado esta bloqueada: " + formatBloqueos(preview));
         }
 
-        // 2. Firmante vigente
-        LocalDate hoy = LocalDate.now();
-        Firmante firmante;
-        try {
-            firmante = firmanteService.resolverFirmanteVigente(hoy);
-        } catch (ResponseStatusException e) {
-            registrarFallido(esalId, null, usuario, rol, e.getReason());
-            throw e;
-        }
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDate hoy = ahora.toLocalDate();
 
-        // 3. Número único (transaccional — saveAndFlush dentro)
-        String numero = numeracionService.reservarSiguienteNumero();
-        LocalDateTime fechaExp = LocalDateTime.now();
+        // 2. Resolver firmante vigente
+        Firmante firmante = firmanteService.resolverVigente(hoy);
 
-        // 4 y 5. Generar PDF y calcular hash
+        // 3. Reservar numero (REQUIRES_NEW para evitar duplicados)
+        String numero = numeracionService.reservarSiguienteNumero(usuario);
+
+        // 4. Generar PDF
         byte[] pdfBytes;
-        String hash;
         try {
-            pdfBytes = pdfService.generar(preview, numero, firmante, fechaExp);
-            hash = sha256Hex(pdfBytes);
+            pdfBytes = pdfService.generar(preview, numero, firmante.getNombre(), firmante.getCargo(), ahora);
         } catch (Exception e) {
-            registrarFallido(esalId, numero, usuario, rol, "Error generando PDF: " + e.getMessage());
+            Certificado fallido = registrarEstado(esalId, preview, EstadoCertificado.FALLIDO,
+                    numero, firmante, ahora, null, "Error al generar PDF: " + e.getMessage(), usuario);
+            auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                    AuditoriaAcciones.CERTIFICADO_GENERACION_FALLIDA, AuditoriaAcciones.ENTIDAD_CERTIFICADO,
+                    fallido.getId(), preview.getIdSipej(), AuditoriaAcciones.RESULTADO_ERROR, e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error técnico al generar el PDF del certificado.", e);
+                    "Error tecnico al generar el PDF del certificado.");
         }
+
+        // 5. Calcular hash SHA-256
+        String hash = calcularHash(pdfBytes);
 
         // 6. Almacenar PDF
-        String nombreArchivo = construirNombreArchivo(numero, preview.getIdSipej());
+        String nombreArchivo = numero.replace("/", "-") + ".pdf";
         String rutaPdf;
         try {
             rutaPdf = almacenamientoService.guardar(esalId, nombreArchivo,
                     new ByteArrayInputStream(pdfBytes), pdfBytes.length);
-        } catch (IOException e) {
-            registrarFallido(esalId, numero, usuario, rol, "Error almacenando PDF: " + e.getMessage());
+        } catch (Exception e) {
+            Certificado fallido = registrarEstado(esalId, preview, EstadoCertificado.FALLIDO,
+                    numero, firmante, ahora, hash, "Error al almacenar PDF: " + e.getMessage(), usuario);
+            auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                    AuditoriaAcciones.CERTIFICADO_GENERACION_FALLIDA, AuditoriaAcciones.ENTIDAD_CERTIFICADO,
+                    fallido.getId(), preview.getIdSipej(), AuditoriaAcciones.RESULTADO_ERROR, e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error técnico al almacenar el PDF del certificado.", e);
+                    "Error tecnico al almacenar el certificado generado.");
         }
 
-        // 7. Persistir registro
+        // 7. Persistir certificado GENERADO
         Certificado cert = new Certificado();
         cert.setEsalId(esalId);
         cert.setIdSipej(preview.getIdSipej());
         cert.setNit(preview.getNit());
         cert.setNumeroCertificado(numero);
         cert.setEstadoCertificado(EstadoCertificado.GENERADO);
-        cert.setVersionDatos(preview.getVersionDatos() != null
-                ? preview.getVersionDatos().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null);
-        cert.setFechaExpedicion(fechaExp);
+        cert.setVersionDatos(preview.getVersionDatos());
+        cert.setFechaExpedicion(ahora);
         cert.setFirmanteId(firmante.getId());
         cert.setFirmanteNombre(firmante.getNombre());
         cert.setFirmanteCargo(firmante.getCargo());
-        cert.setPlantillaVersion(PLANTILLA_VERSION);
+        cert.setPlantillaVersion(CertificadoPdfService.VERSION_PLANTILLA);
         cert.setHashSha256(hash);
         cert.setRutaPdf(rutaPdf);
         cert.setNombreArchivo(nombreArchivo);
         cert.setContentType("application/pdf");
         cert.setTamanoBytes((long) pdfBytes.length);
-        cert.setCreatedAt(fechaExp);
+        cert.setCreatedAt(ahora);
         cert.setCreatedBy(usuario);
-        certificadoRepository.save(cert);
+        Certificado saved = certificadoRepository.save(cert);
 
-        // 8. Auditoría
-        auditoriaService.registrar(usuario, rol,
-                AuditoriaAcciones.CERTIFICADO_GENERADO,
-                AuditoriaAcciones.ENTIDAD_CERTIFICADO, cert.getId(),
-                preview.getIdSipej(), AuditoriaAcciones.RESULTADO_EXITO,
-                "Número: " + numero + " | Hash: " + hash + " | Firmante: " + firmante.getNombre());
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.CERTIFICADO_GENERADO, AuditoriaAcciones.ENTIDAD_CERTIFICADO,
+                saved.getId(), preview.getIdSipej(), AuditoriaAcciones.RESULTADO_EXITO,
+                "Numero: " + numero + " | Hash: " + hash);
 
-        return toDto(cert);
+        return toDto(saved);
     }
 
     @Transactional(readOnly = true)
     public CertificadoDto obtener(Long certificadoId) {
-        Certificado cert = buscarOFallar(certificadoId);
+        Certificado cert = certificadoRepository.findById(certificadoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificado no encontrado."));
         return toDto(cert);
     }
 
     @Transactional(readOnly = true)
-    public List<CertificadoDto> historialPorEsal(Long esalId) {
+    public List<CertificadoDto> listarPorEsal(Long esalId) {
         return certificadoRepository.findByEsalIdOrderByCreatedAtDesc(esalId)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    /**
-     * Descarga el PDF del certificado. Valida hash antes de entregar.
-     */
     @Transactional(readOnly = true)
-    public byte[] descargar(Long certificadoId) {
-        String usuario = obtenerUsuario();
-        String rol     = auditoriaService.obtenerRolActual();
-        Certificado cert = buscarOFallar(certificadoId);
+    public byte[] descargar(Long certificadoId, String usuario) {
+        Certificado cert = certificadoRepository.findById(certificadoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificado no encontrado."));
 
-        if (cert.getEstadoCertificado() != EstadoCertificado.GENERADO) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "El certificado no está en estado GENERADO y no puede descargarse.");
+        if (cert.getEstadoCertificado() != EstadoCertificado.GENERADO || cert.getRutaPdf() == null) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "El certificado no esta disponible para descarga.");
         }
 
-        byte[] bytes;
         try {
-            bytes = Files.readAllBytes(Paths.get(cert.getRutaPdf()));
-        } catch (IOException e) {
-            auditoriaService.registrar(usuario, rol,
-                    AuditoriaAcciones.CERTIFICADO_DESCARGADO,
-                    AuditoriaAcciones.ENTIDAD_CERTIFICADO, certificadoId,
-                    cert.getIdSipej(), AuditoriaAcciones.RESULTADO_ERROR,
-                    "Error leyendo archivo: " + e.getMessage());
+            java.nio.file.Path path = java.nio.file.Paths.get(cert.getRutaPdf());
+            byte[] bytes = java.nio.file.Files.readAllBytes(path);
+
+            // Validar integridad
+            String hashActual = calcularHash(bytes);
+            if (!hashActual.equals(cert.getHashSha256())) {
+                auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                        AuditoriaAcciones.CERTIFICADO_DESCARGADO, AuditoriaAcciones.ENTIDAD_CERTIFICADO,
+                        cert.getId(), cert.getIdSipej(), AuditoriaAcciones.RESULTADO_ERROR,
+                        "Hash inconsistente al descargar certificado " + certificadoId);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Integridad del certificado comprometida. Contacte al administrador.");
+            }
+
+            auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                    AuditoriaAcciones.CERTIFICADO_DESCARGADO, AuditoriaAcciones.ENTIDAD_CERTIFICADO,
+                    cert.getId(), cert.getIdSipej(), AuditoriaAcciones.RESULTADO_EXITO,
+                    "Hash: " + cert.getHashSha256());
+            return bytes;
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "No se puede leer el PDF del certificado.");
+                    "Error al leer el archivo del certificado.");
         }
+    }
 
-        // Validar integridad
-        String hashActual = sha256Hex(bytes);
-        if (!hashActual.equals(cert.getHashSha256())) {
-            auditoriaService.registrar(usuario, rol,
-                    AuditoriaAcciones.CERTIFICADO_DESCARGADO,
-                    AuditoriaAcciones.ENTIDAD_CERTIFICADO, certificadoId,
-                    cert.getIdSipej(), AuditoriaAcciones.RESULTADO_ERROR,
-                    "Hash inconsistente. Esperado: " + cert.getHashSha256() + " | Actual: " + hashActual);
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "El PDF del certificado está corrupto (hash inconsistente). " +
-                    "Contacte al administrador del sistema.");
+    private Certificado registrarEstado(Long esalId, PreviewCertificadoDto preview,
+                                         EstadoCertificado estado, String numero,
+                                         Firmante firmante, LocalDateTime ahora,
+                                         String hash, String errorDetalle, String usuario) {
+        Certificado c = new Certificado();
+        c.setEsalId(esalId);
+        c.setIdSipej(preview.getIdSipej());
+        c.setNit(preview.getNit());
+        c.setNumeroCertificado(numero);
+        c.setEstadoCertificado(estado);
+        c.setVersionDatos(preview.getVersionDatos());
+        c.setFechaExpedicion(ahora);
+        if (firmante != null) {
+            c.setFirmanteId(firmante.getId());
+            c.setFirmanteNombre(firmante.getNombre());
+            c.setFirmanteCargo(firmante.getCargo());
         }
-
-        auditoriaService.registrar(usuario, rol,
-                AuditoriaAcciones.CERTIFICADO_DESCARGADO,
-                AuditoriaAcciones.ENTIDAD_CERTIFICADO, certificadoId,
-                cert.getIdSipej(), AuditoriaAcciones.RESULTADO_EXITO,
-                "Número: " + cert.getNumeroCertificado());
-
-        return bytes;
+        c.setHashSha256(hash);
+        c.setErrorDetalle(errorDetalle);
+        c.setCreatedAt(LocalDateTime.now());
+        c.setCreatedBy(usuario);
+        return certificadoRepository.save(c);
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private void registrarBloqueado(Long esalId, String usuario, String rol, String motivo) {
-        auditoriaService.registrar(usuario, rol,
-                AuditoriaAcciones.CERTIFICADO_BLOQUEADO,
-                AuditoriaAcciones.ENTIDAD_ESAL, esalId, null,
-                AuditoriaAcciones.RESULTADO_ERROR, motivo);
-    }
-
-    private void registrarFallido(Long esalId, String numero, String usuario, String rol, String error) {
-        Certificado fallido = new Certificado();
-        fallido.setEsalId(esalId);
-        fallido.setNumeroCertificado(numero != null ? numero : null);
-        fallido.setEstadoCertificado(EstadoCertificado.FALLIDO);
-        fallido.setErrorDetalle(error);
-        fallido.setCreatedAt(LocalDateTime.now());
-        fallido.setCreatedBy(usuario);
-        certificadoRepository.save(fallido);
-
-        auditoriaService.registrar(usuario, rol,
-                AuditoriaAcciones.CERTIFICADO_GENERACION_FALLIDA,
-                AuditoriaAcciones.ENTIDAD_CERTIFICADO, fallido.getId(), null,
-                AuditoriaAcciones.RESULTADO_ERROR, error);
-    }
-
-    private String construirMotivoBloqueo(PreviewCertificadoDto preview) {
-        if (preview.getBloqueos() != null && !preview.getBloqueos().isEmpty()) {
-            return "Campos obligatorios faltantes: " +
-                    preview.getBloqueos().stream()
-                            .map(b -> b.getSeccion() + " / " + b.getCampo())
-                            .collect(Collectors.joining(", "));
-        }
-        return "La generación está bloqueada por el estado de la ESAL.";
-    }
-
-    private String construirNombreArchivo(String numero, String idSipej) {
-        String safe = numero.replaceAll("[^A-Za-z0-9\\-]", "_");
-        return "CERT_" + safe + ".pdf";
-    }
-
-    private String sha256Hex(byte[] data) {
+    private String calcularHash(byte[] bytes) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(data);
+            byte[] digest = md.digest(bytes);
             StringBuilder sb = new StringBuilder();
             for (byte b : digest) {
                 sb.append(String.format("%02x", b));
@@ -279,22 +227,23 @@ public class GeneracionService {
         }
     }
 
-    private Certificado buscarOFallar(Long id) {
-        return certificadoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Certificado no encontrado: " + id));
+    private String formatBloqueos(PreviewCertificadoDto preview) {
+        if (preview.getBloqueos() == null || preview.getBloqueos().isEmpty()) return "sin detalle";
+        return preview.getBloqueos().stream()
+                .map(b -> b.getCampo() + ": " + b.getMensaje())
+                .collect(Collectors.joining("; "));
     }
 
     private CertificadoDto toDto(Certificado c) {
         CertificadoDto dto = new CertificadoDto();
-        dto.setId(c.getId());
+        dto.setCertificadoId(c.getId());
         dto.setEsalId(c.getEsalId());
         dto.setIdSipej(c.getIdSipej());
         dto.setNit(c.getNit());
         dto.setNumeroCertificado(c.getNumeroCertificado());
         dto.setEstadoCertificado(c.getEstadoCertificado());
-        dto.setVersionDatos(c.getVersionDatos());
         dto.setFechaExpedicion(c.getFechaExpedicion());
+        dto.setVersionDatos(c.getVersionDatos());
         dto.setFirmanteNombre(c.getFirmanteNombre());
         dto.setFirmanteCargo(c.getFirmanteCargo());
         dto.setPlantillaVersion(c.getPlantillaVersion());
@@ -302,14 +251,8 @@ public class GeneracionService {
         dto.setNombreArchivo(c.getNombreArchivo());
         dto.setTamanoBytes(c.getTamanoBytes());
         dto.setErrorDetalle(c.getErrorDetalle());
-        dto.setDownloadUrl("/api/certificados/" + c.getId() + "/descargar");
         dto.setCreatedAt(c.getCreatedAt());
         dto.setCreatedBy(c.getCreatedBy());
         return dto;
-    }
-
-    private String obtenerUsuario() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null ? auth.getName() : "sistema";
     }
 }

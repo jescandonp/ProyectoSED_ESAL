@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { EsalResumen, PageResponse, EstadoEsal } from '../../core/models/esal.model';
+import { BusquedaResultado, PageResponse, EstadoEsal, EstadoCompletitud } from '../../core/models/esal.model';
 
 @Component({
   selector: 'app-esales-list',
@@ -15,25 +15,39 @@ import { EsalResumen, PageResponse, EstadoEsal } from '../../core/models/esal.mo
 
       <!-- Filtros -->
       <div class="sed-card" style="margin-bottom: 16px;">
-        <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
-          <div class="sed-field" style="flex: 1; min-width: 200px;">
-            <label>Nombre</label>
-            <input
-              type="text"
-              class="sed-input"
-              placeholder="Buscar por nombre..."
-              [(ngModel)]="filtroNombre"
-              (keyup.enter)="buscar()"
-            />
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+          <div class="sed-field" style="flex: 1; min-width: 160px;">
+            <label>Búsqueda general</label>
+            <input type="text" class="sed-input" placeholder="Nombre, ID SIPEJ, NIT..."
+              [(ngModel)]="filtroQ" (keyup.enter)="buscar()" />
           </div>
-          <div class="sed-field" style="min-width: 160px;">
+          <div class="sed-field" style="min-width: 130px;">
+            <label>ID SIPEJ</label>
+            <input type="text" class="sed-input" placeholder="ID SIPEJ"
+              [(ngModel)]="filtroIdSipej" (keyup.enter)="buscar()" />
+          </div>
+          <div class="sed-field" style="min-width: 120px;">
+            <label>NIT</label>
+            <input type="text" class="sed-input" placeholder="NIT"
+              [(ngModel)]="filtroNit" (keyup.enter)="buscar()" />
+          </div>
+          <div class="sed-field" style="min-width: 150px;">
             <label>Estado</label>
-            <select class="sed-input" [(ngModel)]="filtroEstado" (change)="buscar()">
+            <select class="sed-input" [(ngModel)]="filtroEstado">
               <option value="">Todos</option>
               <option value="ACTIVO">Activo</option>
               <option value="SUSPENDIDO">Suspendido</option>
               <option value="EN_LIQUIDACION">En Liquidación</option>
               <option value="CANCELADO">Cancelado</option>
+            </select>
+          </div>
+          <div class="sed-field" style="min-width: 150px;">
+            <label>Completitud</label>
+            <select class="sed-input" [(ngModel)]="filtroCompletitud">
+              <option value="">Todos</option>
+              <option value="LISTO_PARA_CERTIFICAR">Listo</option>
+              <option value="INCOMPLETO_NO_BLOQUEANTE">Incompleto</option>
+              <option value="INCOMPLETO_BLOQUEANTE">Bloqueante</option>
             </select>
           </div>
           <button class="sed-btn-primary" (click)="buscar()">Buscar</button>
@@ -122,15 +136,18 @@ export class EsalesListComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
 
-  esales = signal<EsalResumen[]>([]);
+  esales = signal<BusquedaResultado[]>([]);
   cargando = signal(false);
   error = signal<string | null>(null);
   paginaActual = signal(0);
   totalPages = signal(0);
   totalElements = signal(0);
 
-  filtroNombre = '';
+  filtroQ = '';
+  filtroIdSipej = '';
+  filtroNit = '';
   filtroEstado = '';
+  filtroCompletitud = '';
 
   ngOnInit(): void {
     this.cargar();
@@ -144,10 +161,13 @@ export class EsalesListComponent implements OnInit {
       page: this.paginaActual(),
       size: 20,
     };
-    if (this.filtroNombre.trim()) params['nombre'] = this.filtroNombre.trim();
+    if (this.filtroQ.trim()) params['q'] = this.filtroQ.trim();
+    if (this.filtroIdSipej.trim()) params['idSipej'] = this.filtroIdSipej.trim();
+    if (this.filtroNit.trim()) params['nit'] = this.filtroNit.trim();
     if (this.filtroEstado) params['estado'] = this.filtroEstado;
+    if (this.filtroCompletitud) params['estadoCompletitud'] = this.filtroCompletitud;
 
-    this.api.get<PageResponse<EsalResumen>>('/api/esales', params).subscribe({
+    this.api.get<PageResponse<BusquedaResultado>>('/api/busquedas/esales', params).subscribe({
       next: (page) => {
         this.esales.set(page.content);
         this.totalPages.set(page.totalPages);
@@ -167,8 +187,11 @@ export class EsalesListComponent implements OnInit {
   }
 
   limpiarFiltros(): void {
-    this.filtroNombre = '';
+    this.filtroQ = '';
+    this.filtroIdSipej = '';
+    this.filtroNit = '';
     this.filtroEstado = '';
+    this.filtroCompletitud = '';
     this.buscar();
   }
 

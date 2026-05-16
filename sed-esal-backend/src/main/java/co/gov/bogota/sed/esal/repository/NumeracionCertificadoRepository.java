@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface NumeracionCertificadoRepository extends JpaRepository<NumeracionCertificado, Long> {
-
-    Optional<NumeracionCertificado> findByAnioAndActivoTrue(int anio);
+    Optional<NumeracionCertificado> findByAnioAndActivoTrue(Integer anio);
 }

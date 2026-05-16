@@ -1,6 +1,6 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I2 completado. I3 es el siguiente incremento activo.
+> Estado: I4 completado (99 tests backend, build Angular OK).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
 > Ultima actualizacion: 2026-05-16.
 
@@ -31,33 +31,12 @@
 
 `SED_ESAL` tiene I2 completado. El backend tiene 70 tests en verde (BUILD SUCCESS). El frontend Angular compila sin errores. Ambos artefactos listos para ejecucion local-dev.
 
-| Incremento | Estado | Foco |
-|---|---|---|
-| I0 | Cerrado | Base documental, arquitectura y metodologia |
-| I1 | Completado | Modelo base, carga inicial, estados y completitud |
-| I2 | Completado | Busqueda operativa y vista previa certificable |
-| I3 | Proximo activo | Generacion PDF, numeracion, firmante y trazabilidad |
-| I4 | Aprobado futuro | Seguridad institucional, autorizacion y hardening |
-
-### Artefactos I1 entregados
-
-Backend (52 tests, BUILD SUCCESS, WAR `target/sed-esal-backend.war`):
-
-- Modelo Oracle + JPA (10 tablas, prefijo `ESAL_`, esquema `SED_ESAL`).
-- Seguridad HTTP Basic local-dev con roles `ADMINISTRADOR` / `EXPEDIDOR`.
-- Importacion diccionario de obligatoriedad desde Excel (117 campos).
-- Importacion base historica desde Excel (405 filas, upsert idempotente).
-- Servicio de completitud y semaforo (LISTO_PARA_CERTIFICAR / INCOMPLETO_NO_BLOQUEANTE / INCOMPLETO_BLOQUEANTE).
-- Documentos soporte: upload PDF abstraido, rechazo de no-PDF.
-- API REST completa: ESAL CRUD, estados, completitud, documentos, importaciones, auditoria.
-- Auditoria con `REQUIRES_NEW`: CREAR, EDITAR, CAMBIAR_ESTADO, CONSULTAR, IMPORTAR, REGISTRAR_DOCUMENTO, RECALCULAR_COMPLETITUD, CONSULTAR_COMPLETITUD, IMPORTAR_DICCIONARIO, CONSULTAR_AUDITORIA.
-
-Frontend (2 tests, npm run build OK):
-
-- Angular 20.3, PrimeNG 20.4.0, diseno institucional SED.
-- Login local-dev, shell con navegacion por rol.
-- Dashboard, carga inicial, listado ESAL, detalle por secciones, completitud, documentos, auditoria.
-- `ApiService` con HTTP Basic local-dev.
+- Spec 0 de fundacion documental y arquitectura: completado.
+- Spec I1 de modelo base, carga inicial y completitud: completado.
+- Spec I2 de busqueda operativa y vista previa certificable: completado (65 tests, build Angular OK).
+- Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: completado (78 tests, build Angular OK).
+- Spec I4 de seguridad institucional, autorizacion y hardening: completado (99 tests, build Angular OK).
+- Pendiente: confirmar con TI SED tenant, issuer, audience, JWKS y CORS institucional para activar perfil weblogic.
 
 ## Artefactos Fuente
 

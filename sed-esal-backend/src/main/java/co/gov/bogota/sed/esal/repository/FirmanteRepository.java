@@ -11,21 +11,15 @@ import java.util.Optional;
 
 public interface FirmanteRepository extends JpaRepository<Firmante, Long> {
 
-    List<Firmante> findAllByOrderByFechaInicioVigenciaDesc();
+    List<Firmante> findAllByOrderByCreatedAtDesc();
 
-    /**
-     * Firmante vigente en una fecha dada: activo, inicio <= fecha, (fin es null O fin >= fecha).
-     */
     @Query("SELECT f FROM Firmante f WHERE f.activo = true " +
            "AND f.fechaInicioVigencia <= :fecha " +
            "AND (f.fechaFinVigencia IS NULL OR f.fechaFinVigencia >= :fecha)")
-    List<Firmante> findVigentesEn(@Param("fecha") LocalDate fecha);
+    List<Firmante> findVigentesEnFecha(@Param("fecha") LocalDate fecha);
 
-    /**
-     * Detecta firmantes activos cuya vigencia se solapa con el rango dado, excluyendo el id indicado.
-     * Solapamiento: inicio1 <= fin2 AND fin1 >= inicio2 (con fin null = infinito).
-     */
-    @Query("SELECT f FROM Firmante f WHERE f.activo = true AND f.id <> :excludeId " +
+    @Query("SELECT f FROM Firmante f WHERE f.activo = true " +
+           "AND f.id <> :excludeId " +
            "AND f.fechaInicioVigencia <= :fin " +
            "AND (f.fechaFinVigencia IS NULL OR f.fechaFinVigencia >= :inicio)")
     List<Firmante> findSolapados(@Param("inicio") LocalDate inicio,
@@ -35,6 +29,6 @@ public interface FirmanteRepository extends JpaRepository<Firmante, Long> {
     @Query("SELECT f FROM Firmante f WHERE f.activo = true " +
            "AND f.fechaInicioVigencia <= :fin " +
            "AND (f.fechaFinVigencia IS NULL OR f.fechaFinVigencia >= :inicio)")
-    List<Firmante> findSolapadosSinExcluir(@Param("inicio") LocalDate inicio,
-                                            @Param("fin") LocalDate fin);
+    List<Firmante> findSolapadosNew(@Param("inicio") LocalDate inicio,
+                                     @Param("fin") LocalDate fin);
 }

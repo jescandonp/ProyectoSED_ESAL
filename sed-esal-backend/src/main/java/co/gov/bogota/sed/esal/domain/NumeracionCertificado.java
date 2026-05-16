@@ -20,10 +20,10 @@ public class NumeracionCertificado {
     private Integer anio;
 
     @Column(name = "ULTIMO_CONSECUTIVO", nullable = false)
-    private Long ultimoConsecutivo = 0L;
+    private Long ultimoConsecutivo;
 
     @Column(name = "ACTIVO", nullable = false)
-    private Boolean activo = true;
+    private boolean activo;
 
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
@@ -31,8 +31,7 @@ public class NumeracionCertificado {
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 
-    public NumeracionCertificado() {
-    }
+    public NumeracionCertificado() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -46,8 +45,8 @@ public class NumeracionCertificado {
     public Long getUltimoConsecutivo() { return ultimoConsecutivo; }
     public void setUltimoConsecutivo(Long ultimoConsecutivo) { this.ultimoConsecutivo = ultimoConsecutivo; }
 
-    public Boolean getActivo() { return activo; }
-    public void setActivo(Boolean activo) { this.activo = activo; }
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

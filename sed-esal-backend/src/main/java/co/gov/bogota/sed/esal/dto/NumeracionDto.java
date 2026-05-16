@@ -7,8 +7,7 @@ public class NumeracionDto {
     private String prefijo;
     private Integer anio;
     private Long ultimoConsecutivo;
-    private Boolean activo;
-    private String proximoNumero;
+    private boolean activo;
     private LocalDateTime updatedAt;
 
     public NumeracionDto() {}
@@ -25,11 +24,8 @@ public class NumeracionDto {
     public Long getUltimoConsecutivo() { return ultimoConsecutivo; }
     public void setUltimoConsecutivo(Long ultimoConsecutivo) { this.ultimoConsecutivo = ultimoConsecutivo; }
 
-    public Boolean getActivo() { return activo; }
-    public void setActivo(Boolean activo) { this.activo = activo; }
-
-    public String getProximoNumero() { return proximoNumero; }
-    public void setProximoNumero(String proximoNumero) { this.proximoNumero = proximoNumero; }
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

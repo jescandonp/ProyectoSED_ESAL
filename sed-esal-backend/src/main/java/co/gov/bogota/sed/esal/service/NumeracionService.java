@@ -5,17 +5,18 @@ import co.gov.bogota.sed.esal.dto.NumeracionDto;
 import co.gov.bogota.sed.esal.dto.NumeracionUpdateDto;
 import co.gov.bogota.sed.esal.repository.NumeracionCertificadoRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 
 @Service
 public class NumeracionService {
 
-    private static final String PREFIJO_INICIAL = "ESAL";
+    private static final String PREFIJO_DEFAULT = "ESAL";
 
     private final NumeracionCertificadoRepository numeracionRepository;
     private final AuditoriaService auditoriaService;
@@ -27,62 +28,58 @@ public class NumeracionService {
     }
 
     @Transactional(readOnly = true)
-    public NumeracionDto consultar() {
-        int anio = LocalDateTime.now().getYear();
-        NumeracionCertificado num = numeracionRepository.findByAnioAndActivoTrue(anio)
-                .orElseGet(() -> crearNumeracionAnio(anio));
-        return toDto(num);
-    }
-
-    @Transactional
-    public NumeracionDto actualizar(NumeracionUpdateDto dto) {
-        int anio = LocalDateTime.now().getYear();
-        NumeracionCertificado num = numeracionRepository.findByAnioAndActivoTrue(anio)
-                .orElseGet(() -> crearNumeracionAnio(anio));
-
-        if (dto.getPrefijo() != null && !dto.getPrefijo().isBlank()) {
-            num.setPrefijo(dto.getPrefijo().toUpperCase().trim());
+    public NumeracionDto obtenerActual() {
+        int anio = Year.now().getValue();
+        NumeracionCertificado n = numeracionRepository.findByAnioAndActivoTrue(anio)
+                .orElse(null);
+        if (n == null) {
+            NumeracionDto dto = new NumeracionDto();
+            dto.setPrefijo(PREFIJO_DEFAULT);
+            dto.setAnio(anio);
+            dto.setUltimoConsecutivo(0L);
+            dto.setActivo(false);
+            return dto;
         }
-        num.setUpdatedAt(LocalDateTime.now());
-        numeracionRepository.save(num);
-
-        String usuario = obtenerUsuario();
-        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
-                AuditoriaAcciones.NUMERACION_ACTUALIZADA, "NUMERACION", num.getId(),
-                null, AuditoriaAcciones.RESULTADO_EXITO,
-                "Prefijo actualizado a: " + num.getPrefijo());
-
-        return toDto(num);
+        return toDto(n);
     }
 
-    /**
-     * Reserva y retorna el siguiente numero de certificado para el año actual.
-     * La transacción que llama a este método debe garantizar aislamiento para evitar duplicados.
-     * Se usa un @Transactional pesimista en el llamador (GeneracionService).
-     */
     @Transactional
-    public String reservarSiguienteNumero() {
-        int anio = LocalDateTime.now().getYear();
-        NumeracionCertificado num = numeracionRepository.findByAnioAndActivoTrue(anio)
-                .orElseGet(() -> crearNumeracionAnio(anio));
-
-        long siguiente = num.getUltimoConsecutivo() + 1;
-        num.setUltimoConsecutivo(siguiente);
-        num.setUpdatedAt(LocalDateTime.now());
-        numeracionRepository.saveAndFlush(num);
-
-        return String.format("%s-%d-%06d", num.getPrefijo(), anio, siguiente);
+    public NumeracionDto actualizarPrefijo(NumeracionUpdateDto dto, String usuario) {
+        int anio = Year.now().getValue();
+        NumeracionCertificado n = numeracionRepository.findByAnioAndActivoTrue(anio)
+                .orElseGet(() -> crearNueva(anio, dto.getPrefijo()));
+        if (dto.getPrefijo() != null && !dto.getPrefijo().trim().isEmpty()) {
+            n.setPrefijo(dto.getPrefijo().trim().toUpperCase());
+        }
+        n.setUpdatedAt(LocalDateTime.now());
+        NumeracionCertificado saved = numeracionRepository.save(n);
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.NUMERACION_ACTUALIZADA, AuditoriaAcciones.ENTIDAD_NUMERACION,
+                saved.getId(), null, AuditoriaAcciones.RESULTADO_EXITO, "Prefijo: " + saved.getPrefijo());
+        return toDto(saved);
     }
 
-    private NumeracionCertificado crearNumeracionAnio(int anio) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public String reservarSiguienteNumero(String usuario) {
+        int anio = Year.now().getValue();
+        NumeracionCertificado n = numeracionRepository.findByAnioAndActivoTrue(anio)
+                .orElseGet(() -> crearNueva(anio, PREFIJO_DEFAULT));
+        long siguiente = n.getUltimoConsecutivo() + 1;
+        n.setUltimoConsecutivo(siguiente);
+        n.setUpdatedAt(LocalDateTime.now());
+        numeracionRepository.saveAndFlush(n);
+        return String.format("%s-%d-%06d", n.getPrefijo(), anio, siguiente);
+    }
+
+    private NumeracionCertificado crearNueva(int anio, String prefijo) {
         NumeracionCertificado n = new NumeracionCertificado();
-        n.setPrefijo(PREFIJO_INICIAL);
+        n.setPrefijo(prefijo != null ? prefijo.trim().toUpperCase() : PREFIJO_DEFAULT);
         n.setAnio(anio);
         n.setUltimoConsecutivo(0L);
         n.setActivo(true);
         n.setCreatedAt(LocalDateTime.now());
         n.setUpdatedAt(LocalDateTime.now());
-        return numeracionRepository.save(n);
+        return numeracionRepository.saveAndFlush(n);
     }
 
     private NumeracionDto toDto(NumeracionCertificado n) {
@@ -91,16 +88,8 @@ public class NumeracionService {
         dto.setPrefijo(n.getPrefijo());
         dto.setAnio(n.getAnio());
         dto.setUltimoConsecutivo(n.getUltimoConsecutivo());
-        dto.setActivo(n.getActivo());
+        dto.setActivo(n.isActivo());
         dto.setUpdatedAt(n.getUpdatedAt());
-        dto.setProximoNumero(String.format("%s-%d-%06d", n.getPrefijo(), n.getAnio(),
-                n.getUltimoConsecutivo() + 1));
         return dto;
-    }
-
-    private String obtenerUsuario() {
-        org.springframework.security.core.Authentication auth =
-                SecurityContextHolder.getContext().getAuthentication();
-        return auth != null ? auth.getName() : "sistema";
     }
 }

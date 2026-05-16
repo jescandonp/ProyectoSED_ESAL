@@ -39,9 +39,15 @@ type TabActiva = 'info' | 'completitud' | 'documentos';
               ID SIPEJ: {{ esal()!.idSipej ?? '—' }} | NIT: {{ esal()!.nit ?? '—' }}
             </p>
           </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <span [class]="'sed-chip ' + chipEstado(esal()!.estado)">{{ labelEstado(esal()!.estado) }}</span>
             <span [class]="'sed-chip ' + chipCompletitud(esal()!.estadoCompletitud)">{{ labelCompletitud(esal()!.estadoCompletitud) }}</span>
+            <button class="sed-btn-primary" style="padding: 6px 14px; font-size: 12px;" (click)="verPreview()">
+              📋 Vista Previa
+            </button>
+            <button class="sed-btn-secondary" style="padding: 6px 14px; font-size: 12px;" (click)="verHistorial()">
+              📜 Historial
+            </button>
           </div>
         </div>
 
@@ -283,6 +289,14 @@ export class EsalesDetailComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/esales']);
+  }
+
+  verPreview(): void {
+    this.router.navigate(['/certificados', 'preview', this.id]);
+  }
+
+  verHistorial(): void {
+    this.router.navigate(['/esales', this.id, 'certificados']);
   }
 
   chipEstado(estado: EstadoEsal): string {

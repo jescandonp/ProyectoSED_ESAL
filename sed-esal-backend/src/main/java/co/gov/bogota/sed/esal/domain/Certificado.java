@@ -31,8 +31,8 @@ public class Certificado {
     @Column(name = "ESTADO_CERTIFICADO", nullable = false, length = 20)
     private EstadoCertificado estadoCertificado;
 
-    @Column(name = "VERSION_DATOS", length = 50)
-    private String versionDatos;
+    @Column(name = "VERSION_DATOS")
+    private LocalDateTime versionDatos;
 
     @Column(name = "FECHA_EXPEDICION")
     private LocalDateTime fechaExpedicion;
@@ -52,7 +52,7 @@ public class Certificado {
     @Column(name = "HASH_SHA256", length = 64)
     private String hashSha256;
 
-    @Column(name = "RUTA_PDF", length = 500)
+    @Column(name = "RUTA_PDF", length = 1000)
     private String rutaPdf;
 
     @Column(name = "NOMBRE_ARCHIVO", length = 255)
@@ -73,8 +73,7 @@ public class Certificado {
     @Column(name = "CREATED_BY", length = 255)
     private String createdBy;
 
-    public Certificado() {
-    }
+    public Certificado() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -94,8 +93,8 @@ public class Certificado {
     public EstadoCertificado getEstadoCertificado() { return estadoCertificado; }
     public void setEstadoCertificado(EstadoCertificado estadoCertificado) { this.estadoCertificado = estadoCertificado; }
 
-    public String getVersionDatos() { return versionDatos; }
-    public void setVersionDatos(String versionDatos) { this.versionDatos = versionDatos; }
+    public LocalDateTime getVersionDatos() { return versionDatos; }
+    public void setVersionDatos(LocalDateTime versionDatos) { this.versionDatos = versionDatos; }
 
     public LocalDateTime getFechaExpedicion() { return fechaExpedicion; }
     public void setFechaExpedicion(LocalDateTime fechaExpedicion) { this.fechaExpedicion = fechaExpedicion; }

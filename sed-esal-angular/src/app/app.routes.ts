@@ -70,22 +70,6 @@ export const routes: Routes = [
             (m) => m.EsalesDetailComponent
           ),
       },
-      // I2 — Búsqueda operativa
-      {
-        path: 'busqueda',
-        loadComponent: () =>
-          import('./features/busqueda/busqueda.component').then(
-            (m) => m.BusquedaComponent
-          ),
-      },
-      {
-        path: 'busqueda/:id',
-        loadComponent: () =>
-          import('./features/busqueda/busqueda-detalle.component').then(
-            (m) => m.BusquedaDetalleComponent
-          ),
-      },
-      // I2 — Vista previa del certificado
       {
         path: 'certificados/preview/:id',
         loadComponent: () =>
@@ -93,7 +77,46 @@ export const routes: Routes = [
             (m) => m.PreviewCertificadoComponent
           ),
       },
+      {
+        path: 'certificados/:certificadoId',
+        loadComponent: () =>
+          import('./features/certificados/resultado-certificado.component').then(
+            (m) => m.ResultadoCertificadoComponent
+          ),
+      },
+      {
+        path: 'esales/:id/certificados',
+        loadComponent: () =>
+          import('./features/certificados/historial-certificados.component').then(
+            (m) => m.HistorialCertificadosComponent
+          ),
+      },
+      {
+        path: 'admin/firmantes',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/firmantes/firmantes.component').then(
+            (m) => m.FirmantesComponent
+          ),
+      },
+      {
+        path: 'admin/numeracion',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/numeracion/numeracion.component').then(
+            (m) => m.NumeracionComponent
+          ),
+      },
     ],
+  },
+
+  // Acceso denegado (403)
+  {
+    path: 'acceso-denegado',
+    loadComponent: () =>
+      import('./features/acceso-denegado/acceso-denegado.component').then(
+        (m) => m.AccesoDenegadoComponent
+      ),
   },
 
   // Fallback

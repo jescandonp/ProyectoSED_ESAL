@@ -4,7 +4,7 @@ import co.gov.bogota.sed.esal.dto.FirmanteCreateDto;
 import co.gov.bogota.sed.esal.dto.FirmanteDto;
 import co.gov.bogota.sed.esal.service.FirmanteService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,33 +20,30 @@ public class FirmanteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FirmanteDto>> listar() {
-        return ResponseEntity.ok(firmanteService.listar());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<FirmanteDto> obtener(@PathVariable Long id) {
-        return ResponseEntity.ok(firmanteService.obtener(id));
+    public List<FirmanteDto> listar() {
+        return firmanteService.listar();
     }
 
     @PostMapping
-    public ResponseEntity<FirmanteDto> crear(@RequestBody FirmanteCreateDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(firmanteService.crear(dto));
+    @ResponseStatus(HttpStatus.CREATED)
+    public FirmanteDto crear(@RequestBody FirmanteCreateDto dto, Authentication auth) {
+        return firmanteService.crear(dto, auth.getName());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FirmanteDto> actualizar(@PathVariable Long id,
-                                                   @RequestBody FirmanteCreateDto dto) {
-        return ResponseEntity.ok(firmanteService.actualizar(id, dto));
+    public FirmanteDto actualizar(@PathVariable Long id,
+                                   @RequestBody FirmanteCreateDto dto,
+                                   Authentication auth) {
+        return firmanteService.actualizar(id, dto, auth.getName());
     }
 
     @PutMapping("/{id}/activar")
-    public ResponseEntity<FirmanteDto> activar(@PathVariable Long id) {
-        return ResponseEntity.ok(firmanteService.activar(id));
+    public FirmanteDto activar(@PathVariable Long id, Authentication auth) {
+        return firmanteService.activar(id, auth.getName());
     }
 
     @PutMapping("/{id}/inactivar")
-    public ResponseEntity<FirmanteDto> inactivar(@PathVariable Long id) {
-        return ResponseEntity.ok(firmanteService.inactivar(id));
+    public FirmanteDto inactivar(@PathVariable Long id, Authentication auth) {
+        return firmanteService.inactivar(id, auth.getName());
     }
 }

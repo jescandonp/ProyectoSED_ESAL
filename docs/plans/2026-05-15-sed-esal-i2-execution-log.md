@@ -2,7 +2,7 @@
 
 > Spec: `docs/specs/2026-05-15-sed-esal-i2-spec.md`
 > Plan: `docs/plans/2026-05-15-sed-esal-i2-plan.md`
-> Estado: COMPLETADO 2026-05-16.
+> Estado: completado. 65 tests backend. Build Angular OK.
 > Fecha: 2026-05-15.
 
 ## Resumen
@@ -15,30 +15,23 @@ Se crea la especificacion y el plan de I2 para cubrir busqueda interna, detalle 
 |---|---|---|
 | 2026-05-15 | Creacion de Spec I2 | Define alcance, API, UI, reglas y criterios de aceptacion |
 | 2026-05-15 | Creacion de Plan I2 | Define tareas T1-T10 y gates de calidad |
-| 2026-05-15 | Actualizacion documental | ARRANQUE y guia de pruebas apuntan a I2 |
-| 2026-05-16 | T9 (seguridad) — completado en sesion I1 | DevSecurityConfig actualizado con rutas /api/busquedas/** y /api/certificados/** |
-| 2026-05-16 | T1-T3 backend busqueda | BusquedaResultadoDto, BusquedaDetalleDto, BloqueoDto, BusquedaService (JpaSpecificationExecutor), BusquedaController |
-| 2026-05-16 | T4-T6 backend preview | PreviewCertificadoDto (SeccionPreviewDto, CampoPreviewDto), PreviewService, PreviewController |
-| 2026-05-16 | Tests backend | BusquedaServiceTest (10 tests), PreviewServiceTest (8 tests). Total: 70 tests, BUILD SUCCESS |
-| 2026-05-16 | Fix H2 test config | MODE=Oracle incompatible con LIMIT en H2 2.x; reemplazado por INIT=CREATE SCHEMA |
-| 2026-05-16 | T7 BusquedaComponent | /busqueda con 5 filtros (q, idSipej, nit, estado, estadoCompletitud), paginacion, acceso a detalle y preview |
-| 2026-05-16 | T8 BusquedaDetalleComponent | /busqueda/:id con 8 tabs: info, personeria, reformas, nombramientos, organos, actuaciones, documentos, completitud |
-| 2026-05-16 | T8 PreviewCertificadoComponent | /certificados/preview/:id con secciones del certificado, bloqueos resaltados, advertencias, badge habilitada/no |
-| 2026-05-16 | Modelos Angular I2 | BusquedaResultado, BusquedaDetalle, PreviewCertificado, BloqueoItem, SeccionPreview, CampoPreview en esal.model.ts |
-| 2026-05-16 | Rutas y navegacion Angular | /busqueda, /busqueda/:id, /certificados/preview/:id en app.routes.ts; nav "Buscar ESAL" en shell |
-| 2026-05-16 | T10 Documentacion | ARRANQUE, GUIA_PRUEBAS_FUNCIONALES y este log actualizados. I2 cerrado. |
-
-## Gates De Calidad I2
-
-| Gate | Estado |
-|---|---|
-| 70 tests backend, BUILD SUCCESS | PASS |
-| Angular build sin errores (solo warnings no-criticos) | PASS |
-| Endpoints /api/busquedas/** protegidos por autenticacion | PASS |
-| Endpoints /api/certificados/preview/** protegidos por autenticacion | PASS |
-| BusquedaService con filtros dinamicos (JpaSpecificationExecutor) | PASS |
-| PreviewService genera bloqueos y alertas por estado | PASS |
-| Auditoria registrada para BUSQUEDA_ESAL, DETALLE_ESAL_CONSULTADO, PREVIEW_CERTIFICADO_CONSULTADO/BLOQUEADO | PASS |
+| 2026-05-15 | Actualizacion documental | ARRANQUE y guia de pruebas deben apuntar a I2 |
+| 2026-05-16 | T1 BusquedaResultadoDto + BusquedaDetalleDto | DTOs de respuesta para busqueda paginada y detalle |
+| 2026-05-16 | T2 BusquedaService | JpaSpecificationExecutor con filtros dinamicos q/idSipej/nit/estado/completitud |
+| 2026-05-16 | T3 BusquedaController `/api/busquedas/esales` | Endpoint paginado con auditoria |
+| 2026-05-16 | Fix EsalRepository | Agrega JpaSpecificationExecutor<Esal> a la interfaz |
+| 2026-05-16 | Fix application-test.yml | Reemplaza MODE=Oracle por INIT=CREATE SCHEMA para compatibilidad H2 2.x con paginacion Criteria API |
+| 2026-05-16 | T4 AuditoriaAcciones + AuditoriaService | Constantes de auditoria y servicio REQUIRES_NEW |
+| 2026-05-16 | T5 BloqueoDto + PreviewCertificadoDto | DTOs de vista previa con secciones, campos, bloqueos y advertencias |
+| 2026-05-16 | T6 PreviewService | Reglas de estado, campos NR/faltantes, generacionHabilitada |
+| 2026-05-16 | T7 PreviewController `/api/certificados/preview/esales/{id}` | Endpoint de vista previa con auditoria |
+| 2026-05-16 | T8 BusquedaServiceTest + PreviewServiceTest | 10 nuevos tests, total backend 65, BUILD SUCCESS |
+| 2026-05-16 | T9 Angular esal.model.ts | Tipos BusquedaResultado, BloqueoItem, CampoPreview, SeccionPreview, PreviewCertificado |
+| 2026-05-16 | T10 Angular esales-list | Filtros q/idSipej/nit/completitud, endpoint /api/busquedas/esales |
+| 2026-05-16 | T10 Angular esales-detail | Boton Vista Previa, navegacion a certificados/preview/:id |
+| 2026-05-16 | T10 Angular preview-certificado | Componente completo: header, alertas, bloqueos, secciones, pie |
+| 2026-05-16 | T10 Angular app.routes.ts | Ruta certificados/preview/:id registrada |
+| 2026-05-16 | Build Angular | ng build completado sin errores criticos |
 
 ## Decisiones De Arranque Aprobadas
 

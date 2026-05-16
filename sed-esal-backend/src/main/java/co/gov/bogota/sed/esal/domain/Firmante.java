@@ -30,7 +30,7 @@ public class Firmante {
     private LocalDate fechaFinVigencia;
 
     @Column(name = "ACTIVO", nullable = false)
-    private Boolean activo = true;
+    private boolean activo;
 
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
@@ -44,8 +44,7 @@ public class Firmante {
     @Column(name = "UPDATED_BY", length = 255)
     private String updatedBy;
 
-    public Firmante() {
-    }
+    public Firmante() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -65,8 +64,8 @@ public class Firmante {
     public LocalDate getFechaFinVigencia() { return fechaFinVigencia; }
     public void setFechaFinVigencia(LocalDate fechaFinVigencia) { this.fechaFinVigencia = fechaFinVigencia; }
 
-    public Boolean getActivo() { return activo; }
-    public void setActivo(Boolean activo) { this.activo = activo; }
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -29,6 +29,8 @@ export class ShellComponent {
     { label: 'Carga Inicial', route: '/admin/carga-inicial', icon: '📤', roles: ['ADMINISTRADOR'] },
     { label: 'ESAL (Admin)', route: '/admin/esales', icon: '🏢', roles: ['ADMINISTRADOR'] },
     { label: 'Auditoría', route: '/admin/auditoria', icon: '📋', roles: ['ADMINISTRADOR'] },
+    { label: 'Firmantes', route: '/admin/firmantes', icon: '✍️', roles: ['ADMINISTRADOR'] },
+    { label: 'Numeración', route: '/admin/numeracion', icon: '🔢', roles: ['ADMINISTRADOR'] },
     { label: 'Consultar ESAL', route: '/esales', icon: '🔍', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
     { label: 'Buscar ESAL', route: '/busqueda', icon: '🔎', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
   ];

@@ -21,17 +21,49 @@ public class PreviewCertificadoDto {
     private List<String> advertencias;
     private List<BloqueoDto> bloqueos;
 
-    public PreviewCertificadoDto() {}
+    public Long getEsalId() { return esalId; }
+    public void setEsalId(Long esalId) { this.esalId = esalId; }
 
-    // -------------------------------------------------------------------------
-    // Inner classes
-    // -------------------------------------------------------------------------
+    public String getIdSipej() { return idSipej; }
+    public void setIdSipej(String idSipej) { this.idSipej = idSipej; }
+
+    public String getNit() { return nit; }
+    public void setNit(String nit) { this.nit = nit; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public EstadoEsal getEstado() { return estado; }
+    public void setEstado(EstadoEsal estado) { this.estado = estado; }
+
+    public EstadoCompletitud getEstadoCompletitud() { return estadoCompletitud; }
+    public void setEstadoCompletitud(EstadoCompletitud estadoCompletitud) { this.estadoCompletitud = estadoCompletitud; }
+
+    public LocalDateTime getVersionDatos() { return versionDatos; }
+    public void setVersionDatos(LocalDateTime versionDatos) { this.versionDatos = versionDatos; }
+
+    public Boolean getGeneracionHabilitada() { return generacionHabilitada; }
+    public void setGeneracionHabilitada(Boolean generacionHabilitada) { this.generacionHabilitada = generacionHabilitada; }
+
+    public String getAlertaEstado() { return alertaEstado; }
+    public void setAlertaEstado(String alertaEstado) { this.alertaEstado = alertaEstado; }
+
+    public List<SeccionPreviewDto> getSecciones() { return secciones; }
+    public void setSecciones(List<SeccionPreviewDto> secciones) { this.secciones = secciones; }
+
+    public List<String> getAdvertencias() { return advertencias; }
+    public void setAdvertencias(List<String> advertencias) { this.advertencias = advertencias; }
+
+    public List<BloqueoDto> getBloqueos() { return bloqueos; }
+    public void setBloqueos(List<BloqueoDto> bloqueos) { this.bloqueos = bloqueos; }
 
     public static class SeccionPreviewDto {
         private String nombre;
         private List<CampoPreviewDto> campos;
 
-        public SeccionPreviewDto() {}
+        public SeccionPreviewDto() {
+        }
+
         public SeccionPreviewDto(String nombre, List<CampoPreviewDto> campos) {
             this.nombre = nombre;
             this.campos = campos;
@@ -50,7 +82,9 @@ public class PreviewCertificadoDto {
         private Boolean obligatorio;
         private Boolean origenHistorico;
 
-        public CampoPreviewDto() {}
+        public CampoPreviewDto() {
+        }
+
         public CampoPreviewDto(String etiqueta, String valor, Boolean faltante,
                                Boolean obligatorio, Boolean origenHistorico) {
             this.etiqueta = etiqueta;
@@ -71,33 +105,4 @@ public class PreviewCertificadoDto {
         public Boolean getOrigenHistorico() { return origenHistorico; }
         public void setOrigenHistorico(Boolean origenHistorico) { this.origenHistorico = origenHistorico; }
     }
-
-    // -------------------------------------------------------------------------
-    // Getters / Setters
-    // -------------------------------------------------------------------------
-
-    public Long getEsalId() { return esalId; }
-    public void setEsalId(Long esalId) { this.esalId = esalId; }
-    public String getIdSipej() { return idSipej; }
-    public void setIdSipej(String idSipej) { this.idSipej = idSipej; }
-    public String getNit() { return nit; }
-    public void setNit(String nit) { this.nit = nit; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public EstadoEsal getEstado() { return estado; }
-    public void setEstado(EstadoEsal estado) { this.estado = estado; }
-    public EstadoCompletitud getEstadoCompletitud() { return estadoCompletitud; }
-    public void setEstadoCompletitud(EstadoCompletitud estadoCompletitud) { this.estadoCompletitud = estadoCompletitud; }
-    public LocalDateTime getVersionDatos() { return versionDatos; }
-    public void setVersionDatos(LocalDateTime versionDatos) { this.versionDatos = versionDatos; }
-    public Boolean getGeneracionHabilitada() { return generacionHabilitada; }
-    public void setGeneracionHabilitada(Boolean generacionHabilitada) { this.generacionHabilitada = generacionHabilitada; }
-    public String getAlertaEstado() { return alertaEstado; }
-    public void setAlertaEstado(String alertaEstado) { this.alertaEstado = alertaEstado; }
-    public List<SeccionPreviewDto> getSecciones() { return secciones; }
-    public void setSecciones(List<SeccionPreviewDto> secciones) { this.secciones = secciones; }
-    public List<String> getAdvertencias() { return advertencias; }
-    public void setAdvertencias(List<String> advertencias) { this.advertencias = advertencias; }
-    public List<BloqueoDto> getBloqueos() { return bloqueos; }
-    public void setBloqueos(List<BloqueoDto> bloqueos) { this.bloqueos = bloqueos; }
 }

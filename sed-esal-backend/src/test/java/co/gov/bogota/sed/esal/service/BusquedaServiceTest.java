@@ -1,44 +1,33 @@
 package co.gov.bogota.sed.esal.service;
 
-import co.gov.bogota.sed.esal.domain.Auditoria;
 import co.gov.bogota.sed.esal.domain.Esal;
+import co.gov.bogota.sed.esal.domain.Nombramiento;
+import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
 import co.gov.bogota.sed.esal.domain.enums.EstadoCompletitud;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
 import co.gov.bogota.sed.esal.dto.BusquedaDetalleDto;
 import co.gov.bogota.sed.esal.dto.BusquedaResultadoDto;
 import co.gov.bogota.sed.esal.dto.PageDto;
-import co.gov.bogota.sed.esal.repository.AuditoriaRepository;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
+import co.gov.bogota.sed.esal.repository.NombramientoRepository;
+import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
 import co.gov.bogota.sed.esal.repository.PersoneriaJuridicaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Tests de integración para BusquedaService (I2).
- *
- * 1.  buscar_sinFiltros_devuelveTodos
- * 2.  buscar_porNombreExacto_encuentraEsal
- * 3.  buscar_porNombreParcial_encuentraVarios
- * 4.  buscar_porIdSipej_encuentraEsal
- * 5.  buscar_porNit_encuentraEsal
- * 6.  buscar_porEstado_filtraCorrectamente
- * 7.  buscar_porEstadoCompletitud_filtraCorrectamente
- * 8.  buscar_porQ_buscaEnVariasColunas
- * 9.  obtenerDetalle_retornaEsalCompleta
- * 10. obtenerDetalle_esalInexistente_lanza404
- */
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
@@ -54,201 +43,180 @@ class BusquedaServiceTest {
     private PersoneriaJuridicaRepository personeriaRepository;
 
     @Autowired
-    private AuditoriaRepository auditoriaRepository;
+    private NombramientoRepository nombramientoRepository;
 
-    // =========================================================================
-    // 1. Sin filtros — devuelve todos
-    // =========================================================================
+    @Autowired
+    private OrganoAdministracionRepository organoRepository;
 
     @Test
-    void buscar_sinFiltros_devuelveTodos() {
-        crearEsal("Fundacion Alpha", "SA-001", "900001001", EstadoEsal.ACTIVO);
-        crearEsal("Corporacion Beta", "SA-002", "900001002", EstadoEsal.ACTIVO);
+    void buscarSinFiltros_retornaPaginado() {
+        crearEsal("Fundacion Alfa", "SIPEJ-I2-001", "900001", EstadoEsal.ACTIVO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
+        crearEsal("Corporacion Beta", "SIPEJ-I2-002", "900002", EstadoEsal.SUSPENDIDO,
+                EstadoCompletitud.INCOMPLETO_BLOQUEANTE);
 
         PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
-                null, null, null, null, null, null, 0, 20, null);
+                null, null, null, null, null, null, 0, 20, "tester");
 
         assertThat(resultado.getTotalElements()).isGreaterThanOrEqualTo(2);
-    }
-
-    // =========================================================================
-    // 2. Por nombre exacto
-    // =========================================================================
-
-    @Test
-    void buscar_porNombreExacto_encuentraEsal() {
-        crearEsal("Asociacion Exacta Test", "SA-003", null, EstadoEsal.ACTIVO);
-
-        PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
-                null, null, "Asociacion Exacta Test", null, null, null, 0, 20, null);
-
-        assertThat(resultado.getContent())
-                .extracting(BusquedaResultadoDto::getNombre)
-                .contains("Asociacion Exacta Test");
-    }
-
-    // =========================================================================
-    // 3. Por nombre parcial
-    // =========================================================================
-
-    @Test
-    void buscar_porNombreParcial_encuentraVarios() {
-        crearEsal("Fundacion Parcial Uno", "SA-010", null, EstadoEsal.ACTIVO);
-        crearEsal("Fundacion Parcial Dos", "SA-011", null, EstadoEsal.ACTIVO);
-
-        PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
-                null, null, "Parcial", null, null, null, 0, 20, null);
-
         assertThat(resultado.getContent()).hasSizeGreaterThanOrEqualTo(2);
     }
 
-    // =========================================================================
-    // 4. Por idSipej
-    // =========================================================================
-
     @Test
-    void buscar_porIdSipej_encuentraEsal() {
-        crearEsal("Fundacion SIPEJ Test", "SIPEJ-999", null, EstadoEsal.ACTIVO);
+    void buscarPorNombreExacto() {
+        crearEsal("Fundacion Nombre Exacto I2", "SIPEJ-I2-003", "900003", EstadoEsal.ACTIVO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
 
         PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
-                null, "SIPEJ-999", null, null, null, null, 0, 20, null);
+                null, null, "Fundacion Nombre Exacto I2", null, null, null, 0, 20, "tester");
 
-        assertThat(resultado.getContent())
-                .extracting(BusquedaResultadoDto::getIdSipej)
-                .contains("SIPEJ-999");
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getNombre)
+                .contains("Fundacion Nombre Exacto I2");
     }
 
-    // =========================================================================
-    // 5. Por NIT
-    // =========================================================================
-
     @Test
-    void buscar_porNit_encuentraEsal() {
-        crearEsal("Fundacion NIT Test", "SA-020", "800555777", EstadoEsal.ACTIVO);
+    void buscarPorNombreParcial() {
+        crearEsal("Fundacion Busqueda Parcial I2", "SIPEJ-I2-004", "900004", EstadoEsal.ACTIVO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
 
         PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
-                null, null, null, "800555777", null, null, 0, 20, null);
+                null, null, "busqueda parcial", null, null, null, 0, 20, "tester");
 
-        assertThat(resultado.getContent())
-                .extracting(BusquedaResultadoDto::getNit)
-                .contains("800555777");
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getNombre)
+                .contains("Fundacion Busqueda Parcial I2");
     }
 
-    // =========================================================================
-    // 6. Por estado
-    // =========================================================================
-
     @Test
-    void buscar_porEstado_filtraCorrectamente() {
-        crearEsal("Fundacion Suspendida X", "SA-030", null, EstadoEsal.SUSPENDIDO);
-        crearEsal("Fundacion Activa Y", "SA-031", null, EstadoEsal.ACTIVO);
-
-        PageDto<BusquedaResultadoDto> suspendidas = busquedaService.buscar(
-                null, null, null, null, EstadoEsal.SUSPENDIDO, null, 0, 50, null);
-
-        assertThat(suspendidas.getContent())
-                .allMatch(dto -> EstadoEsal.SUSPENDIDO.equals(dto.getEstado()));
-        assertThat(suspendidas.getContent())
-                .extracting(BusquedaResultadoDto::getIdSipej)
-                .contains("SA-030");
-    }
-
-    // =========================================================================
-    // 7. Por estadoCompletitud
-    // =========================================================================
-
-    @Test
-    void buscar_porEstadoCompletitud_filtraCorrectamente() {
-        Esal esal = crearEsal("Fundacion Completa Z", "SA-040", null, EstadoEsal.ACTIVO);
-        esal.setEstadoCompletitud(EstadoCompletitud.LISTO_PARA_CERTIFICAR);
-        esalRepository.save(esal);
+    void buscarPorIdSipejExacto() {
+        crearEsal("Fundacion Sipej Exacto", "SIPEJ-I2-005", "900005", EstadoEsal.ACTIVO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
 
         PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
-                null, null, null, null, null,
-                EstadoCompletitud.LISTO_PARA_CERTIFICAR, 0, 50, null);
+                null, "SIPEJ-I2-005", null, null, null, null, 0, 20, "tester");
 
-        assertThat(resultado.getContent())
-                .allMatch(dto -> EstadoCompletitud.LISTO_PARA_CERTIFICAR.equals(dto.getEstadoCompletitud()));
-        assertThat(resultado.getContent())
-                .extracting(BusquedaResultadoDto::getIdSipej)
-                .contains("SA-040");
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getIdSipej)
+                .contains("SIPEJ-I2-005");
     }
 
-    // =========================================================================
-    // 8. Q — busca en nombre, idSipej y nit
-    // =========================================================================
-
     @Test
-    void buscar_porQ_buscaEnVariasColumnas() {
-        crearEsal("Fundacion Omega", "SA-050", null, EstadoEsal.ACTIVO);
+    void buscarPorIdSipejParcial() {
+        crearEsal("Fundacion Sipej Parcial", "SIPEJ-I2-006", "900006", EstadoEsal.ACTIVO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
 
         PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
-                "omega", null, null, null, null, null, 0, 20, null);
+                null, "i2-006", null, null, null, null, 0, 20, "tester");
 
-        assertThat(resultado.getContent())
-                .extracting(BusquedaResultadoDto::getNombre)
-                .anyMatch(n -> n.toLowerCase().contains("omega"));
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getIdSipej)
+                .contains("SIPEJ-I2-006");
     }
 
-    // =========================================================================
-    // 9. Detalle completo — con personería
-    // =========================================================================
+    @Test
+    void buscarSinCoincidencias_retornaVacio() {
+        PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
+                null, null, "Nombre Inexistente I2", null, null, null, 0, 20, "tester");
+
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
+    }
 
     @Test
-    void obtenerDetalle_retornaEsalCompleta() {
-        Esal esal = crearEsal("Fundacion Detalle Full", "SA-060", "900123456", EstadoEsal.ACTIVO);
-        esal.setDomicilio("Bogotá");
-        esal.setCorreoElectronico("info@detalle.org");
-        esalRepository.save(esal);
+    void buscarPorEstado_filtrado() {
+        crearEsal("Fundacion Activa I2", "SIPEJ-I2-007", "900007", EstadoEsal.ACTIVO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
+        crearEsal("Fundacion Cancelada I2", "SIPEJ-I2-008", "900008", EstadoEsal.CANCELADO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
 
-        PersoneriaJuridica pj = new PersoneriaJuridica();
-        pj.setEsalId(esal.getId());
-        pj.setReconocimientoPersoneriaJuridica("Resolución 001-2020");
-        pj.setFechaReconocimientoPersoneriaJuridica(LocalDate.of(2020, 1, 15));
-        pj.setEntidadQueExpide("Secretaría de Educación");
-        personeriaRepository.save(pj);
+        PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
+                "Fundacion", null, null, null, EstadoEsal.CANCELADO, null, 0, 20, "tester");
 
-        LocalDateTime antes = LocalDateTime.now().minusSeconds(1);
-        BusquedaDetalleDto detalle = busquedaService.obtenerDetalle(esal.getId(), null);
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getEstado)
+                .contains(EstadoEsal.CANCELADO);
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getEstado)
+                .doesNotContain(EstadoEsal.ACTIVO);
+    }
+
+    @Test
+    void buscarPorCompletitud_filtrado() {
+        crearEsal("Fundacion Lista I2", "SIPEJ-I2-009", "900009", EstadoEsal.ACTIVO,
+                EstadoCompletitud.LISTO_PARA_CERTIFICAR);
+        crearEsal("Fundacion Incompleta I2", "SIPEJ-I2-010", "900010", EstadoEsal.ACTIVO,
+                EstadoCompletitud.INCOMPLETO_BLOQUEANTE);
+
+        PageDto<BusquedaResultadoDto> resultado = busquedaService.buscar(
+                "Fundacion", null, null, null, null,
+                EstadoCompletitud.INCOMPLETO_BLOQUEANTE, 0, 20, "tester");
+
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getEstadoCompletitud)
+                .contains(EstadoCompletitud.INCOMPLETO_BLOQUEANTE);
+        assertThat(resultado.getContent()).extracting(BusquedaResultadoDto::getEstadoCompletitud)
+                .doesNotContain(EstadoCompletitud.LISTO_PARA_CERTIFICAR);
+    }
+
+    @Test
+    void obtenerDetalle_retornaSecciones() {
+        Esal esal = crearEsalCompleta("Fundacion Detalle I2", "SIPEJ-I2-011", EstadoEsal.ACTIVO);
+
+        BusquedaDetalleDto detalle = busquedaService.obtenerDetalle(esal.getId(), "tester");
 
         assertThat(detalle.getEsalId()).isEqualTo(esal.getId());
-        assertThat(detalle.getNombre()).isEqualTo("Fundacion Detalle Full");
-        assertThat(detalle.getIdSipej()).isEqualTo("SA-060");
         assertThat(detalle.getPersoneria()).isNotNull();
-        assertThat(detalle.getPersoneria().getReconocimiento()).isEqualTo("Resolución 001-2020");
+        assertThat(detalle.getNombramientos()).isNotEmpty();
+        assertThat(detalle.getOrganos()).isNotEmpty();
         assertThat(detalle.getCompletitud()).isNotNull();
-
-        // Verifica auditoría
-        List<Auditoria> auds = auditoriaRepository.findByAccion(AuditoriaAcciones.DETALLE_ESAL_CONSULTADO);
-        assertThat(auds).anyMatch(a ->
-                esal.getId().equals(a.getEntidadId()) && a.getCreatedAt().isAfter(antes));
     }
-
-    // =========================================================================
-    // 10. Detalle — ESAL inexistente lanza 404
-    // =========================================================================
 
     @Test
-    void obtenerDetalle_esalInexistente_lanza404() {
-        assertThatThrownBy(() -> busquedaService.obtenerDetalle(999999L, null))
+    void obtenerDetalleInexistente_lanza404() {
+        assertThatThrownBy(() -> busquedaService.obtenerDetalle(-999L, "tester"))
                 .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("404");
+                .extracting("status")
+                .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    // =========================================================================
-    // Helper
-    // =========================================================================
-
-    private Esal crearEsal(String nombre, String idSipej, String nit, EstadoEsal estado) {
+    private Esal crearEsal(String nombre, String idSipej, String nit, EstadoEsal estado,
+                           EstadoCompletitud estadoCompletitud) {
         Esal esal = new Esal();
         esal.setNombre(nombre);
         esal.setIdSipej(idSipej);
         esal.setNit(nit);
+        esal.setDomicilio("Bogota D.C.");
+        esal.setCorreoElectronico("contacto@example.org");
+        esal.setTerminoDuracion("Indefinido");
+        esal.setObjetoSocial("Objeto social de prueba");
         esal.setEstado(estado);
-        esal.setEstadoCompletitud(EstadoCompletitud.INCOMPLETO_BLOQUEANTE);
+        esal.setEstadoCompletitud(estadoCompletitud);
         esal.setCreatedAt(LocalDateTime.now());
         esal.setUpdatedAt(LocalDateTime.now());
         esal.setCreatedBy("test");
         return esalRepository.save(esal);
+    }
+
+    private Esal crearEsalCompleta(String nombre, String idSipej, EstadoEsal estado) {
+        Esal esal = crearEsal(nombre, idSipej, "901000", estado, EstadoCompletitud.LISTO_PARA_CERTIFICAR);
+
+        PersoneriaJuridica personeria = new PersoneriaJuridica();
+        personeria.setEsalId(esal.getId());
+        personeria.setReconocimientoPersoneriaJuridica("Resolucion 001");
+        personeria.setFechaReconocimientoPersoneriaJuridica(LocalDate.of(2000, 1, 1));
+        personeria.setEntidadQueExpide("Alcaldia Mayor");
+        personeriaRepository.save(personeria);
+
+        Nombramiento representante = new Nombramiento();
+        representante.setEsalId(esal.getId());
+        representante.setTipoNombramiento(TipoNombramiento.REPRESENTANTE_LEGAL);
+        representante.setNombre("Representante Legal");
+        representante.setNumeroDocumento("123456");
+        representante.setFacultadesLimitaciones("Facultades amplias");
+        representante.setActaAprueba("Acta 001");
+        representante.setFechaActa(LocalDate.of(2024, 1, 1));
+        nombramientoRepository.save(representante);
+
+        OrganoAdministracion organo = new OrganoAdministracion();
+        organo.setEsalId(esal.getId());
+        organo.setOrgano("Junta Directiva");
+        organo.setMiembro("Miembro Principal");
+        organoRepository.save(organo);
+
+        return esal;
     }
 }

@@ -75,6 +75,98 @@ export interface ImportResultDto {
   importadoPor: string;
 }
 
+// ── I2 ─────────────────────────────────────────────────────────────────────
+export interface BusquedaResultado {
+  id: number;
+  nombre: string;
+  idSipej: string | null;
+  nit: string | null;
+  domicilio: string | null;
+  estado: EstadoEsal;
+  estadoCompletitud: EstadoCompletitud;
+  updatedAt: string | null;
+}
+
+export interface BloqueoItem {
+  seccion: string;
+  campo: string;
+  tipo: string;
+  mensaje: string;
+  origenHistorico: boolean;
+}
+
+export interface CampoPreview {
+  etiqueta: string;
+  valor: string | null;
+  faltante: boolean;
+  obligatorio: boolean;
+  origenHistorico: boolean;
+}
+
+export interface SeccionPreview {
+  nombre: string;
+  campos: CampoPreview[];
+}
+
+export interface PreviewCertificado {
+  esalId: number;
+  idSipej: string | null;
+  nit: string | null;
+  nombre: string;
+  estado: EstadoEsal;
+  estadoCompletitud: EstadoCompletitud;
+  versionDatos: string | null;
+  generacionHabilitada: boolean;
+  alertaEstado: string | null;
+  secciones: SeccionPreview[];
+  advertencias: string[];
+  bloqueos: BloqueoItem[];
+}
+
+// ── I3 ─────────────────────────────────────────────────────────────────────
+export type EstadoCertificado = 'GENERADO' | 'FALLIDO' | 'BLOQUEADO';
+
+export interface CertificadoDto {
+  certificadoId: number;
+  esalId: number;
+  idSipej: string | null;
+  nit: string | null;
+  numeroCertificado: string | null;
+  estadoCertificado: EstadoCertificado;
+  fechaExpedicion: string | null;
+  versionDatos: string | null;
+  firmanteNombre: string | null;
+  firmanteCargo: string | null;
+  plantillaVersion: string | null;
+  hashSha256: string | null;
+  nombreArchivo: string | null;
+  tamanoBytes: number | null;
+  errorDetalle: string | null;
+  createdAt: string | null;
+  createdBy: string | null;
+}
+
+export interface NumeracionDto {
+  id: number | null;
+  prefijo: string;
+  anio: number;
+  ultimoConsecutivo: number;
+  activo: boolean;
+  updatedAt: string | null;
+}
+
+export interface FirmanteDto {
+  id: number;
+  nombre: string;
+  cargo: string;
+  dependencia: string | null;
+  fechaInicioVigencia: string;
+  fechaFinVigencia: string | null;
+  activo: boolean;
+  createdAt: string | null;
+  createdBy: string | null;
+}
+
 export interface AuditoriaItem {
   id: number;
   usuario: string;

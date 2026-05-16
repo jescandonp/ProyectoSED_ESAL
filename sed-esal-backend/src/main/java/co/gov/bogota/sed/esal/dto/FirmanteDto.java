@@ -10,10 +10,9 @@ public class FirmanteDto {
     private String dependencia;
     private LocalDate fechaInicioVigencia;
     private LocalDate fechaFinVigencia;
-    private Boolean activo;
+    private boolean activo;
     private LocalDateTime createdAt;
     private String createdBy;
-    private LocalDateTime updatedAt;
 
     public FirmanteDto() {}
 
@@ -35,15 +34,12 @@ public class FirmanteDto {
     public LocalDate getFechaFinVigencia() { return fechaFinVigencia; }
     public void setFechaFinVigencia(LocalDate fechaFinVigencia) { this.fechaFinVigencia = fechaFinVigencia; }
 
-    public Boolean getActivo() { return activo; }
-    public void setActivo(Boolean activo) { this.activo = activo; }
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

@@ -3,7 +3,7 @@ package co.gov.bogota.sed.esal.controller;
 import co.gov.bogota.sed.esal.dto.NumeracionDto;
 import co.gov.bogota.sed.esal.dto.NumeracionUpdateDto;
 import co.gov.bogota.sed.esal.service.NumeracionService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,12 +17,12 @@ public class NumeracionController {
     }
 
     @GetMapping
-    public ResponseEntity<NumeracionDto> consultar() {
-        return ResponseEntity.ok(numeracionService.consultar());
+    public NumeracionDto obtener() {
+        return numeracionService.obtenerActual();
     }
 
     @PutMapping
-    public ResponseEntity<NumeracionDto> actualizar(@RequestBody NumeracionUpdateDto dto) {
-        return ResponseEntity.ok(numeracionService.actualizar(dto));
+    public NumeracionDto actualizar(@RequestBody NumeracionUpdateDto dto, Authentication auth) {
+        return numeracionService.actualizarPrefijo(dto, auth.getName());
     }
 }
