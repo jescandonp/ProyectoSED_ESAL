@@ -51,6 +51,7 @@ public class CompletitudService {
     private final OrganoAdministracionRepository organoRepository;
     private final ActuacionAdministrativaRepository actuacionRepository;
     private final AdvertenciaCompletitudRepository advertenciaRepository;
+    private final AuditoriaService auditoriaService;
 
     public CompletitudService(
             EsalRepository esalRepository,
@@ -58,13 +59,15 @@ public class CompletitudService {
             NombramientoRepository nombramientoRepository,
             OrganoAdministracionRepository organoRepository,
             ActuacionAdministrativaRepository actuacionRepository,
-            AdvertenciaCompletitudRepository advertenciaRepository) {
+            AdvertenciaCompletitudRepository advertenciaRepository,
+            AuditoriaService auditoriaService) {
         this.esalRepository = esalRepository;
         this.personeriaRepository = personeriaRepository;
         this.nombramientoRepository = nombramientoRepository;
         this.organoRepository = organoRepository;
         this.actuacionRepository = actuacionRepository;
         this.advertenciaRepository = advertenciaRepository;
+        this.auditoriaService = auditoriaService;
     }
 
     // -------------------------------------------------------------------------
@@ -104,6 +107,16 @@ public class CompletitudService {
         esal.setUpdatedAt(ahora);
         esalRepository.save(esal);
 
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String usuario = (auth != null) ? auth.getName() : "sistema";
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.RECALCULAR_COMPLETITUD,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esalId, esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO,
+                "Semaforo: " + semaforo.name() + ", Advertencias: " + nuevas.size());
+
         return construirDto(esal, nuevas);
     }
 
@@ -118,6 +131,16 @@ public class CompletitudService {
     public CompletitudDto consultar(Long esalId) {
         Esal esal = obtenerEsal(esalId);
         List<AdvertenciaCompletitud> advertencias = advertenciaRepository.findByEsalId(esalId);
+
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String usuario = (auth != null) ? auth.getName() : "sistema";
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.CONSULTAR_COMPLETITUD,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esalId, esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO, null);
+
         return construirDto(esal, advertencias);
     }
 

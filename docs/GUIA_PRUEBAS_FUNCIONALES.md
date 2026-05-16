@@ -1,7 +1,7 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: guia base aprobada, pre-implementacion funcional.
-> Fecha: 2026-05-15.
+> Estado: I1 completado. I2 pendiente de implementacion.
+> Fecha: 2026-05-16.
 > Marco: SDD Spec-Anchored por incrementos.
 
 ## 1. Objetivo
@@ -43,15 +43,17 @@ Observaciones:
 
 ## 4. Prevalidacion Tecnica
 
-Pendiente de implementar. Cuando existan backend y frontend, validar:
+Requisito: backend levantado en `http://localhost:8080` y frontend en `http://localhost:4200`.
 
-| ID | Accion | Esperado |
-|---|---|---|
-| T-00-01 | Abrir health backend | Backend responde `UP` |
-| T-00-02 | Abrir frontend | Login local-dev carga |
-| T-00-03 | Abrir Swagger | OpenAPI disponible |
-| T-00-04 | Login ADMINISTRADOR | Acceso a administracion |
-| T-00-05 | Login EXPEDIDOR | Acceso a busqueda/certificados |
+| ID | Accion | Endpoint / URL | Esperado |
+|---|---|---|---|
+| T-00-01 | Verificar health backend | `GET /actuator/health` | `{"status":"UP"}` sin autenticacion |
+| T-00-02 | Abrir Swagger | `http://localhost:8080/swagger-ui.html` | OpenAPI disponible |
+| T-00-03 | Abrir frontend | `http://localhost:4200` | Pantalla login carga |
+| T-00-04 | Login ADMINISTRADOR | Usuario `admin@educacionbogota.edu.co` / `admin123` | Sidebar con modulos admin visibles |
+| T-00-05 | Login EXPEDIDOR | Usuario `expedidor@educacionbogota.edu.co` / `expedidor123` | Sidebar solo con busqueda/consulta |
+| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 52 tests, BUILD SUCCESS |
+| T-00-07 | Verificar build frontend | `npm run build` en `sed-esal-angular` | BUILD SUCCESS sin errores |
 
 ## 5. Incremento 0 - Base Documental Y Arquitectura
 
@@ -67,42 +69,70 @@ Pendiente de implementar. Cuando existan backend y frontend, validar:
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 
-Estado: aprobado como incremento activo, pendiente de implementacion.
+Estado: **implementado**. Backend: 52 tests en verde. Frontend: build y tests en verde.
 
-Casos previstos:
+### I1 - Carga
 
-| ID | Accion | Datos | Esperado |
-|---|---|---|---|
-| I1-CARGA-01 | Cargar Excel historico valido | `BASE DE DATOS - REGISTRO_1.xlsx` | Importacion con resumen |
-| I1-CARGA-02 | Detectar entidades efectivas | Archivo historico | Se reconocen registros con datos ESAL |
-| I1-CARGA-03 | Aplicar diccionario de obligatoriedad | `Base excel.xlsx` | 23 obligatorios y 94 opcionales cargados |
-| I1-CARGA-04 | Importar registro incompleto historico | Registro con `NR` | Importa con advertencia |
-| I1-CARGA-05 | Detectar `ID SIPEJ` faltante o duplicado | Datos de prueba | Advertencia o bloqueo segun regla |
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I1-CARGA-01 | Cargar diccionario | `POST /api/admin/diccionario/inicializar` | `Base excel.xlsx` como multipart | `totalPersistidos: 117`, `totalObligatorios: 23`, `totalOpcionales: 94` |
+| I1-CARGA-02 | Cargar Excel historico | `POST /api/admin/importaciones/esal` | `BASE DE DATOS - REGISTRO_1.xlsx` como multipart | `totalImportados > 0`, resumen con advertencias |
+| I1-CARGA-03 | Idempotencia historico | `POST /api/admin/importaciones/esal` (segunda vez) | Mismo archivo | `totalImportados` igual a primera carga; ESALes no duplicadas |
+| I1-CARGA-04 | Registro con `NR` | Ver resultado de importacion | Archivo historico con celdas `NR` | ESAL importada con advertencia bloqueante en `ID SIPEJ` |
+| I1-CARGA-05 | Crear ESAL nueva | `POST /api/esales` | JSON `{"nombre": "Fundacion Test"}` con admin | 201 con id asignado |
+
+### I1 - Administracion
+
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I1-ADMIN-01 | Listar ESALes | `GET /api/esales?page=0&size=10` | - | Lista paginada de ESALes |
+| I1-ADMIN-02 | Filtrar por nombre | `GET /api/esales?nombre=Fund` | - | Solo ESALes con nombre que contiene `Fund` |
+| I1-ADMIN-03 | Filtrar por estado | `GET /api/esales?estado=ACTIVO` | - | Solo ESALes con `estado = ACTIVO` |
+| I1-ADMIN-04 | Ver detalle | `GET /api/esales/{id}` | id de ESAL existente | Detalle completo |
+| I1-ADMIN-05 | Editar ESAL | `PUT /api/esales/{id}` | JSON con campos a actualizar, rol admin | 200 con datos actualizados |
+| I1-ADMIN-06 | Cambiar estado | `PUT /api/esales/{id}/estado` | `{"estado": "SUSPENDIDO"}` con admin | 200, estado actualizado |
+| I1-ADMIN-07 | Expedidor intenta editar | `PUT /api/esales/{id}` | Cualquier JSON con rol expedidor | 403 Forbidden |
 
 ## 7. Incremento 1 - Estados Y Completitud
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 
-| ID | Accion | Datos | Esperado |
-|---|---|---|---|
-| I1-EST-01 | Marcar ESAL activa | Estado `Activo` | Certificado refleja informacion registrada |
-| I1-EST-02 | Marcar ESAL suspendida | Tiempo de suspension | Semaforo exige datos de suspension |
-| I1-EST-03 | Marcar ESAL en liquidacion | Acta/liquidador | Vista previa incluye `EN LIQUIDACIÓN` |
-| I1-EST-04 | Marcar ESAL cancelada | Resolucion y fecha | Vista previa limita informacion segun regla |
-| I1-COMP-01 | Evaluar registro completo | Campos obligatorios completos | `Listo para certificar` |
-| I1-COMP-02 | Evaluar faltante opcional | Campo opcional vacio | `Incompleto no bloqueante` |
-| I1-COMP-03 | Evaluar faltante obligatorio | Campo obligatorio vacio | `Incompleto bloqueante` |
+Estado: **implementado**.
+
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I1-COMP-01 | Consultar completitud | `GET /api/esales/{id}/completitud` | ESAL completa | `estadoCompletitud: LISTO_PARA_CERTIFICAR`, 0 advertencias |
+| I1-COMP-02 | Completitud bloqueante | `GET /api/esales/{id}/completitud` | ESAL con `idSipej = NR` | `estadoCompletitud: INCOMPLETO_BLOQUEANTE` |
+| I1-COMP-03 | Recalcular | `POST /api/esales/{id}/completitud/recalcular` | id de ESAL, rol admin | 200, semaforo actualizado |
+| I1-EST-01 | SUSPENDIDO exige datos | Cambiar estado + recalcular | ESAL sin actuacion SUSPENSION | `INCOMPLETO_BLOQUEANTE` por actuacion faltante |
+| I1-EST-02 | EN_LIQUIDACION exige datos | Cambiar estado + recalcular | ESAL sin actuacion LIQUIDACION | `INCOMPLETO_BLOQUEANTE` |
+| I1-EST-03 | CANCELADO exige datos | Cambiar estado + recalcular | ESAL sin actuacion CANCELACION | `INCOMPLETO_BLOQUEANTE` |
 
 ## 8. Incremento 1 - Documentos Soporte
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 
-| ID | Accion | Datos | Esperado |
-|---|---|---|---|
-| I1-DOC-01 | Cargar PDF soporte | Archivo `.pdf` | Documento asociado |
-| I1-DOC-02 | Cargar formato no permitido | Archivo no PDF | Rechazo |
-| I1-DOC-03 | Finalizar constitucion nueva sin documentos | Registro nuevo | Bloqueo por documentos faltantes |
-| I1-DOC-04 | Importar historico sin documentos | Registro historico | Advertencia documental, no bloqueo de importacion |
+Estado: **implementado**.
+
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I1-DOC-01 | Cargar PDF soporte | `POST /api/esales/{id}/documentos` | Archivo `.pdf` como multipart, rol admin | 200, documento con `estadoValidacion: PENDIENTE` |
+| I1-DOC-02 | Cargar no PDF | `POST /api/esales/{id}/documentos` | Archivo `.png` o `.docx` | 400 Bad Request |
+| I1-DOC-03 | Listar documentos | `GET /api/esales/{id}/documentos` | id de ESAL con documentos | Lista de documentos |
+| I1-DOC-04 | Expedidor lista documentos | `GET /api/esales/{id}/documentos` | Rol expedidor | 200, lista visible |
+
+## 8b. Incremento 1 - Auditoria
+
+Estado: **implementado**.
+
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I1-AUD-01 | Consultar auditoria | `GET /api/admin/auditoria?page=0&size=20` | Rol admin | Lista de eventos con usuario, rol, accion, resultado |
+| I1-AUD-02 | Verificar evento CREAR_ESAL | Crear ESAL y consultar auditoria | - | Registro con `accion: CREAR_ESAL`, `resultado: EXITO` |
+| I1-AUD-03 | Verificar evento IMPORTAR_ESAL | Importar Excel y consultar auditoria | - | Registro con detalle de conteos |
+| I1-AUD-04 | Verificar evento REGISTRAR_DOCUMENTO | Subir PDF y consultar auditoria | - | Registro con nombre de archivo |
+| I1-AUD-05 | Verificar evento RECALCULAR_COMPLETITUD | Recalcular y consultar auditoria | - | Registro con semaforo resultante |
+| I1-AUD-06 | Expedidor intenta auditoria | `GET /api/admin/auditoria` | Rol expedidor | 403 Forbidden |
 
 ## 9. Incremento 2 - Busqueda Y Vista Previa
 

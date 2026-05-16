@@ -1,6 +1,8 @@
 package co.gov.bogota.sed.esal.controller;
 
 import co.gov.bogota.sed.esal.dto.EsalImportResultDto;
+import co.gov.bogota.sed.esal.service.AuditoriaAcciones;
+import co.gov.bogota.sed.esal.service.AuditoriaService;
 import co.gov.bogota.sed.esal.service.EsalImportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,9 +25,12 @@ import java.io.IOException;
 public class ImportacionController {
 
     private final EsalImportService esalImportService;
+    private final AuditoriaService auditoriaService;
 
-    public ImportacionController(EsalImportService esalImportService) {
+    public ImportacionController(EsalImportService esalImportService,
+                                  AuditoriaService auditoriaService) {
         this.esalImportService = esalImportService;
+        this.auditoriaService = auditoriaService;
     }
 
     /**
@@ -43,7 +48,18 @@ public class ImportacionController {
             @RequestParam("archivo") MultipartFile archivo,
             Authentication authentication) throws IOException {
         String usuario = authentication != null ? authentication.getName() : "sistema";
+        String rol = auditoriaService.obtenerRolActual();
         EsalImportResultDto result = esalImportService.importar(archivo.getInputStream(), usuario);
+
+        String detalle = "Importados: " + result.getTotalImportados()
+                + ", Rechazados: " + result.getTotalRechazados()
+                + ", Advertencias: " + result.getTotalAdvertencias();
+        auditoriaService.registrar(usuario, rol,
+                AuditoriaAcciones.IMPORTAR_ESAL,
+                AuditoriaAcciones.ENTIDAD_IMPORTACION,
+                result.getImportacionId(), null,
+                AuditoriaAcciones.RESULTADO_EXITO, detalle);
+
         return ResponseEntity.ok(result);
     }
 }

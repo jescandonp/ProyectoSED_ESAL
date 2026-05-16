@@ -22,7 +22,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | T7 - Completitud Y Estados | Completado | `CompletitudService.java`; `CompletitudDto.java`; `EsalController.java`; `CompletitudServiceTest.java`; `mvn test` 36/36 SUCCESS |
 | T8 - Documentos Soporte Iniciales | Completado | `AlmacenamientoService.java`; `LocalDevAlmacenamientoService.java`; `TestAlmacenamientoService.java`; `DocumentoSoporteService.java`; `DocumentoSoporteDto.java`; `EsalController.java` actualizado; `DocumentoSoporteServiceTest.java`; `mvn test` 41/41 SUCCESS |
 | T9 - API Y UI Administrativa | Completado | `EsalService.java`; `EsalController.java` actualizado; `AuditoriaController.java`; DTOs nuevos; `EsalApiTest.java`; Angular: `ApiService`, `esal.model.ts`, `DashboardComponent`, `CargaInicialComponent`, `AdminEsalesListComponent`, `AdminEsalesDetailComponent`, `AuditoriaComponent`, `EsalesListComponent`, `EsalesDetailComponent`; `mvn test` 47/47 SUCCESS; `npm run build` OK; `npm test` 2/2 SUCCESS |
-| T10 - Auditoria Y Documentacion | Pendiente |  |
+| T10 - Auditoria Y Documentacion | Completado | Servicios conectados; `AuditoriaServiceTest.java`; `mvn test` 52/52 SUCCESS; `ARRANQUE.md` y `GUIA_PRUEBAS_FUNCIONALES.md` actualizados |
 
 ## 3. Decisiones De Arranque Aprobadas
 
@@ -123,7 +123,20 @@ Resultado:
 
 ## 5. Cierre
 
-Pendiente.
+I1 cerrado. Todos los gates de calidad cumplidos:
+
+- Backend compila y 52 tests pasan.
+- Frontend compila y 2 pruebas pasan.
+- Importacion con archivos reales probada (tests con `assumeTrue`).
+- Roles bloquean acciones no permitidas (9 tests de seguridad).
+- Completitud genera estados correctos para ACTIVO, SUSPENDIDO, EN_LIQUIDACION, CANCELADO.
+- Documentos soporte aceptan solo PDF.
+- Auditoria visible por admin con eventos trazados en todos los servicios.
+- `ARRANQUE.md` y `GUIA_PRUEBAS_FUNCIONALES.md` actualizados.
+
+Siguiente incremento: I2 - Busqueda Operativa y Vista Previa de Certificado.
+Spec: `docs/specs/2026-05-15-sed-esal-i2-spec.md`.
+Plan: `docs/plans/2026-05-15-sed-esal-i2-plan.md`.
 
 ---
 
@@ -549,3 +562,36 @@ Resultado:
 - `mvn package -DskipTests`: BUILD SUCCESS. WAR generado: `target/sed-esal-backend.war`.
 - `npm run build`: BUILD SUCCESS. Bundle generado en `dist/sed-esal-angular/`.
 - `npm test`: 2 of 2 SUCCESS (ChromeHeadless).
+
+---
+
+### T10 - Auditoria Y Documentacion
+
+Fecha: 2026-05-16.
+
+Implementado:
+
+- `AuditoriaRepository` actualizado: metodo `findByAccion(String accion)` agregado.
+- `CompletitudService.java`: llamadas a `auditoriaService.registrar()` en `calcular()` (RECALCULAR_COMPLETITUD) y `consultar()` (CONSULTAR_COMPLETITUD). Usuario obtenido desde `SecurityContextHolder`. La propagacion `REQUIRES_NEW` del `AuditoriaService` funciona correctamente con la transaccion de lectura de `consultar()`.
+- `DocumentoSoporteService.java`: inyeccion de `AuditoriaService` via constructor; llamada en `registrar()` tras guardar documento (REGISTRAR_DOCUMENTO con detalle de ESAL y nombre de archivo).
+- `DiccionarioController.java`: inyeccion de `AuditoriaService`; parametro `Authentication` agregado al endpoint `inicializar()`; registro de IMPORTAR_DICCIONARIO con detalle de conteos.
+- `AuditoriaController.java`: inyeccion de `AuditoriaService`; parametro `Authentication` agregado al endpoint `listar()`; registro de CONSULTAR_AUDITORIA con pagina y total.
+- `AuditoriaServiceTest.java` creado en `test/service/`:
+  - 5 tests con `@SpringBootTest @ActiveProfiles("test") @Transactional`.
+  - `registrar_persisteConCamposCorrectos`: llamada directa verifica campos usuario, rol, entidad, resultado, detalle y timestamp.
+  - `crearEsal_generaEventoAuditoria`: EsalService.crear() genera CREAR_ESAL con entidadId correcto.
+  - `registrarDocumento_generaEventoAuditoria`: DocumentoSoporteService.registrar() genera REGISTRAR_DOCUMENTO con nombre de archivo en detalle.
+  - `recalcularCompletitud_generaEventoAuditoria`: CompletitudService.calcular() genera RECALCULAR_COMPLETITUD con semaforo en detalle.
+  - `consultarCompletitud_generaEventoAuditoria`: CompletitudService.consultar() genera CONSULTAR_COMPLETITUD.
+- `docs/ARRANQUE.md` actualizado: estado I1 completado, tabla de incrementos, artefactos entregados, seccion de arranque local-dev, proximo trabajo apuntando a I2.
+- `docs/GUIA_PRUEBAS_FUNCIONALES.md` actualizado: prevalidacion tecnica con endpoints reales, I1 marcado como implementado, secciones de carga, administracion, completitud, documentos y auditoria con endpoints concretos.
+
+Verificacion ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+```
+
+Resultado:
+- `mvn test`: BUILD SUCCESS, 52 tests (47 existentes + 5 nuevos de T10).

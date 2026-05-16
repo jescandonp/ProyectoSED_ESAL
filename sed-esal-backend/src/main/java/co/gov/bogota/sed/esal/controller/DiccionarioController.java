@@ -1,11 +1,14 @@
 package co.gov.bogota.sed.esal.controller;
 
 import co.gov.bogota.sed.esal.dto.DiccionarioImportResultDto;
+import co.gov.bogota.sed.esal.service.AuditoriaAcciones;
+import co.gov.bogota.sed.esal.service.AuditoriaService;
 import co.gov.bogota.sed.esal.service.DiccionarioImportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,9 +30,12 @@ import java.io.IOException;
 public class DiccionarioController {
 
     private final DiccionarioImportService service;
+    private final AuditoriaService auditoriaService;
 
-    public DiccionarioController(DiccionarioImportService service) {
+    public DiccionarioController(DiccionarioImportService service,
+                                  AuditoriaService auditoriaService) {
         this.service = service;
+        this.auditoriaService = auditoriaService;
     }
 
     /**
@@ -46,8 +52,21 @@ public class DiccionarioController {
                     + "Operación idempotente: elimina registros previos antes de recargar."
     )
     public ResponseEntity<DiccionarioImportResultDto> inicializar(
-            @RequestParam("archivo") MultipartFile archivo) throws IOException {
+            @RequestParam("archivo") MultipartFile archivo,
+            Authentication authentication) throws IOException {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        String rol = auditoriaService.obtenerRolActual();
         DiccionarioImportResultDto result = service.importar(archivo.getInputStream());
+
+        String detalle = "Persistidos: " + result.getTotalPersistidos()
+                + ", Obligatorios: " + result.getTotalObligatorios()
+                + ", Opcionales: " + result.getTotalOpcionales();
+        auditoriaService.registrar(usuario, rol,
+                AuditoriaAcciones.IMPORTAR_DICCIONARIO,
+                AuditoriaAcciones.ENTIDAD_DICCIONARIO,
+                null, null,
+                AuditoriaAcciones.RESULTADO_EXITO, detalle);
+
         return ResponseEntity.ok(result);
     }
 }

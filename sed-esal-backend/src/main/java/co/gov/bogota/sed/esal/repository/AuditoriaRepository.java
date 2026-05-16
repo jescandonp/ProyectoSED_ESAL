@@ -10,4 +10,6 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
     List<Auditoria> findByUsuario(String usuario);
 
     List<Auditoria> findByEntidadAndEntidadId(String entidad, Long entidadId);
+
+    List<Auditoria> findByAccion(String accion);
 }

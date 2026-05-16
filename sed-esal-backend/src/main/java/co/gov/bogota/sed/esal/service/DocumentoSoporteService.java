@@ -34,14 +34,17 @@ public class DocumentoSoporteService {
     private final EsalRepository esalRepository;
     private final DocumentoSoporteRepository documentoRepository;
     private final AlmacenamientoService almacenamientoService;
+    private final AuditoriaService auditoriaService;
 
     public DocumentoSoporteService(
             EsalRepository esalRepository,
             DocumentoSoporteRepository documentoRepository,
-            AlmacenamientoService almacenamientoService) {
+            AlmacenamientoService almacenamientoService,
+            AuditoriaService auditoriaService) {
         this.esalRepository = esalRepository;
         this.documentoRepository = documentoRepository;
         this.almacenamientoService = almacenamientoService;
+        this.auditoriaService = auditoriaService;
     }
 
     /**
@@ -104,6 +107,13 @@ public class DocumentoSoporteService {
         documento.setCreatedBy(registradoPor);
 
         documento = documentoRepository.save(documento);
+
+        auditoriaService.registrar(registradoPor, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.REGISTRAR_DOCUMENTO,
+                AuditoriaAcciones.ENTIDAD_DOCUMENTO,
+                documento.getId(), null,
+                AuditoriaAcciones.RESULTADO_EXITO,
+                "ESAL: " + esalId + ", archivo: " + nombreArchivo);
 
         // 5. Retornar DTO
         return toDto(documento);

@@ -1,8 +1,8 @@
 # ARRANQUE SED_ESAL
 
-> Estado: base documental aprobada, pre-implementacion funcional.
+> Estado: I1 completado. I2 es el siguiente incremento activo.
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
-> Ultima actualizacion: 2026-05-15.
+> Ultima actualizacion: 2026-05-16.
 
 ## Orden De Documentos
 
@@ -29,14 +29,35 @@
 
 ## Estado Del Proyecto
 
-`SED_ESAL` esta en fase de implementacion I1 con I0-I4 aprobados como base documental. El backend base `sed-esal-backend` ya fue creado como bootstrap Spring Boot WAR. El frontend `sed-esal-angular` fue creado con Angular 20.3, PrimeNG 20.4.0, rutas base, autenticacion local-dev, shell layout institucional y pantalla de login. La implementacion funcional sigue I1, segun la spec y el plan aprobados.
+`SED_ESAL` tiene I1 completado. El backend `sed-esal-backend` tiene 52 tests en verde (BUILD SUCCESS). El frontend `sed-esal-angular` compila y tiene tests en verde. Ambos artefactos quedan listos para ejecucion local-dev.
 
-- Spec 0 de fundacion documental y arquitectura: aprobado.
-- Spec I1 de modelo base, carga inicial y completitud: aprobado como incremento activo.
-- Spec I2 de busqueda operativa y vista previa certificable: aprobado como incremento futuro.
-- Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: aprobado como incremento futuro.
-- Spec I4 de seguridad institucional, autorizacion y hardening: aprobado como incremento futuro.
-- Plan de implementacion correspondiente al incremento activo.
+| Incremento | Estado | Foco |
+|---|---|---|
+| I0 | Cerrado | Base documental, arquitectura y metodologia |
+| I1 | Completado | Modelo base, carga inicial, estados y completitud |
+| I2 | Proximo activo | Busqueda operativa y vista previa certificable |
+| I3 | Aprobado futuro | Generacion PDF, numeracion, firmante y trazabilidad |
+| I4 | Aprobado futuro | Seguridad institucional, autorizacion y hardening |
+
+### Artefactos I1 entregados
+
+Backend (52 tests, BUILD SUCCESS, WAR `target/sed-esal-backend.war`):
+
+- Modelo Oracle + JPA (10 tablas, prefijo `ESAL_`, esquema `SED_ESAL`).
+- Seguridad HTTP Basic local-dev con roles `ADMINISTRADOR` / `EXPEDIDOR`.
+- Importacion diccionario de obligatoriedad desde Excel (117 campos).
+- Importacion base historica desde Excel (405 filas, upsert idempotente).
+- Servicio de completitud y semaforo (LISTO_PARA_CERTIFICAR / INCOMPLETO_NO_BLOQUEANTE / INCOMPLETO_BLOQUEANTE).
+- Documentos soporte: upload PDF abstraido, rechazo de no-PDF.
+- API REST completa: ESAL CRUD, estados, completitud, documentos, importaciones, auditoria.
+- Auditoria con `REQUIRES_NEW`: CREAR, EDITAR, CAMBIAR_ESTADO, CONSULTAR, IMPORTAR, REGISTRAR_DOCUMENTO, RECALCULAR_COMPLETITUD, CONSULTAR_COMPLETITUD, IMPORTAR_DICCIONARIO, CONSULTAR_AUDITORIA.
+
+Frontend (2 tests, npm run build OK):
+
+- Angular 20.3, PrimeNG 20.4.0, diseno institucional SED.
+- Login local-dev, shell con navegacion por rol.
+- Dashboard, carga inicial, listado ESAL, detalle por secciones, completitud, documentos, auditoria.
+- `ApiService` con HTTP Basic local-dev.
 
 ## Artefactos Fuente
 
@@ -75,9 +96,25 @@ Estas coordenadas quedan aprobadas para iniciar I1. Cualquier cambio posterior p
 | Auth local-dev | HTTP Basic |
 | Auth weblogic | Azure AD JWT / Office 365 |
 
+## Arranque Local-Dev
+
+```powershell
+# Backend
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test                    # 52 tests, BUILD SUCCESS
+mvn package -DskipTests     # genera target/sed-esal-backend.war
+mvn spring-boot:run -Dspring-boot.run.profiles=local-dev  # levanta en :8080
+
+# Frontend
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
+npm run build               # genera dist/sed-esal-angular/
+npm test -- --watch=false --browsers=ChromeHeadless
+npm start                   # levanta en :4200 con proxy hacia :8080
+```
+
 ## Proximo Orden De Trabajo
 
-1. Ejecutar I1 segun `docs/specs/2026-05-15-sed-esal-i1-spec.md` y `docs/plans/2026-05-15-sed-esal-i1-plan.md`.
+1. Iniciar I2 segun `docs/specs/2026-05-15-sed-esal-i2-spec.md` y `docs/plans/2026-05-15-sed-esal-i2-plan.md`.
 2. Mantener execution log, commits y push al finalizar cada bloque de trabajo.
 3. Mantener `Documentos_Referencia/` fuera del repositorio salvo aprobacion explicita de publicacion.
 4. Cerrar decisiones tecnicas diferidas antes del incremento que las requiera: almacenamiento definitivo para I3, Azure AD para I4 y conversion DOCX/PDF para I3.

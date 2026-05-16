@@ -23,15 +23,19 @@ import java.util.stream.Collectors;
 
 /**
  * Servicio de negocio para operaciones CRUD sobre ESALes.
+ * Registra eventos de auditoría en cada operación relevante.
  */
 @Service
 @Transactional
 public class EsalService {
 
     private final EsalRepository esalRepository;
+    private final AuditoriaService auditoriaService;
 
-    public EsalService(EsalRepository esalRepository) {
+    public EsalService(EsalRepository esalRepository,
+                       AuditoriaService auditoriaService) {
         this.esalRepository = esalRepository;
+        this.auditoriaService = auditoriaService;
     }
 
     // =========================================================================
@@ -77,6 +81,15 @@ public class EsalService {
     @Transactional(readOnly = true)
     public EsalDetalleDto obtener(Long id) {
         Esal esal = findOrThrow(id);
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String usuarioReal = (auth != null) ? auth.getName() : "sistema";
+        String rol = auditoriaService.obtenerRolActual();
+        auditoriaService.registrar(usuarioReal, rol,
+                AuditoriaAcciones.CONSULTAR_ESAL,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esal.getId(), esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO, null);
         return toDetalleDto(esal);
     }
 
@@ -101,6 +114,13 @@ public class EsalService {
         esal.setCreatedBy(creadoPor);
 
         Esal saved = esalRepository.save(esal);
+
+        auditoriaService.registrar(creadoPor, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.CREAR_ESAL,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                saved.getId(), saved.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO, null);
+
         return toResumenDto(saved);
     }
 
@@ -136,6 +156,13 @@ public class EsalService {
         esal.setUpdatedBy(actualizadoPor);
 
         Esal saved = esalRepository.save(esal);
+
+        auditoriaService.registrar(actualizadoPor, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.EDITAR_ESAL,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                saved.getId(), saved.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO, null);
+
         return toResumenDto(saved);
     }
 
@@ -153,6 +180,14 @@ public class EsalService {
         esal.setUpdatedBy(usuario);
 
         Esal saved = esalRepository.save(esal);
+
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.CAMBIAR_ESTADO_ESAL,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                saved.getId(), saved.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO,
+                "Nuevo estado: " + nuevoEstado.name());
+
         return toResumenDto(saved);
     }
 
