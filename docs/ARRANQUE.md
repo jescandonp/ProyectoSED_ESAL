@@ -1,8 +1,8 @@
 # ARRANQUE SED_ESAL
 
-> Estado: base documental aprobada, pre-implementacion funcional.
+> Estado: I2 completado (65 tests backend, build Angular OK).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
-> Ultima actualizacion: 2026-05-15.
+> Ultima actualizacion: 2026-05-16.
 
 ## Orden De Documentos
 
@@ -31,12 +31,12 @@
 
 `SED_ESAL` esta en fase de implementacion I1 con I0-I4 aprobados como base documental. El backend base `sed-esal-backend` ya fue creado como bootstrap Spring Boot WAR. El frontend `sed-esal-angular` fue creado con Angular 20.3, PrimeNG 20.4.0, rutas base, autenticacion local-dev, shell layout institucional y pantalla de login. La implementacion funcional sigue I1, segun la spec y el plan aprobados.
 
-- Spec 0 de fundacion documental y arquitectura: aprobado.
-- Spec I1 de modelo base, carga inicial y completitud: aprobado como incremento activo.
-- Spec I2 de busqueda operativa y vista previa certificable: aprobado como incremento futuro.
-- Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: aprobado como incremento futuro.
+- Spec 0 de fundacion documental y arquitectura: completado.
+- Spec I1 de modelo base, carga inicial y completitud: completado.
+- Spec I2 de busqueda operativa y vista previa certificable: completado (65 tests, build Angular OK).
+- Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: aprobado como incremento activo.
 - Spec I4 de seguridad institucional, autorizacion y hardening: aprobado como incremento futuro.
-- Plan de implementacion correspondiente al incremento activo.
+- Plan de implementacion correspondiente al incremento activo: I3.
 
 ## Artefactos Fuente
 

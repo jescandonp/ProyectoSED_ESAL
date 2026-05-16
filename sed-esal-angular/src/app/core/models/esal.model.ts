@@ -75,6 +75,54 @@ export interface ImportResultDto {
   importadoPor: string;
 }
 
+// ── I2 ─────────────────────────────────────────────────────────────────────
+export interface BusquedaResultado {
+  id: number;
+  nombre: string;
+  idSipej: string | null;
+  nit: string | null;
+  domicilio: string | null;
+  estado: EstadoEsal;
+  estadoCompletitud: EstadoCompletitud;
+  updatedAt: string | null;
+}
+
+export interface BloqueoItem {
+  seccion: string;
+  campo: string;
+  tipo: string;
+  mensaje: string;
+  origenHistorico: boolean;
+}
+
+export interface CampoPreview {
+  etiqueta: string;
+  valor: string | null;
+  faltante: boolean;
+  obligatorio: boolean;
+  origenHistorico: boolean;
+}
+
+export interface SeccionPreview {
+  nombre: string;
+  campos: CampoPreview[];
+}
+
+export interface PreviewCertificado {
+  esalId: number;
+  idSipej: string | null;
+  nit: string | null;
+  nombre: string;
+  estado: EstadoEsal;
+  estadoCompletitud: EstadoCompletitud;
+  versionDatos: string | null;
+  generacionHabilitada: boolean;
+  alertaEstado: string | null;
+  secciones: SeccionPreview[];
+  advertencias: string[];
+  bloqueos: BloqueoItem[];
+}
+
 export interface AuditoriaItem {
   id: number;
   usuario: string;

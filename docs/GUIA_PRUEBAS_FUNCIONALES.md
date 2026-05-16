@@ -108,7 +108,7 @@ Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i1-spec.md`.
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i2-spec.md`.
 
-Estado: aprobado como incremento futuro, pendiente de implementacion.
+Estado: completado. Implementado en commit feat/T10.
 
 ### I2 - Busqueda
 

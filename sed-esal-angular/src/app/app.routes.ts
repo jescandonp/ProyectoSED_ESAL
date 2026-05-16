@@ -70,6 +70,13 @@ export const routes: Routes = [
             (m) => m.EsalesDetailComponent
           ),
       },
+      {
+        path: 'certificados/preview/:id',
+        loadComponent: () =>
+          import('./features/certificados/preview-certificado.component').then(
+            (m) => m.PreviewCertificadoComponent
+          ),
+      },
     ],
   },
 
