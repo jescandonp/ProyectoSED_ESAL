@@ -1,6 +1,6 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I3 completado (78 tests backend, build Angular OK).
+> Estado: I4 completado (99 tests backend, build Angular OK).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
 > Ultima actualizacion: 2026-05-16.
 
@@ -35,8 +35,8 @@
 - Spec I1 de modelo base, carga inicial y completitud: completado.
 - Spec I2 de busqueda operativa y vista previa certificable: completado (65 tests, build Angular OK).
 - Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: completado (78 tests, build Angular OK).
-- Spec I4 de seguridad institucional, autorizacion y hardening: aprobado como incremento activo.
-- Plan de implementacion correspondiente al incremento activo: I4.
+- Spec I4 de seguridad institucional, autorizacion y hardening: completado (99 tests, build Angular OK).
+- Pendiente: confirmar con TI SED tenant, issuer, audience, JWKS y CORS institucional para activar perfil weblogic.
 
 ## Artefactos Fuente
 

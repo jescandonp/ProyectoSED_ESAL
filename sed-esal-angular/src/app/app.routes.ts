@@ -110,6 +110,15 @@ export const routes: Routes = [
     ],
   },
 
+  // Acceso denegado (403)
+  {
+    path: 'acceso-denegado',
+    loadComponent: () =>
+      import('./features/acceso-denegado/acceso-denegado.component').then(
+        (m) => m.AccesoDenegadoComponent
+      ),
+  },
+
   // Fallback
   { path: '**', redirectTo: '/login' },
 ];

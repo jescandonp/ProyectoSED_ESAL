@@ -38,4 +38,10 @@ public final class AuditoriaAcciones {
     public static final String FIRMANTE_ACTUALIZADO              = "FIRMANTE_ACTUALIZADO";
     public static final String FIRMANTE_ACTIVADO                 = "FIRMANTE_ACTIVADO";
     public static final String FIRMANTE_INACTIVADO               = "FIRMANTE_INACTIVADO";
+
+    // ── I4 ───────────────────────────────────────────────────────────────────
+    public static final String ENTIDAD_SEGURIDAD            = "SEGURIDAD";
+    public static final String ACCESO_DENEGADO              = "ACCESO_DENEGADO";
+    public static final String TOKEN_INVALIDO_O_AUSENTE     = "TOKEN_INVALIDO_O_AUSENTE";
+    public static final String DOCUMENTO_DESCARGADO         = "DOCUMENTO_DESCARGADO";
 }

@@ -172,7 +172,7 @@ Estado: completado. Implementado en commit feat/T12.
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i4-spec.md`.
 
-Estado: aprobado como incremento futuro, pendiente de implementacion.
+Estado: completado. Implementado en commit feat/T14. Pendiente activacion weblogic con datos TI SED.
 
 ### I4 - Autenticacion Y Roles
 
