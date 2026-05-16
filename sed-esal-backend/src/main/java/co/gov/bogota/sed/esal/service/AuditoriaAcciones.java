@@ -29,6 +29,13 @@ public final class AuditoriaAcciones {
     public static final String RECALCULAR_COMPLETITUD  = "RECALCULAR_COMPLETITUD";
     public static final String CONSULTAR_AUDITORIA     = "CONSULTAR_AUDITORIA";
 
+    // I2 — Búsqueda y Vista Previa
+    public static final String BUSQUEDA_ESAL                  = "BUSQUEDA_ESAL";
+    public static final String DETALLE_ESAL_CONSULTADO        = "DETALLE_ESAL_CONSULTADO";
+    public static final String PREVIEW_CERTIFICADO_CONSULTADO = "PREVIEW_CERTIFICADO_CONSULTADO";
+    public static final String PREVIEW_CERTIFICADO_BLOQUEADO  = "PREVIEW_CERTIFICADO_BLOQUEADO";
+    public static final String ERROR_VALIDACION_PREVIEW       = "ERROR_VALIDACION_PREVIEW";
+
     // -------------------------------------------------------------------------
     // Resultados
     // -------------------------------------------------------------------------

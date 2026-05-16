@@ -54,6 +54,10 @@ public class DevSecurityConfig {
                 .antMatchers(HttpMethod.POST, "/api/esales/*/documentos").hasRole("ADMINISTRADOR")
                 // ADMINISTRADOR o EXPEDIDOR — consultas ESAL
                 .antMatchers(HttpMethod.GET,  "/api/esales/**").hasAnyRole("ADMINISTRADOR", "EXPEDIDOR")
+                // ADMINISTRADOR o EXPEDIDOR — búsqueda y preview (I2)
+                .antMatchers(HttpMethod.GET,  "/api/busquedas/**").hasAnyRole("ADMINISTRADOR", "EXPEDIDOR")
+                .antMatchers(HttpMethod.GET,  "/api/certificados/**").hasAnyRole("ADMINISTRADOR", "EXPEDIDOR")
+                .antMatchers(HttpMethod.POST, "/api/certificados/**").hasAnyRole("ADMINISTRADOR", "EXPEDIDOR")
                 // Cualquier otra petición autenticada
                 .anyRequest().authenticated()
                 .and()

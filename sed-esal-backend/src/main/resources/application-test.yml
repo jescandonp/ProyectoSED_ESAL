@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Oracle;NON_KEYWORDS=VALUE
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE;INIT=CREATE SCHEMA IF NOT EXISTS SED_ESAL
     driver-class-name: org.h2.Driver
     username: sa
     password:

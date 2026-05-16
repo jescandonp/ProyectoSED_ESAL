@@ -5,12 +5,13 @@ import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface EsalRepository extends JpaRepository<Esal, Long> {
+public interface EsalRepository extends JpaRepository<Esal, Long>, JpaSpecificationExecutor<Esal> {
 
     Optional<Esal> findByIdSipej(String idSipej);
 
