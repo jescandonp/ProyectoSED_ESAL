@@ -36,6 +36,18 @@ public final class AuditoriaAcciones {
     public static final String PREVIEW_CERTIFICADO_BLOQUEADO  = "PREVIEW_CERTIFICADO_BLOQUEADO";
     public static final String ERROR_VALIDACION_PREVIEW       = "ERROR_VALIDACION_PREVIEW";
 
+    // I3 — Expedición de Certificado
+    public static final String CERTIFICADO_GENERACION_SOLICITADA = "CERTIFICADO_GENERACION_SOLICITADA";
+    public static final String CERTIFICADO_BLOQUEADO             = "CERTIFICADO_BLOQUEADO";
+    public static final String CERTIFICADO_GENERADO              = "CERTIFICADO_GENERADO";
+    public static final String CERTIFICADO_GENERACION_FALLIDA    = "CERTIFICADO_GENERACION_FALLIDA";
+    public static final String CERTIFICADO_DESCARGADO            = "CERTIFICADO_DESCARGADO";
+    public static final String NUMERACION_ACTUALIZADA            = "NUMERACION_ACTUALIZADA";
+    public static final String FIRMANTE_CREADO                   = "FIRMANTE_CREADO";
+    public static final String FIRMANTE_ACTUALIZADO              = "FIRMANTE_ACTUALIZADO";
+    public static final String FIRMANTE_ACTIVADO                 = "FIRMANTE_ACTIVADO";
+    public static final String FIRMANTE_INACTIVADO               = "FIRMANTE_INACTIVADO";
+
     // -------------------------------------------------------------------------
     // Resultados
     // -------------------------------------------------------------------------
@@ -47,10 +59,13 @@ public final class AuditoriaAcciones {
     // Entidades
     // -------------------------------------------------------------------------
 
-    public static final String ENTIDAD_ESAL        = "ESAL";
-    public static final String ENTIDAD_IMPORTACION = "IMPORTACION";
-    public static final String ENTIDAD_DOCUMENTO   = "DOCUMENTO";
-    public static final String ENTIDAD_DICCIONARIO = "DICCIONARIO";
+    public static final String ENTIDAD_ESAL         = "ESAL";
+    public static final String ENTIDAD_IMPORTACION  = "IMPORTACION";
+    public static final String ENTIDAD_DOCUMENTO    = "DOCUMENTO";
+    public static final String ENTIDAD_DICCIONARIO  = "DICCIONARIO";
+    public static final String ENTIDAD_CERTIFICADO  = "CERTIFICADO";
+    public static final String ENTIDAD_FIRMANTE     = "FIRMANTE";
+    public static final String ENTIDAD_NUMERACION   = "NUMERACION";
 
     private AuditoriaAcciones() {
         // clase de constantes — no instanciar
