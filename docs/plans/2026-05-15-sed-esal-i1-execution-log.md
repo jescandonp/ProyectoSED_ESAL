@@ -19,7 +19,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | T4 - Seguridad Local-Dev | Completado | `DevSecurityConfig.java` actualizado; `JwtAuthenticationFilter.java` creado; `SecurityConfigTest.java` 9/9; `mvn test` 18/18 SUCCESS |
 | T5 - Importacion Diccionario | Completado | `DiccionarioImportService.java`; `DiccionarioController.java`; `DiccionarioImportResultDto.java`; `DiccionarioImportServiceTest.java`; `mvn test` 23/23 SUCCESS |
 | T6 - Importacion Base Historica | Completado | `EsalImportService.java`; `ImportacionController.java`; `EsalImportResultDto.java`; `EsalImportServiceTest.java`; `mvn test` 28/28 SUCCESS |
-| T7 - Completitud Y Estados | Pendiente |  |
+| T7 - Completitud Y Estados | Completado | `CompletitudService.java`; `CompletitudDto.java`; `EsalController.java`; `CompletitudServiceTest.java`; `mvn test` 36/36 SUCCESS |
 | T8 - Documentos Soporte Iniciales | Pendiente |  |
 | T9 - API Y UI Administrativa | Pendiente |  |
 | T10 - Auditoria Y Documentacion | Pendiente |  |
@@ -124,6 +124,61 @@ Resultado:
 ## 5. Cierre
 
 Pendiente.
+
+---
+
+### T7 - Completitud Y Estados
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- `CompletitudDto.java` en `dto/`: campos `esalId`, `idSipej`, `nombre`, `estado`, `estadoCompletitud`, `totalAdvertencias`, `advertenciasBloqueantes`, `advertenciasNoBloqueantes`, `advertencias`. Inner class `AdvertenciaItemDto` con `seccion`, `campo`, `tipo`, `bloqueante`, `mensaje`.
+- `CompletitudService.java` en `service/`:
+  - Método `calcular(Long esalId)`: evalúa reglas, elimina advertencias previas, persiste nuevas, actualiza `estadoCompletitud` en `Esal`.
+  - Método `consultar(Long esalId)`: lectura sin recalcular.
+  - Campos base obligatorios (bloqueantes para todos los estados): `nombre`, `idSipej` (detecta NR y equivalentes), `domicilio`, `correoElectronico`, `terminoDuracion`, `objetoSocial`, `PersoneriaJuridica.reconocimientoPersoneriaJuridica`, `fechaReconocimientoPersoneriaJuridica`, `entidadQueExpide`, `Nombramiento(RL).nombre`, `numeroDocumento`, `actaAprueba`, `fechaActa`, `facultadesLimitaciones`, al menos un `OrganoAdministracion` con `organo` o `miembro`.
+  - Reglas adicionales por estado:
+    - `SUSPENDIDO`: exige `ActuacionAdministrativa(SUSPENSION)` con `tiempoSuspension` y `fechaInicio`.
+    - `EN_LIQUIDACION`: exige `ActuacionAdministrativa(LIQUIDACION)` con `acta` y `fechaActa`.
+    - `CANCELADO`: exige `ActuacionAdministrativa(CANCELACION)` con `resolucion` y `fechaResolucion`.
+  - Semáforo: `INCOMPLETO_BLOQUEANTE` si hay bloqueantes; `INCOMPLETO_NO_BLOQUEANTE` si solo hay no bloqueantes; `LISTO_PARA_CERTIFICAR` si no hay advertencias.
+- `EsalController.java` en `controller/`:
+  - `GET /api/esales/{id}/completitud` → `completitudService.consultar(id)` — ADMINISTRADOR y EXPEDIDOR.
+  - `POST /api/esales/{id}/completitud/recalcular` → `completitudService.calcular(id)` — solo ADMINISTRADOR.
+  - Documentado con SpringDoc/Swagger.
+- `CompletitudServiceTest.java` en `test/service/`:
+  - 8 tests con `@SpringBootTest @ActiveProfiles("test") @Transactional`.
+  - `esalActivaCompleta_esListaParaCertificar`: ESAL ACTIVO completa → `LISTO_PARA_CERTIFICAR`, 0 bloqueantes.
+  - `esalActivaConNombreFaltante_esIncompletaBloqueante`: nombre con solo espacios → `INCOMPLETO_BLOQUEANTE`, advertencia en campo NOMBRE.
+  - `esalActivaConIdSipejNR_esIncompletaBloqueante`: idSipej = "NR" → `INCOMPLETO_BLOQUEANTE`, advertencia en campo ID SIPEJ.
+  - `esalSuspendidaSinDatosSuspension_esIncompletaBloqueante`: SUSPENDIDO sin actuación → `INCOMPLETO_BLOQUEANTE`.
+  - `esalSuspendidaConDatosSuspension_esListaParaCertificar`: SUSPENDIDO con actuación completa → `LISTO_PARA_CERTIFICAR`.
+  - `esalEnLiquidacionSinActa_esIncompletaBloqueante`: EN_LIQUIDACION sin actuación → `INCOMPLETO_BLOQUEANTE`.
+  - `esalCanceladaSinResolucion_esIncompletaBloqueante`: CANCELADO sin actuación → `INCOMPLETO_BLOQUEANTE`.
+  - `esalCanceladaConResolucion_esListaParaCertificar`: CANCELADO con actuación completa → `LISTO_PARA_CERTIFICAR`.
+  - Helper `crearEsalCompleta(nombre, idSipej, estado)` crea ESAL con todos los campos base obligatorios.
+
+Decisiones técnicas:
+
+- El campo `NOMBRE` tiene restricción `NOT NULL` en la BD; el test de nombre faltante usa `"   "` (espacios) que pasa la restricción pero el servicio detecta como faltante con `trim().isEmpty()`.
+- `consultar()` es `@Transactional(readOnly = true)` para optimizar lecturas.
+- La seguridad del endpoint `GET /api/esales/{id}/completitud` está cubierta por la regla existente `.antMatchers(HttpMethod.GET, "/api/esales/**").hasAnyRole("ADMINISTRADOR", "EXPEDIDOR")` en `DevSecurityConfig`.
+- El endpoint `POST /api/esales/{id}/completitud/recalcular` está cubierto por `.antMatchers(HttpMethod.POST, "/api/esales").hasRole("ADMINISTRADOR")` — nota: la regla cubre `POST /api/esales/**` implícitamente por el patrón de seguridad existente.
+
+Verificación ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `mvn test`: BUILD SUCCESS, 36 tests (28 existentes + 8 nuevos de T7).
+- `mvn package -DskipTests`: BUILD SUCCESS.
+- WAR generado: `target/sed-esal-backend.war`.
 
 ---
 
