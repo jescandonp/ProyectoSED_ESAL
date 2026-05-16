@@ -68,11 +68,11 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- H2 para tests con modo de compatibilidad Oracle -->
+        <!-- H2 para local-dev y tests (runtime para que spring-boot:run lo cargue) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <!-- Apache POI para lectura de archivos Excel (.xlsx) -->
         <dependency>
