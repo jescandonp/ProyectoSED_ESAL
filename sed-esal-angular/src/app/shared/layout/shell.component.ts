@@ -30,6 +30,7 @@ export class ShellComponent {
     { label: 'ESAL (Admin)', route: '/admin/esales', icon: '🏢', roles: ['ADMINISTRADOR'] },
     { label: 'Auditoría', route: '/admin/auditoria', icon: '📋', roles: ['ADMINISTRADOR'] },
     { label: 'Consultar ESAL', route: '/esales', icon: '🔍', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
+    { label: 'Buscar ESAL', route: '/busqueda', icon: '🔎', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
   ];
 
   readonly visibleNavItems = computed(() => {

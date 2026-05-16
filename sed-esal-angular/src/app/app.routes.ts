@@ -70,6 +70,29 @@ export const routes: Routes = [
             (m) => m.EsalesDetailComponent
           ),
       },
+      // I2 — Búsqueda operativa
+      {
+        path: 'busqueda',
+        loadComponent: () =>
+          import('./features/busqueda/busqueda.component').then(
+            (m) => m.BusquedaComponent
+          ),
+      },
+      {
+        path: 'busqueda/:id',
+        loadComponent: () =>
+          import('./features/busqueda/busqueda-detalle.component').then(
+            (m) => m.BusquedaDetalleComponent
+          ),
+      },
+      // I2 — Vista previa del certificado
+      {
+        path: 'certificados/preview/:id',
+        loadComponent: () =>
+          import('./features/certificados/preview-certificado.component').then(
+            (m) => m.PreviewCertificadoComponent
+          ),
+      },
     ],
   },
 

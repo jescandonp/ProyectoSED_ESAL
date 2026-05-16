@@ -87,3 +87,123 @@ export interface AuditoriaItem {
   detalle: string | null;
   createdAt: string;
 }
+
+// ── I2: Búsqueda operativa ────────────────────────────────────────────────────
+
+export interface BusquedaResultado {
+  id: number;
+  nombre: string;
+  idSipej: string | null;
+  nit: string | null;
+  domicilio: string | null;
+  estado: EstadoEsal;
+  estadoCompletitud: EstadoCompletitud;
+  updatedAt: string | null;
+}
+
+export interface PersoneriaSeccion {
+  reconocimiento: string | null;
+  fechaReconocimiento: string | null;
+  entidadQueExpide: string | null;
+  inscripcion: string | null;
+  fechaInscripcion: string | null;
+  entidadQueInscribio: string | null;
+}
+
+export interface ReformaItem {
+  orden: number | null;
+  tipoActo: string | null;
+  numeroActo: string | null;
+  fechaActo: string | null;
+  entidadQueExpide: string | null;
+  descripcion: string | null;
+}
+
+export interface NombramientoItem {
+  tipoNombramiento: string | null;
+  nombre: string | null;
+  tipoDocumento: string | null;
+  numeroDocumento: string | null;
+  cargo: string | null;
+  actaAprueba: string | null;
+  fechaActa: string | null;
+  facultadesLimitaciones: string | null;
+}
+
+export interface OrganoItem {
+  organo: string | null;
+  miembro: string | null;
+  cargo: string | null;
+  actaAprueba: string | null;
+  fechaActa: string | null;
+}
+
+export interface ActuacionItem {
+  tipoActuacion: string | null;
+  acta: string | null;
+  fechaActa: string | null;
+  resolucion: string | null;
+  fechaResolucion: string | null;
+  motivo: string | null;
+  tiempoSuspension: string | null;
+  fechaInicio: string | null;
+}
+
+export interface BusquedaDetalle {
+  esalId: number;
+  nombre: string;
+  idSipej: string | null;
+  nit: string | null;
+  domicilio: string | null;
+  correoElectronico: string | null;
+  terminoDuracion: string | null;
+  objetoSocial: string | null;
+  estado: EstadoEsal;
+  estadoCompletitud: EstadoCompletitud;
+  updatedAt: string | null;
+  personeria: PersoneriaSeccion | null;
+  reformas: ReformaItem[];
+  nombramientos: NombramientoItem[];
+  organos: OrganoItem[];
+  actuaciones: ActuacionItem[];
+  documentos: DocumentoSoporte[];
+  completitud: CompletitudResponse | null;
+}
+
+// ── I2: Vista previa certificado ─────────────────────────────────────────────
+
+export interface BloqueoItem {
+  seccion: string;
+  campo: string;
+  tipo: string;
+  mensaje: string;
+  origenHistorico: boolean;
+}
+
+export interface CampoPreview {
+  etiqueta: string;
+  valor: string | null;
+  faltante: boolean;
+  obligatorio: boolean;
+  origenHistorico: boolean;
+}
+
+export interface SeccionPreview {
+  nombre: string;
+  campos: CampoPreview[];
+}
+
+export interface PreviewCertificado {
+  esalId: number;
+  idSipej: string | null;
+  nit: string | null;
+  nombre: string;
+  estado: EstadoEsal;
+  estadoCompletitud: EstadoCompletitud;
+  versionDatos: string | null;
+  generacionHabilitada: boolean;
+  alertaEstado: string | null;
+  secciones: SeccionPreview[];
+  advertencias: string[];
+  bloqueos: BloqueoItem[];
+}
