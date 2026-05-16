@@ -16,7 +16,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | T1 - Bootstrap Backend | Completado | `sed-esal-backend`; `mvn test`; `mvn package -DskipTests`; WAR `target/sed-esal-backend.war` |
 | T2 - Bootstrap Frontend | Completado | `sed-esal-angular`; `npm run build` OK; `npm test` 2/2 SUCCESS |
 | T3 - Modelo Oracle Y Dominio Backend | Completado | `db/00_setup.sql`; entidades JPA; repositorios; `mvn test` 9/9 SUCCESS |
-| T4 - Seguridad Local-Dev | Pendiente |  |
+| T4 - Seguridad Local-Dev | Completado | `DevSecurityConfig.java` actualizado; `JwtAuthenticationFilter.java` creado; `SecurityConfigTest.java` 9/9; `mvn test` 18/18 SUCCESS |
 | T5 - Importacion Diccionario | Pendiente |  |
 | T6 - Importacion Base Historica | Pendiente |  |
 | T7 - Completitud Y Estados | Pendiente |  |
@@ -72,6 +72,54 @@ Resultado:
 Observacion de ambiente:
 
 - La maquina actual ejecuta Maven con Java 21. El proyecto compila con `java.version=1.8`; se mantiene pendiente validar con Oracle JDK 8 antes de despliegue WebLogic.
+
+---
+
+### T4 - Seguridad Local-Dev
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- `DevSecurityConfig.java` actualizado:
+  - CORS habilitado para `http://localhost:4200` con métodos GET, POST, PUT, DELETE, OPTIONS y `allowCredentials=true`.
+  - Bean `CorsConfigurationSource` registrado en `/**`.
+  - Reglas de autorización por rol con `hasRole()` / `hasAnyRole()`:
+    - Públicos: `/actuator/health`, `/v3/api-docs/**`, `/swagger-ui/**`, `/swagger-ui.html`.
+    - Solo `ADMINISTRADOR`: `POST /api/admin/**`, `GET /api/admin/**`, `POST /api/esales`, `PUT /api/esales/**`, `POST /api/esales/*/documentos`.
+    - `ADMINISTRADOR` o `EXPEDIDOR`: `GET /api/esales/**`.
+    - Cualquier otra petición: autenticada.
+  - HTTP Basic mantenido.
+- `config/security/JwtAuthenticationFilter.java` creado como stub para I4:
+  - Extiende `OncePerRequestFilter`.
+  - `shouldNotFilter` devuelve `true` en local-dev (filtro inactivo).
+  - Javadoc documenta el plan de implementación JWT Azure AD en I4.
+- `SecurityConfigTest.java` creado con 9 tests de seguridad por rol:
+  1. `healthEndpointIsPublic` — GET /actuator/health → 200 sin auth.
+  2. `swaggerIsPublic` — GET /v3/api-docs → 200 sin auth.
+  3. `adminEndpointRequiresAuthentication` — GET /api/admin/auditoria sin auth → 401.
+  4. `adminCanAccessAdminEndpoint` — GET /api/admin/auditoria con admin → 200.
+  5. `expedidorCannotAccessAdminEndpoint` — GET /api/admin/auditoria con expedidor → 403.
+  6. `expedidorCanAccessEsalesEndpoint` — GET /api/esales con expedidor → 200.
+  7. `expedidorCannotCreateEsal` — POST /api/esales con expedidor → 403.
+  8. `adminCanCreateEsal` — POST /api/esales con admin → 200.
+  9. `adminCanPostToAdminEndpoint` — POST /api/admin/importaciones con admin → 200.
+  - Usa `@TestConfiguration` con controladores REST mínimos internos para no depender de T9.
+  - Usa `SecurityMockMvcRequestPostProcessors.httpBasic()` para autenticación.
+
+Verificación ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `mvn test`: BUILD SUCCESS, 18 tests (6 repositorio + 9 seguridad + 3 aplicación).
+- `mvn package -DskipTests`: BUILD SUCCESS.
+- WAR generado: `target/sed-esal-backend.war`.
 
 ## 5. Cierre
 
