@@ -18,7 +18,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | T3 - Modelo Oracle Y Dominio Backend | Completado | `db/00_setup.sql`; entidades JPA; repositorios; `mvn test` 9/9 SUCCESS |
 | T4 - Seguridad Local-Dev | Completado | `DevSecurityConfig.java` actualizado; `JwtAuthenticationFilter.java` creado; `SecurityConfigTest.java` 9/9; `mvn test` 18/18 SUCCESS |
 | T5 - Importacion Diccionario | Completado | `DiccionarioImportService.java`; `DiccionarioController.java`; `DiccionarioImportResultDto.java`; `DiccionarioImportServiceTest.java`; `mvn test` 23/23 SUCCESS |
-| T6 - Importacion Base Historica | Pendiente |  |
+| T6 - Importacion Base Historica | Completado | `EsalImportService.java`; `ImportacionController.java`; `EsalImportResultDto.java`; `EsalImportServiceTest.java`; `mvn test` 28/28 SUCCESS |
 | T7 - Completitud Y Estados | Pendiente |  |
 | T8 - Documentos Soporte Iniciales | Pendiente |  |
 | T9 - API Y UI Administrativa | Pendiente |  |
@@ -124,6 +124,78 @@ Resultado:
 ## 5. Cierre
 
 Pendiente.
+
+---
+
+### T6 - Importacion Base Historica
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- `EsalImportResultDto.java` en `dto/`: campos `importacionId`, `totalLeidos`, `totalImportados`, `totalRechazados`, `totalAdvertencias`, `totalReformas`, `advertencias`, `fechaImportacion`, `importadoPor`.
+- `EsalImportService.java` en `service/`:
+  - Lee `BASE DE DATOS - REGISTRO_1.xlsx` con `XSSFWorkbook` (Apache POI).
+  - Fila 0 (secciones) y fila 1 (encabezados) se omiten; datos desde fila 2 (índice 2).
+  - Solo importa filas con `NOMBRE` o `ID SIPEJ` efectivos.
+  - Normaliza valores `NR`, `N/A`, `NA`, `-`, `N.A.`, `N.R.`, `S/I`, `S.I.` → null.
+  - Estrategia upsert por `idSipej`: si existe, actualiza y regenera datos relacionados; si no, inserta.
+  - Filas sin `idSipej` siempre se insertan (comportamiento esperado por spec).
+  - Crea `Esal` con datos básicos (nombre, idSipej, nit, domicilio, correo, terminoDuracion, objetoSocial).
+  - Crea `PersoneriaJuridica` con inscripción, reconocimiento, entidad que expide.
+  - Detecta 8 reformas estatutarias (columnas 18-50) → crea `ReformaEstatutaria` con orden secuencial.
+  - Crea `Nombramiento` para representante legal, hasta 3 suplentes, revisor fiscal principal/suplente, tesorero.
+  - Crea `OrganoAdministracion` si hay datos de órgano o miembro.
+  - Crea `ActuacionAdministrativa` para liquidación (cols 106-107) y cancelación (cols 108-110).
+  - Genera `AdvertenciaCompletitud` bloqueantes para 15 campos obligatorios faltantes.
+  - Genera advertencias no bloqueantes para NIT e inscripción faltantes.
+  - Calcula `estadoCompletitud` (INCOMPLETO_BLOQUEANTE / INCOMPLETO_NO_BLOQUEANTE / LISTO_PARA_CERTIFICAR).
+  - Trunca campos largos para respetar límites de columna (FACULTADES_LIMITACIONES 1000, NOMBRE 500, etc.).
+  - Parsea fechas en múltiples formatos colombianos (dd/MM/yyyy, d/MM/yyyy, etc.).
+  - Maneja celdas de fecha nativas de Excel con `DateUtil.isCellDateFormatted`.
+- `ImportacionController.java` en `controller/`:
+  - `POST /api/admin/importaciones/esal` con `@RequestParam("archivo") MultipartFile`.
+  - Solo accesible por `ADMINISTRADOR` (protegido por `DevSecurityConfig`).
+  - Documentado con SpringDoc/Swagger.
+- `EsalImportServiceTest.java` en `test/service/`:
+  - 5 tests con `@SpringBootTest @ActiveProfiles("test") @Transactional`.
+  - Todos usan `assumeTrue(f.exists(), ...)` para omitirse si el archivo no está disponible.
+  - `importaEsalesEfectivas`: verifica totalImportados > 0, totalLeidos > 0, ESALes en BD > 0.
+  - `reformasSeTransformanAFilasDinamicas`: verifica totalReformas > 0, al menos una ESAL con múltiples reformas, orden secuencial.
+  - `advertenciasGeneradasParaCamposFaltantes`: verifica advertencias bloqueantes y ESALes con INCOMPLETO_BLOQUEANTE.
+  - `importacionEsIdempotente`: verifica que ESALes con idSipej no se duplican en segunda importación.
+  - `esFaltanteDetectaValoresNR`: test unitario sin archivo real para la lógica de normalización.
+
+Estructura del Excel inspeccionada:
+
+- Hoja: `Hoja1` (índice 0).
+- 407 filas usadas, 111 columnas.
+- Fila 1 (secciones): INFORMACION PRINCIPAL (col1), CONSTITUCION Y REFORMAS (col9), NOMBRAMIENTOS (col51), ORGANO DE ADMINISTRACION (col96), ESTADO DE LIQUIDACION (col106), CANCELACION PERSONERIA JURIDICA (col108).
+- Fila 2 (encabezados): No., NOMBRE, ID SIPEJ, NIT, DOMICILIO, CORREO ELECTRONICO, TERMINO DE DURACION, OBJETO SOCIAL, INSCRIPCION, FECHA DE INSCRIPCION, ENTIDAD QUE INSCRIBIO, RECONOCIMIENTO DE PERSONERIA JURIDICA, FECHA RECONOCIMIENTO, ENTIDAD QUE EXPIDE, ... (8 reformas en cols 18-50), REPRESENTANTE LEGAL (col51), ... REVISOR FISCAL (col76), TESORERO (col90), ORGANO (col96), LIQUIDACION (col106), CANCELACION (col108).
+- Filas 3-407: datos de ESALes (405 filas de datos, algunas vacías o rechazadas).
+
+Decisiones técnicas:
+
+- Truncación de campos largos: el Excel contiene textos de hasta 1651 caracteres en FACULTADES_LIMITACIONES (límite de columna: 1000). Se trunca en el servicio para compatibilidad con H2 en tests y Oracle en producción.
+- `OBJETO_SOCIAL` usa `@Lob` en la entidad, por lo que no requiere truncación.
+- Las reformas se mapean por posición fija de columnas (no por sección dinámica de fila 1), ya que la estructura es consistente en el archivo real.
+- El test `esFaltanteDetectaValoresNR` no requiere el archivo Excel y siempre se ejecuta.
+
+Verificación ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `mvn test`: BUILD SUCCESS, 28 tests (23 existentes + 5 nuevos de T6).
+- `mvn package -DskipTests`: BUILD SUCCESS.
+- WAR generado: `target/sed-esal-backend.war`.
+
+
 
 ---
 
