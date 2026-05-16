@@ -1,6 +1,6 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I2 completado (65 tests backend, build Angular OK).
+> Estado: I3 completado (78 tests backend, build Angular OK).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
 > Ultima actualizacion: 2026-05-16.
 
@@ -34,9 +34,9 @@
 - Spec 0 de fundacion documental y arquitectura: completado.
 - Spec I1 de modelo base, carga inicial y completitud: completado.
 - Spec I2 de busqueda operativa y vista previa certificable: completado (65 tests, build Angular OK).
-- Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: aprobado como incremento activo.
-- Spec I4 de seguridad institucional, autorizacion y hardening: aprobado como incremento futuro.
-- Plan de implementacion correspondiente al incremento activo: I3.
+- Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: completado (78 tests, build Angular OK).
+- Spec I4 de seguridad institucional, autorizacion y hardening: aprobado como incremento activo.
+- Plan de implementacion correspondiente al incremento activo: I4.
 
 ## Artefactos Fuente
 

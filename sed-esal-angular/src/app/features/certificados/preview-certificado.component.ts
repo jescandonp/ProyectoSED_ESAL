@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { PreviewCertificado, EstadoEsal, EstadoCompletitud } from '../../core/models/esal.model';
+import { PreviewCertificado, EstadoEsal, EstadoCompletitud, CertificadoDto } from '../../core/models/esal.model';
 
 @Component({
   selector: 'app-preview-certificado',
@@ -128,20 +128,29 @@ import { PreviewCertificado, EstadoEsal, EstadoCompletitud } from '../../core/mo
             <button class="btn-generar" disabled title="Resuelva los bloqueos para habilitar la generación">
               🔒 Generación bloqueada
             </button>
+          } @else if (generando()) {
+            <button class="btn-generar" disabled>⏳ Generando...</button>
           } @else {
-            <button class="btn-generar" disabled title="La generación del certificado se habilitará en I3">
-              📄 Generar certificado (próximamente)
+            <button class="btn-generar" (click)="confirmarYGenerar()">
+              📄 Generar certificado
             </button>
           }
         </div>
+
+        @if (errorGeneracion()) {
+          <div class="sed-card" style="margin-top: 12px; color: var(--color-error); background: #fef2f2; border-left: 4px solid var(--color-error);">
+            ⚠️ {{ errorGeneracion() }}
+          </div>
+        }
       }
     </div>
   `,
   styles: [`
     .btn-generar {
       background: #1b5e20; color: #fff; border: none; padding: 10px 22px;
-      border-radius: 6px; cursor: not-allowed; font-size: 0.92rem; font-weight: 600; opacity: 0.7;
+      border-radius: 6px; cursor: pointer; font-size: 0.92rem; font-weight: 600;
     }
+    .btn-generar:disabled { cursor: not-allowed; opacity: 0.6; }
     .habilitada-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
     .habilitada-badge--si { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
     .habilitada-badge--no { background: #fef2f2; color: var(--color-error); border: 1px solid #fca5a5; }
@@ -170,9 +179,11 @@ export class PreviewCertificadoComponent implements OnInit {
 
   readonly id = this.route.snapshot.paramMap.get('id') ?? '';
 
-  preview   = signal<PreviewCertificado | null>(null);
-  cargando  = signal(false);
-  error     = signal<string | null>(null);
+  preview        = signal<PreviewCertificado | null>(null);
+  cargando       = signal(false);
+  error          = signal<string | null>(null);
+  generando      = signal(false);
+  errorGeneracion = signal<string | null>(null);
 
   ngOnInit(): void {
     this.cargando.set(true);
@@ -183,6 +194,22 @@ export class PreviewCertificadoComponent implements OnInit {
   }
 
   volver(): void { this.router.navigate(['/esales', this.id]); }
+
+  confirmarYGenerar(): void {
+    if (!confirm(`¿Confirma la generación del certificado para "${this.preview()!.nombre}"?\n\nSe asignará un número único que no podrá reutilizarse.`)) return;
+    this.generando.set(true);
+    this.errorGeneracion.set(null);
+    this.api.post<CertificadoDto>(`/api/certificados/esales/${this.id}/generar`, {}).subscribe({
+      next: (cert) => {
+        this.generando.set(false);
+        this.router.navigate(['/certificados', cert.certificadoId]);
+      },
+      error: (err) => {
+        this.generando.set(false);
+        this.errorGeneracion.set(err?.error?.message ?? 'Error al generar el certificado.');
+      },
+    });
+  }
 
   chipEstado(estado: EstadoEsal): string {
     const map: Record<EstadoEsal, string> = { ACTIVO: 'sed-chip--activo', SUSPENDIDO: 'sed-chip--suspendido', EN_LIQUIDACION: 'sed-chip--liquidacion', CANCELADO: 'sed-chip--cancelado' };

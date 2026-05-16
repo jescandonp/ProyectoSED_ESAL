@@ -45,6 +45,9 @@ type TabActiva = 'info' | 'completitud' | 'documentos';
             <button class="sed-btn-primary" style="padding: 6px 14px; font-size: 12px;" (click)="verPreview()">
               📋 Vista Previa
             </button>
+            <button class="sed-btn-secondary" style="padding: 6px 14px; font-size: 12px;" (click)="verHistorial()">
+              📜 Historial
+            </button>
           </div>
         </div>
 
@@ -290,6 +293,10 @@ export class EsalesDetailComponent implements OnInit {
 
   verPreview(): void {
     this.router.navigate(['/certificados', 'preview', this.id]);
+  }
+
+  verHistorial(): void {
+    this.router.navigate(['/esales', this.id, 'certificados']);
   }
 
   chipEstado(estado: EstadoEsal): string {

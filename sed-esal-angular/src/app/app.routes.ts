@@ -77,6 +77,36 @@ export const routes: Routes = [
             (m) => m.PreviewCertificadoComponent
           ),
       },
+      {
+        path: 'certificados/:certificadoId',
+        loadComponent: () =>
+          import('./features/certificados/resultado-certificado.component').then(
+            (m) => m.ResultadoCertificadoComponent
+          ),
+      },
+      {
+        path: 'esales/:id/certificados',
+        loadComponent: () =>
+          import('./features/certificados/historial-certificados.component').then(
+            (m) => m.HistorialCertificadosComponent
+          ),
+      },
+      {
+        path: 'admin/firmantes',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/firmantes/firmantes.component').then(
+            (m) => m.FirmantesComponent
+          ),
+      },
+      {
+        path: 'admin/numeracion',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/numeracion/numeracion.component').then(
+            (m) => m.NumeracionComponent
+          ),
+      },
     ],
   },
 

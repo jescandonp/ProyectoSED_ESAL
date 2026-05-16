@@ -140,7 +140,7 @@ Estado: completado. Implementado en commit feat/T10.
 
 Fuente de especificacion: `docs/specs/2026-05-15-sed-esal-i3-spec.md`.
 
-Estado: aprobado como incremento futuro, pendiente de implementacion.
+Estado: completado. Implementado en commit feat/T12.
 
 ### I3 - Numeracion Y Firmante
 
