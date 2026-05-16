@@ -9,6 +9,9 @@ public final class AuditoriaAcciones {
     public static final String ENTIDAD_CERTIFICADO = "CERTIFICADO";
     public static final String ENTIDAD_FIRMANTE    = "FIRMANTE";
     public static final String ENTIDAD_NUMERACION  = "NUMERACION";
+    public static final String ENTIDAD_DOCUMENTO   = "DOCUMENTO";
+    public static final String ENTIDAD_DICCIONARIO = "DICCIONARIO";
+    public static final String ENTIDAD_IMPORTACION = "IMPORTACION";
 
     // ── Resultados ────────────────────────────────────────────────────────────
     public static final String RESULTADO_EXITO = "EXITO";
@@ -21,6 +24,17 @@ public final class AuditoriaAcciones {
     public static final String IMPORTACION_HISTORICA   = "IMPORTACION_HISTORICA";
     public static final String IMPORTACION_DICCIONARIO = "IMPORTACION_DICCIONARIO";
     public static final String DOCUMENTO_CARGADO       = "DOCUMENTO_CARGADO";
+    // Alias usados por servicios I1 de main
+    public static final String CREAR_ESAL              = "CREAR_ESAL";
+    public static final String EDITAR_ESAL             = "EDITAR_ESAL";
+    public static final String CONSULTAR_ESAL          = "CONSULTAR_ESAL";
+    public static final String CAMBIAR_ESTADO_ESAL     = "CAMBIAR_ESTADO_ESAL";
+    public static final String IMPORTAR_ESAL           = "IMPORTAR_ESAL";
+    public static final String IMPORTAR_DICCIONARIO    = "IMPORTAR_DICCIONARIO";
+    public static final String REGISTRAR_DOCUMENTO     = "REGISTRAR_DOCUMENTO";
+    public static final String RECALCULAR_COMPLETITUD  = "RECALCULAR_COMPLETITUD";
+    public static final String CONSULTAR_COMPLETITUD   = "CONSULTAR_COMPLETITUD";
+    public static final String CONSULTAR_AUDITORIA     = "CONSULTAR_AUDITORIA";
 
     // ── I2 ───────────────────────────────────────────────────────────────────
     public static final String BUSQUEDA_ESAL              = "BUSQUEDA_ESAL";
