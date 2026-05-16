@@ -20,7 +20,7 @@ I1 formaliza el primer incremento funcional de `SED_ESAL`. El proyecto aun no ti
 | T5 - Importacion Diccionario | Completado | `DiccionarioImportService.java`; `DiccionarioController.java`; `DiccionarioImportResultDto.java`; `DiccionarioImportServiceTest.java`; `mvn test` 23/23 SUCCESS |
 | T6 - Importacion Base Historica | Completado | `EsalImportService.java`; `ImportacionController.java`; `EsalImportResultDto.java`; `EsalImportServiceTest.java`; `mvn test` 28/28 SUCCESS |
 | T7 - Completitud Y Estados | Completado | `CompletitudService.java`; `CompletitudDto.java`; `EsalController.java`; `CompletitudServiceTest.java`; `mvn test` 36/36 SUCCESS |
-| T8 - Documentos Soporte Iniciales | Pendiente |  |
+| T8 - Documentos Soporte Iniciales | Completado | `AlmacenamientoService.java`; `LocalDevAlmacenamientoService.java`; `TestAlmacenamientoService.java`; `DocumentoSoporteService.java`; `DocumentoSoporteDto.java`; `EsalController.java` actualizado; `DocumentoSoporteServiceTest.java`; `mvn test` 41/41 SUCCESS |
 | T9 - API Y UI Administrativa | Pendiente |  |
 | T10 - Auditoria Y Documentacion | Pendiente |  |
 
@@ -124,6 +124,54 @@ Resultado:
 ## 5. Cierre
 
 Pendiente.
+
+---
+
+### T8 - Documentos Soporte Iniciales
+
+Fecha: 2026-05-15.
+
+Implementado:
+
+- `AlmacenamientoService.java` en `service/`: interfaz abstraída con métodos `guardar()` y `eliminar()`. Javadoc documenta que en I3 se reemplazará por almacenamiento definitivo sin cambiar la interfaz.
+- `LocalDevAlmacenamientoService.java` en `service/`: implementación `@Profile("local-dev")` con filesystem local. Directorio base configurable vía `${sed.esal.almacenamiento.directorio}`, por defecto `${java.io.tmpdir}/sed-esal-docs/`. Crea subdirectorio por `esalId` y nombre único con timestamp.
+- `TestAlmacenamientoService.java` en `service/`: implementación `@Profile("test")` que retorna ruta ficticia `/test/docs/{esalId}/{nombreArchivo}` sin escribir al disco. Permite que los tests no dependan del filesystem.
+- `DocumentoSoporteDto.java` en `dto/`: DTO de respuesta con campos `id`, `esalId`, `tipoProceso`, `tipoDocumento`, `nombreArchivo`, `contentType`, `tamanoBytes`, `estadoValidacion`, `createdAt`, `createdBy`.
+- `DocumentoSoporteService.java` en `service/`:
+  - Método `registrar()`: valida existencia de ESAL (404), valida `contentType == application/pdf` (400), guarda vía `AlmacenamientoService`, persiste `DocumentoSoporte` con `estadoValidacion = PENDIENTE`, retorna DTO.
+  - Método `listar()`: valida existencia de ESAL (404), retorna lista de DTOs.
+- `EsalController.java` en `controller/` actualizado:
+  - Inyecta `DocumentoSoporteService` vía constructor.
+  - `POST /api/esales/{id}/documentos` con `consumes = MULTIPART_FORM_DATA_VALUE` — solo ADMINISTRADOR.
+  - `GET /api/esales/{id}/documentos` — ADMINISTRADOR y EXPEDIDOR.
+  - Documentados con SpringDoc/Swagger.
+- `DocumentoSoporteServiceTest.java` en `test/service/`:
+  - 5 tests con `@SpringBootTest @ActiveProfiles("test") @Transactional`.
+  - `uploadPdfExitoso`: PDF registrado con `estadoValidacion = PENDIENTE`, visible en BD.
+  - `uploadNoPdfRechazado`: `image/png` lanza `ResponseStatusException` 400.
+  - `uploadWordRechazado`: `application/msword` lanza `ResponseStatusException` 400.
+  - `listarDocumentosDeEsal`: 2 PDFs registrados → lista con 2 elementos.
+  - `esalInexistenteLanza404`: esalId 99999L lanza `ResponseStatusException` 404.
+
+Decisiones técnicas:
+
+- El `*/` en comentarios Javadoc dentro de bloques `/** */` cierra el comentario prematuramente en Java. Se evitó usando `{id}` en lugar de `*` en las rutas de los comentarios.
+- `TestAlmacenamientoService` usa `@Profile("test")` para que Spring Boot lo seleccione automáticamente en tests sin necesidad de mocks.
+- La seguridad del endpoint `POST /api/esales/{id}/documentos` ya estaba cubierta por la regla `.antMatchers(HttpMethod.POST, "/api/esales/*/documentos").hasRole("ADMINISTRADOR")` en `DevSecurityConfig`.
+
+Verificación ejecutada:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn clean test
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `mvn clean test`: BUILD SUCCESS, 41 tests (36 existentes + 5 nuevos de T8).
+- `mvn package -DskipTests`: BUILD SUCCESS.
+- WAR generado: `target/sed-esal-backend.war`.
 
 ---
 
