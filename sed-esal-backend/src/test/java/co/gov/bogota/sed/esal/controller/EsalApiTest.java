@@ -469,4 +469,92 @@ class EsalApiTest {
                         .content(objectMapper.writeValueAsString(cancelacionBody)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void mantenimientoReactivacionPermiteReactivarComoAdmin() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Reactivacion API");
+        createBody.put("idSipej", "SIPEJ-I5-API-009");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> cancelacionBody = new HashMap<>();
+        cancelacionBody.put("resolucion", "Resolucion Reactivacion API 001");
+        cancelacionBody.put("fechaResolucion", "2026-05-20");
+        cancelacionBody.put("motivo", "Cancelacion previa API");
+
+        mockMvc.perform(post("/api/esales/" + id + "/cancelacion")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelacionBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.informacionPrincipal.estado").value("CANCELADO"));
+
+        Map<String, Object> reactivacionBody = new HashMap<>();
+        reactivacionBody.put("motivo", "Reactivacion API formal");
+
+        mockMvc.perform(post("/api/esales/" + id + "/reactivacion")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reactivacionBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.informacionPrincipal.estado").value("ACTIVO"));
+    }
+
+    @Test
+    void reactivacionSinMotivoRetorna400() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Reactivacion Validacion API");
+        createBody.put("idSipej", "SIPEJ-I5-API-010");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> reactivacionBody = new HashMap<>();
+        reactivacionBody.put("estadoDestino", "ACTIVO");
+
+        mockMvc.perform(post("/api/esales/" + id + "/reactivacion")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reactivacionBody)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void expedidorNoPuedeReactivarEsal() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Reactivacion Seguridad");
+        createBody.put("idSipej", "SIPEJ-I5-API-011");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> reactivacionBody = new HashMap<>();
+        reactivacionBody.put("motivo", "No permitido");
+
+        mockMvc.perform(post("/api/esales/" + id + "/reactivacion")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reactivacionBody)))
+                .andExpect(status().isForbidden());
+    }
 }

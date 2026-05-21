@@ -14,6 +14,7 @@ import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.NombramientoDto;
 import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
+import co.gov.bogota.sed.esal.dto.ReactivacionEsalDto;
 import co.gov.bogota.sed.esal.repository.ActuacionAdministrativaRepository;
 import co.gov.bogota.sed.esal.repository.AdvertenciaCompletitudRepository;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
@@ -310,5 +311,71 @@ class EsalMaintenanceServiceTest {
                 .hasMessageContaining("fechaResolucion");
         assertThatThrownBy(() -> maintenanceService.cancelar(esalId, sinMotivo, "admin-i5"))
                 .hasMessageContaining("motivo");
+    }
+
+    @Test
+    void reactivarEsalCanceladaExigeMotivoYCambiaEstadoSinEliminarCancelacion() {
+        Esal esal = new Esal();
+        esal.setNombre("Fundacion Reactivacion");
+        esal.setIdSipej("I5-011");
+        esal.setEstado(EstadoEsal.ACTIVO);
+        esal = esalRepository.save(esal);
+
+        CancelacionEsalDto cancelacion = new CancelacionEsalDto();
+        cancelacion.setResolucion("Resolucion Reactivacion 001");
+        cancelacion.setFechaResolucion(LocalDate.of(2026, 5, 20));
+        cancelacion.setMotivo("Cancelacion previa");
+        maintenanceService.cancelar(esal.getId(), cancelacion, "admin-i5");
+
+        ReactivacionEsalDto reactivacion = new ReactivacionEsalDto();
+        reactivacion.setMotivo("Reactivacion por acto administrativo posterior");
+
+        MantenimientoEsalDto result = maintenanceService.reactivar(esal.getId(), reactivacion, "admin-i5");
+
+        Esal actualizada = esalRepository.findById(esal.getId()).orElseThrow(AssertionError::new);
+
+        assertThat(result.getInformacionPrincipal().getEstado()).isEqualTo(EstadoEsal.ACTIVO);
+        assertThat(actualizada.getEstado()).isEqualTo(EstadoEsal.ACTIVO);
+        assertThat(actuacionRepository.findByEsalId(esal.getId()))
+                .anyMatch(actuacion -> TipoActuacion.CANCELACION.equals(actuacion.getTipoActuacion()));
+    }
+
+    @Test
+    void reactivarPermiteEstadoDestinoDistintoACanceladoYRechazaCasosInvalidos() {
+        Esal cancelada = new Esal();
+        cancelada.setNombre("Fundacion Reactivacion Destino");
+        cancelada.setIdSipej("I5-012");
+        cancelada.setEstado(EstadoEsal.CANCELADO);
+        cancelada = esalRepository.save(cancelada);
+
+        Esal activa = new Esal();
+        activa.setNombre("Fundacion No Cancelada");
+        activa.setIdSipej("I5-013");
+        activa.setEstado(EstadoEsal.ACTIVO);
+        activa = esalRepository.save(activa);
+
+        ReactivacionEsalDto suspendida = new ReactivacionEsalDto();
+        suspendida.setEstadoDestino(EstadoEsal.SUSPENDIDO);
+        suspendida.setMotivo("Reactivacion hacia suspension controlada");
+
+        MantenimientoEsalDto result = maintenanceService.reactivar(cancelada.getId(), suspendida, "admin-i5");
+
+        ReactivacionEsalDto sinMotivo = new ReactivacionEsalDto();
+        sinMotivo.setEstadoDestino(EstadoEsal.ACTIVO);
+
+        ReactivacionEsalDto destinoCancelado = new ReactivacionEsalDto();
+        destinoCancelado.setEstadoDestino(EstadoEsal.CANCELADO);
+        destinoCancelado.setMotivo("Destino invalido");
+
+        Long activaId = activa.getId();
+        Long canceladaId = cancelada.getId();
+
+        assertThat(result.getInformacionPrincipal().getEstado()).isEqualTo(EstadoEsal.SUSPENDIDO);
+        assertThatThrownBy(() -> maintenanceService.reactivar(activaId, suspendida, "admin-i5"))
+                .hasMessageContaining("CANCELADO");
+        assertThatThrownBy(() -> maintenanceService.reactivar(canceladaId, sinMotivo, "admin-i5"))
+                .hasMessageContaining("motivo");
+        assertThatThrownBy(() -> maintenanceService.reactivar(canceladaId, destinoCancelado, "admin-i5"))
+                .hasMessageContaining("estadoDestino");
     }
 }

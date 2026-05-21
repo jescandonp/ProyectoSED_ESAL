@@ -17,6 +17,7 @@ import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.NombramientoDto;
 import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
+import co.gov.bogota.sed.esal.dto.ReactivacionEsalDto;
 import co.gov.bogota.sed.esal.repository.ActuacionAdministrativaRepository;
 import co.gov.bogota.sed.esal.repository.AdvertenciaCompletitudRepository;
 import co.gov.bogota.sed.esal.repository.DocumentoSoporteRepository;
@@ -264,6 +265,31 @@ public class EsalMaintenanceService {
         return obtenerMantenimiento(esalId);
     }
 
+    public MantenimientoEsalDto reactivar(Long esalId, ReactivacionEsalDto dto, String usuario) {
+        validarReactivacion(dto);
+        Esal esal = obtenerEsal(esalId);
+        if (!EstadoEsal.CANCELADO.equals(esal.getEstado())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La reactivacion solo aplica para ESAL en estado CANCELADO.");
+        }
+
+        EstadoEsal estadoDestino = dto.getEstadoDestino() == null ? EstadoEsal.ACTIVO : dto.getEstadoDestino();
+        esal.setEstado(estadoDestino);
+        esal.setUpdatedAt(LocalDateTime.now());
+        esal.setUpdatedBy(usuario);
+        esalRepository.save(esal);
+
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.ESAL_REACTIVADA,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esal.getId(), esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO,
+                "Estado destino: " + estadoDestino + ". Motivo: " + dto.getMotivo().trim());
+
+        completitudService.calcular(esalId);
+        return obtenerMantenimiento(esalId);
+    }
+
     private void aplicarInformacionPrincipal(Esal esal, EsalInformacionPrincipalDto dto, boolean crear) {
         if (dto.getNombre() != null) {
             esal.setNombre(dto.getNombre().trim());
@@ -358,6 +384,16 @@ public class EsalMaintenanceService {
         }
         if (dto.getMotivo() == null || dto.getMotivo().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'motivo' es obligatorio.");
+        }
+    }
+
+    private void validarReactivacion(ReactivacionEsalDto dto) {
+        if (dto == null || dto.getMotivo() == null || dto.getMotivo().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'motivo' es obligatorio.");
+        }
+        if (EstadoEsal.CANCELADO.equals(dto.getEstadoDestino())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El campo 'estadoDestino' no puede ser CANCELADO en una reactivacion.");
         }
     }
 

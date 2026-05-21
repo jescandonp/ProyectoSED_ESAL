@@ -37,7 +37,15 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T8 parcial | Seguridad endpoint cancelacion | `ADMINISTRADOR` puede cancelar; `EXPEDIDOR` recibe 403 |
 | 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 24 tests |
 | 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 122 tests |
+| 2026-05-21 | T7 | Reactivacion desde cancelacion | `POST /api/esales/{id}/reactivacion` exige motivo y cambia una ESAL desde `CANCELADO` a `ACTIVO` por defecto o a otro estado destino permitido |
+| 2026-05-21 | T7 | Preservacion de trazabilidad | La reactivacion no elimina la actuacion administrativa `CANCELACION`; conserva el historico y audita la reactivacion |
+| 2026-05-21 | T8 parcial | Seguridad endpoint reactivacion | `ADMINISTRADOR` puede reactivar; `EXPEDIDOR` recibe 403 |
+| 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 29 tests |
+| 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 127 tests |
 
 ## Pendientes Del Siguiente Bloque
 
-- T7 Reactivacion desde `CANCELADO`.
+- T8 Autorizacion y seguridad consolidada.
+- T9 UI administrativa Angular.
+- T10 Integracion con preview y certificados.
+- T11 Documentacion y guia funcional.

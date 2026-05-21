@@ -15,6 +15,7 @@ import co.gov.bogota.sed.esal.dto.NombramientoDto;
 import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PageDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
+import co.gov.bogota.sed.esal.dto.ReactivacionEsalDto;
 import co.gov.bogota.sed.esal.service.CompletitudService;
 import co.gov.bogota.sed.esal.service.DocumentoSoporteService;
 import co.gov.bogota.sed.esal.service.EsalMaintenanceService;
@@ -295,6 +296,17 @@ public class EsalController {
             Authentication authentication) {
         String usuario = authentication != null ? authentication.getName() : "sistema";
         return ResponseEntity.ok(esalMaintenanceService.cancelar(id, dto, usuario));
+    }
+
+    @PostMapping("/{id}/reactivacion")
+    @Operation(summary = "Reactivar ESAL",
+               description = "Cambia una ESAL desde CANCELADO a ACTIVO u otro estado destino permitido con motivo obligatorio. Solo ADMINISTRADOR.")
+    public ResponseEntity<MantenimientoEsalDto> reactivar(
+            @PathVariable Long id,
+            @RequestBody ReactivacionEsalDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalMaintenanceService.reactivar(id, dto, usuario));
     }
 
     // =========================================================================
