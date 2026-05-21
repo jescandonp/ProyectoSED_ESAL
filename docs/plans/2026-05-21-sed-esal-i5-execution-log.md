@@ -2,7 +2,7 @@
 
 > Spec: `docs/specs/2026-05-21-sed-esal-i5-spec.md`
 > Plan: `docs/plans/2026-05-21-sed-esal-i5-plan.md`
-> Estado: en ejecucion.
+> Estado: completado.
 > Fecha inicio: 2026-05-21.
 
 ## Resumen
@@ -55,7 +55,10 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T10 | Certificados historicos | Certificado generado conserva `versionDatos` aunque despues se edite la ESAL; nuevos certificados usan version vigente |
 | 2026-05-21 | Verificacion | `mvn test "-Dtest=PreviewServiceTest,GeneracionServiceTest"` | BUILD SUCCESS, 14 tests |
 | 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 131 tests |
+| 2026-05-21 | T11 | Documentacion funcional I5 | `README.md`, `docs/ARRANQUE.md` y `docs/GUIA_PRUEBAS_FUNCIONALES.md` actualizados a estado I5 |
+| 2026-05-21 | T11 | Guia funcional I5 | Casos de creacion, edicion seccional, cancelacion, reactivacion, seguridad, preview y certificados documentados |
+| 2026-05-21 | Cierre I5 | Incremento completado | CRUD y mantenimiento operativo de ESAL queda documentado y verificable por bloques |
 
 ## Pendientes Del Siguiente Bloque
 
-- T11 Documentacion y guia funcional.
+- Definir siguiente incremento formal mediante spec, plan y execution log aprobados.

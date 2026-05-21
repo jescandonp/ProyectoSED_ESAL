@@ -1,8 +1,8 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: I2 completado. I3 es el siguiente incremento activo.
-> Tests backend: 70 (BUILD SUCCESS). Frontend Angular: build en verde.
-> Fecha: 2026-05-16.
+> Estado: I5 completado.
+> Tests backend: 131 (BUILD SUCCESS). Frontend Angular: tests y build en verde.
+> Fecha: 2026-05-21.
 > Marco: SDD Spec-Anchored por incrementos.
 
 ## 1. Objetivo
@@ -53,7 +53,7 @@ Requisito: backend levantado en `http://localhost:8080` y frontend en `http://lo
 | T-00-03 | Abrir frontend | `http://localhost:4200` | Pantalla login carga |
 | T-00-04 | Login ADMINISTRADOR | Usuario `admin@educacionbogota.edu.co` / `admin123` | Sidebar con modulos admin visibles |
 | T-00-05 | Login EXPEDIDOR | Usuario `expedidor@educacionbogota.edu.co` / `expedidor123` | Sidebar solo con busqueda/consulta |
-| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 52 tests, BUILD SUCCESS |
+| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 131 tests, BUILD SUCCESS |
 | T-00-07 | Verificar build frontend | `npm run build` en `sed-esal-angular` | BUILD SUCCESS sin errores |
 
 ## 5. Incremento 0 - Base Documental Y Arquitectura
@@ -254,9 +254,65 @@ Estado: completado. Implementado en commit feat/T14. Pendiente activacion weblog
 | I4-ERR-01 | Forzar error tecnico | Endpoint con error controlado | No expone stack trace ni rutas fisicas |
 | I4-AUD-01 | Consultar evento de acceso denegado | 403 generado | Auditoria registra usuario/recurso/resultado |
 
-## 12. Incrementos Posteriores
+## 12. Incremento 5 - CRUD Y Mantenimiento Operativo De ESAL
 
-### I5 - Verificacion Externa Futura
+Fuente de especificacion: `docs/specs/2026-05-21-sed-esal-i5-spec.md`.
+
+Estado: completado. Implementado en commits I5 hasta `feat: align SED ESAL I5 preview with current data`.
+
+### I5 - API Administrativa
+
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I5-API-01 | Crear ESAL desde mantenimiento | `POST /api/esales/mantenimiento` | Nombre obligatorio y datos basicos con rol admin | ESAL creada, completitud recalculada y auditoria registrada |
+| I5-API-02 | Consultar vista mantenimiento | `GET /api/esales/{id}/mantenimiento` | ESAL existente con rol admin | Respuesta con informacion principal, personeria, representantes, organo y estado |
+| I5-API-03 | Actualizar informacion principal | `PUT /api/esales/{id}/informacion-principal` | Nombre, NIT, domicilio, correo, objeto social | Datos guardados sin cambiar a `CANCELADO` por edicion libre |
+| I5-API-04 | Actualizar personeria juridica | `PUT /api/esales/{id}/personeria-juridica` | Reconocimiento, fecha, entidad, inscripcion | Crea o actualiza un unico registro 1:1 por ESAL |
+| I5-API-05 | Crear representante legal | `POST /api/esales/{id}/representantes` | Tipo `REPRESENTANTE_LEGAL`, nombre, documento, vigente | Representante creado y visible en listado |
+| I5-API-06 | Editar representante legal | `PUT /api/esales/{id}/representantes/{representanteId}` | Cambio de datos o vigencia | Registro actualizado, sin eliminacion fisica |
+| I5-API-07 | Crear miembro organo administracion | `POST /api/esales/{id}/organo-administracion` | Organo, miembro, cargo, documento | Miembro creado y visible en listado |
+| I5-API-08 | Editar miembro organo administracion | `PUT /api/esales/{id}/organo-administracion/{miembroId}` | Cambio de cargo o facultades | Registro actualizado |
+| I5-API-09 | Rechazar mutacion como expedidor | Cualquier endpoint `POST`/`PUT` I5 | Rol `EXPEDIDOR` | 403 Forbidden |
+
+### I5 - Cancelacion Y Reactivacion
+
+| ID | Accion | Endpoint | Datos | Esperado |
+|---|---|---|---|---|
+| I5-CAN-01 | Cancelar sin resolucion | `POST /api/esales/{id}/cancelacion` | Fecha y motivo sin resolucion | 400 Bad Request |
+| I5-CAN-02 | Cancelar sin fecha | `POST /api/esales/{id}/cancelacion` | Resolucion y motivo sin fecha | 400 Bad Request |
+| I5-CAN-03 | Cancelar sin motivo | `POST /api/esales/{id}/cancelacion` | Resolucion y fecha sin motivo | 400 Bad Request |
+| I5-CAN-04 | Cancelar con datos completos | `POST /api/esales/{id}/cancelacion` | Resolucion, fecha de cancelacion y motivo | Estado `CANCELADO`, actuacion `CANCELACION`, auditoria y completitud recalculada |
+| I5-CAN-05 | Cancelar sin PDF soporte | `POST /api/esales/{id}/cancelacion` | Datos completos sin documento soporte | Guarda cancelacion y deja advertencia `PDF SOPORTE CANCELACION` |
+| I5-CAN-06 | UI bloquea edicion ordinaria | `/admin/esales/{id}/mantenimiento` | ESAL en estado `CANCELADO` | Formularios ordinarios bloqueados; accion de reactivacion visible |
+| I5-REA-01 | Reactivar sin motivo | `POST /api/esales/{id}/reactivacion` | Motivo vacio | 400 Bad Request |
+| I5-REA-02 | Reactivar con motivo | `POST /api/esales/{id}/reactivacion` | Motivo y estado destino permitido | Estado actualizado, actuacion de cancelacion preservada y auditoria registrada |
+
+### I5 - UI Administrativa
+
+| ID | Accion | URL | Datos | Esperado |
+|---|---|---|---|---|
+| I5-UI-01 | Navegar a mantenimiento desde detalle | `/busqueda/:id` | Rol `ADMINISTRADOR` | Accion `Actualizar informacion` lleva a `/admin/esales/:id/mantenimiento` |
+| I5-UI-02 | Guardar informacion principal | `/admin/esales/:id/mantenimiento` | Modificar campos principales | Seccion guarda independiente y muestra resultado |
+| I5-UI-03 | Guardar personeria juridica | `/admin/esales/:id/mantenimiento` | Modificar reconocimiento o inscripcion | Seccion guarda independiente y refresca vista |
+| I5-UI-04 | Agregar representante | `/admin/esales/:id/mantenimiento` | Nombre, documento, tipo y vigencia | Lista de representantes se actualiza |
+| I5-UI-05 | Agregar miembro de organo | `/admin/esales/:id/mantenimiento` | Organo, miembro, cargo | Lista de organo se actualiza |
+| I5-UI-06 | Registrar cancelacion | `/admin/esales/:id/mantenimiento` | Resolucion, fecha y motivo | Estado cambia a `CANCELADO` y se bloquea edicion ordinaria |
+| I5-UI-07 | Reactivar ESAL cancelada | `/admin/esales/:id/mantenimiento` | Motivo de reactivacion | Estado vuelve a `ACTIVO` u otro destino permitido |
+| I5-UI-08 | Ver controles como expedidor | `/busqueda/:id` o mantenimiento directo | Rol `EXPEDIDOR` | Sin accion administrativa; acceso o mutacion denegada segun ruta |
+
+### I5 - Preview Y Certificados
+
+| ID | Accion | Endpoint / URL | Datos | Esperado |
+|---|---|---|---|---|
+| I5-PREV-01 | Preview posterior a cambio de representante | `GET /api/certificados/preview/esales/{id}` | Representante historico no vigente y nuevo vigente | Preview muestra el representante vigente |
+| I5-PREV-02 | Preview con datos historicos sin vigencia | `GET /api/certificados/preview/esales/{id}` | Registros legacy sin bandera vigente | Preview conserva fallback y no queda vacio por migracion parcial |
+| I5-CERT-01 | Generar certificado antes de editar ESAL | `POST /api/certificados/esales/{id}` | ESAL completa | Certificado registra `versionDatos` inicial |
+| I5-CERT-02 | Editar ESAL despues de generar certificado | Endpoints I5 + consulta certificado historico | Cambiar nombre u otro dato base | Certificado historico conserva `versionDatos` y contenido historico |
+| I5-CERT-03 | Generar nuevo certificado despues de editar | `POST /api/certificados/esales/{id}` | ESAL editada y certificable | Nuevo certificado usa version vigente de datos |
+
+## 13. Incrementos Posteriores
+
+### Verificacion Externa Futura
 
 - QR o codigo de verificacion.
 - Pagina publica o interna de validacion si la DIV lo aprueba.

@@ -4,9 +4,9 @@ Aplicativo interno para la Direccion de Inspeccion y Vigilancia de la Secretaria
 
 ## Estado
 
-Fase actual: I1 en ejecucion bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
+Fase actual: I5 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
 
-El backend base `sed-esal-backend` ya existe como bootstrap Spring Boot WAR para I1. El frontend aun no se ha creado. El repositorio contiene la base documental, PRD, arquitectura propia del proyecto, specs por incremento, planes de implementacion y guia funcional de pruebas.
+`SED_ESAL` cuenta con backend Spring Boot WAR y frontend Angular para busqueda, preview, generacion de certificados, seguridad por roles y mantenimiento operativo de ESAL. La carga Excel se conserva como mecanismo inicial o esporadico; el mantenimiento posterior se realiza desde el aplicativo por secciones administrativas.
 
 ## Orden De Lectura
 
@@ -21,17 +21,19 @@ El backend base `sed-esal-backend` ya existe como bootstrap Spring Boot WAR para
 9. `docs/specs/2026-05-15-sed-esal-i2-spec.md`
 10. `docs/specs/2026-05-15-sed-esal-i3-spec.md`
 11. `docs/specs/2026-05-15-sed-esal-i4-spec.md`
-12. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+12. `docs/specs/2026-05-21-sed-esal-i5-spec.md`
+13. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Incrementos Especificados
 
 | Incremento | Estado | Foco |
 |---|---|---|
 | I0 | Cerrado | Base documental, arquitectura y metodologia |
-| I1 | En ejecucion | Modelo base, carga inicial, estados y completitud |
-| I2 | Aprobado futuro | Busqueda operativa y vista previa certificable |
-| I3 | Aprobado futuro | Generacion PDF, numeracion, firmante y trazabilidad |
-| I4 | Aprobado futuro | Seguridad institucional, autorizacion y hardening |
+| I1 | Completado | Modelo base, carga inicial, estados y completitud |
+| I2 | Completado | Busqueda operativa y vista previa certificable |
+| I3 | Completado | Generacion PDF, numeracion, firmante y trazabilidad |
+| I4 | Completado | Seguridad institucional, autorizacion y hardening |
+| I5 | Completado | CRUD y mantenimiento operativo de ESAL |
 
 ## Coordenadas Canonicas
 
@@ -50,9 +52,9 @@ El backend base `sed-esal-backend` ya existe como bootstrap Spring Boot WAR para
 
 Los archivos fuente del area usuaria se mantienen localmente en `Documentos_Referencia/`. Por cautela, esos archivos no se versionan inicialmente en GitHub hasta confirmar politica de publicacion o privacidad.
 
-## Backend I1
+## Verificacion Local
 
-El bootstrap backend se encuentra en `sed-esal-backend`.
+El backend se encuentra en `sed-esal-backend` y el frontend en `sed-esal-angular`.
 
 Comandos de verificacion:
 
@@ -60,11 +62,16 @@ Comandos de verificacion:
 Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
 mvn test
 mvn package -DskipTests
+
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" test -- --watch=false --browsers=ChromeHeadless
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
 ```
 
 Resultados esperados:
 
-- Tests de arranque local-dev pasan.
+- Tests backend pasan.
+- Tests y build Angular pasan.
 - Health expone `/actuator/health`.
 - OpenAPI expone `BearerAuth`.
 - El WAR se genera como `target/sed-esal-backend.war`.
