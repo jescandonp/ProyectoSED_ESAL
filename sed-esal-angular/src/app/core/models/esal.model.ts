@@ -24,6 +24,67 @@ export interface EsalDetalle extends EsalResumen {
   updatedBy: string | null;
 }
 
+export interface EsalInformacionPrincipalDto {
+  id?: number | null;
+  nombre: string | null;
+  idSipej: string | null;
+  nit: string | null;
+  domicilio: string | null;
+  correoElectronico: string | null;
+  terminoDuracion: string | null;
+  objetoSocial: string | null;
+  estado: EstadoEsal | null;
+}
+
+export interface PersoneriaJuridicaDto {
+  id?: number | null;
+  reconocimientoPersoneriaJuridica: string | null;
+  fechaReconocimientoPersoneriaJuridica: string | null;
+  entidadQueExpide: string | null;
+  inscripcion: string | null;
+  fechaInscripcion: string | null;
+  entidadQueInscribio: string | null;
+}
+
+export type TipoNombramiento = 'REPRESENTANTE_LEGAL' | 'REPRESENTANTE_LEGAL_SUPLENTE';
+
+export interface NombramientoDto {
+  id?: number | null;
+  tipoNombramiento: TipoNombramiento | null;
+  nombre: string | null;
+  tipoDocumento: string | null;
+  numeroDocumento: string | null;
+  cargo: string | null;
+  actaAprueba: string | null;
+  fechaActa: string | null;
+  facultadesLimitaciones: string | null;
+  vigente: boolean | null;
+}
+
+export interface OrganoAdministracionDto {
+  id?: number | null;
+  organo: string | null;
+  miembro: string | null;
+  cargo: string | null;
+  tipoDocumento: string | null;
+  numeroDocumento: string | null;
+  actaAprueba: string | null;
+  fechaActa: string | null;
+  actaAclaratoria: string | null;
+  fechaActaAclaratoria: string | null;
+  facultadesLimitaciones: string | null;
+}
+
+export interface MantenimientoEsalDto {
+  id: number;
+  informacionPrincipal: EsalInformacionPrincipalDto;
+  personeriaJuridica: PersoneriaJuridicaDto | null;
+  representantes: NombramientoDto[];
+  organosAdministracion: OrganoAdministracionDto[];
+  completitud: CompletitudResponse | null;
+  advertencias: AdvertenciaItem[];
+}
+
 export interface PageResponse<T> {
   content: T[];
   page: number;

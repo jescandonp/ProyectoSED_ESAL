@@ -46,9 +46,13 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T8 | Proteccion local-dev y weblogic | Se alinea `POST /api/esales/{id}/completitud/recalcular` como operacion administrativa en ambas configuraciones |
 | 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalApiTest"` | BUILD SUCCESS, 20 tests |
 | 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 129 tests |
+| 2026-05-21 | T9 | UI administrativa Angular | Se agrega ruta `/admin/esales/:id/mantenimiento` protegida para administrador y pantalla de mantenimiento por secciones |
+| 2026-05-21 | T9 | Guardado seccional | La UI consume endpoints I5 de informacion principal, personeria juridica, representantes, organo, cancelacion y reactivacion |
+| 2026-05-21 | T9 | Bloqueo por cancelacion | La pantalla bloquea edicion ordinaria cuando la ESAL esta `CANCELADO` y mantiene accion explicita de reactivacion |
+| 2026-05-21 | Verificacion | `npm test -- --watch=false --browsers=ChromeHeadless` | SUCCESS, 3 tests |
+| 2026-05-21 | Verificacion | `npm run build` en `sed-esal-angular` | BUILD SUCCESS con warnings preexistentes de optional/nullish checks |
 
 ## Pendientes Del Siguiente Bloque
 
-- T9 UI administrativa Angular.
 - T10 Integracion con preview y certificados.
 - T11 Documentacion y guia funcional.

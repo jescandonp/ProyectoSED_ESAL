@@ -41,6 +41,7 @@ type TabActiva = 'info' | 'estado' | 'completitud' | 'documentos';
             </p>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="sed-btn-primary" style="padding: 6px 12px;" (click)="irAMantenimiento()">Actualizar información</button>
             <span [class]="'sed-chip ' + chipEstado(esal()!.estado)">{{ labelEstado(esal()!.estado) }}</span>
             <span [class]="'sed-chip ' + chipCompletitud(esal()!.estadoCompletitud)">{{ labelCompletitud(esal()!.estadoCompletitud) }}</span>
           </div>
@@ -431,6 +432,10 @@ export class AdminEsalesDetailComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/admin/esales']);
+  }
+
+  irAMantenimiento(): void {
+    this.router.navigate(['/admin/esales', this.id, 'mantenimiento']);
   }
 
   // --- Edición ---

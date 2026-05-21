@@ -24,4 +24,14 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
+
+  it('should expose I5 maintenance route only for administrators', () => {
+    const shellRoute = routes.find((route) => route.component);
+    const maintenanceRoute = shellRoute?.children?.find(
+      (route) => route.path === 'admin/esales/:id/mantenimiento'
+    );
+
+    expect(maintenanceRoute).toBeTruthy();
+    expect(maintenanceRoute?.canActivate).toBeTruthy();
+  });
 });

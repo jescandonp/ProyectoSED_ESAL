@@ -49,6 +49,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'admin/esales/:id/mantenimiento',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/esales/esal-maintenance.component').then(
+            (m) => m.EsalMaintenanceComponent
+          ),
+      },
+      {
         path: 'admin/auditoria',
         canActivate: [adminGuard],
         loadComponent: () =>
