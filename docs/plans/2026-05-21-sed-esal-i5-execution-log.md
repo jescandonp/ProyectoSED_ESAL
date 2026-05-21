@@ -42,10 +42,13 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T8 parcial | Seguridad endpoint reactivacion | `ADMINISTRADOR` puede reactivar; `EXPEDIDOR` recibe 403 |
 | 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 29 tests |
 | 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 127 tests |
+| 2026-05-21 | T8 | Autorizacion y seguridad consolidada | Mutaciones I5 requieren autenticacion; `EXPEDIDOR` recibe 403; recalculo de completitud queda restringido a `ADMINISTRADOR` |
+| 2026-05-21 | T8 | Proteccion local-dev y weblogic | Se alinea `POST /api/esales/{id}/completitud/recalcular` como operacion administrativa en ambas configuraciones |
+| 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalApiTest"` | BUILD SUCCESS, 20 tests |
+| 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 129 tests |
 
 ## Pendientes Del Siguiente Bloque
 
-- T8 Autorizacion y seguridad consolidada.
 - T9 UI administrativa Angular.
 - T10 Integracion con preview y certificados.
 - T11 Documentacion y guia funcional.

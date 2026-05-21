@@ -557,4 +557,44 @@ class EsalApiTest {
                         .content(objectMapper.writeValueAsString(reactivacionBody)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void usuarioAnonimoNoPuedeUsarMutacionesI5() throws Exception {
+        Map<String, String> body = new HashMap<>();
+        body.put("nombre", "ESAL Anonima Bloqueada");
+
+        mockMvc.perform(post("/api/esales/mantenimiento")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(put("/api/esales/999/informacion-principal")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void recalculoCompletitudEsMutacionSoloAdministrador() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Recalculo Seguridad");
+        createBody.put("idSipej", "SIPEJ-I5-API-012");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        mockMvc.perform(post("/api/esales/" + id + "/completitud/recalcular")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS)))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/esales/" + id + "/completitud/recalcular")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS)))
+                .andExpect(status().isOk());
+    }
 }
