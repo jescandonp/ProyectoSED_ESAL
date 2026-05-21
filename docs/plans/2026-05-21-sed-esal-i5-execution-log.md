@@ -22,10 +22,14 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T8 parcial | Seguridad endpoints I5 iniciales | `ADMINISTRADOR` puede mutar; `EXPEDIDOR` recibe 403 en creacion de mantenimiento |
 | 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 11 tests |
 | 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 109 tests |
+| 2026-05-21 | T4 | CRUD de representantes legales | `REPRESENTANTE_LEGAL` y `REPRESENTANTE_LEGAL_SUPLENTE` se pueden crear, actualizar y listar por ESAL |
+| 2026-05-21 | T4 | Restriccion de tipos de nombramiento | Tipos fuera del alcance de representantes se rechazan con error funcional |
+| 2026-05-21 | T8 parcial | Seguridad endpoints representantes | `ADMINISTRADOR` puede mutar representantes; `EXPEDIDOR` recibe 403 en creacion |
+| 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 15 tests |
+| 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 113 tests |
 
 ## Pendientes Del Siguiente Bloque
 
-- T4 Representantes legales.
 - T5 Organo de administracion.
 - T6 Cancelacion formal.
 - T7 Reactivacion desde `CANCELADO`.

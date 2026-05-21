@@ -62,4 +62,7 @@ public final class AuditoriaAcciones {
     // ── I5 ───────────────────────────────────────────────────────────────────
     public static final String ESAL_INFORMACION_PRINCIPAL_ACTUALIZADA = "ESAL_INFORMACION_PRINCIPAL_ACTUALIZADA";
     public static final String ESAL_PERSONERIA_ACTUALIZADA            = "ESAL_PERSONERIA_ACTUALIZADA";
+    public static final String ESAL_REPRESENTANTE_CREADO              = "ESAL_REPRESENTANTE_CREADO";
+    public static final String ESAL_REPRESENTANTE_ACTUALIZADO         = "ESAL_REPRESENTANTE_ACTUALIZADO";
+    public static final String ESAL_REPRESENTANTE_VIGENCIA_CAMBIADA   = "ESAL_REPRESENTANTE_VIGENCIA_CAMBIADA";
 }

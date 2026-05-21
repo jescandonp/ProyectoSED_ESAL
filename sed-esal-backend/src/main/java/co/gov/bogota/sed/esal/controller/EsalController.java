@@ -10,6 +10,7 @@ import co.gov.bogota.sed.esal.dto.EsalDetalleDto;
 import co.gov.bogota.sed.esal.dto.EsalResumenDto;
 import co.gov.bogota.sed.esal.dto.EsalUpdateDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
+import co.gov.bogota.sed.esal.dto.NombramientoDto;
 import co.gov.bogota.sed.esal.dto.PageDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
 import co.gov.bogota.sed.esal.service.CompletitudService;
@@ -219,6 +220,37 @@ public class EsalController {
             Authentication authentication) {
         String usuario = authentication != null ? authentication.getName() : "sistema";
         return ResponseEntity.ok(esalMaintenanceService.guardarPersoneriaJuridica(id, dto, usuario));
+    }
+
+    @GetMapping("/{id}/representantes")
+    @Operation(summary = "Listar representantes legales",
+               description = "Lista representantes legales principales y suplentes de la ESAL.")
+    public ResponseEntity<List<NombramientoDto>> listarRepresentantes(@PathVariable Long id) {
+        return ResponseEntity.ok(esalMaintenanceService.listarRepresentantes(id));
+    }
+
+    @PostMapping("/{id}/representantes")
+    @Operation(summary = "Crear representante legal",
+               description = "Crea representante legal principal o suplente. Solo ADMINISTRADOR.")
+    public ResponseEntity<NombramientoDto> crearRepresentante(
+            @PathVariable Long id,
+            @RequestBody NombramientoDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        NombramientoDto result = esalMaintenanceService.crearRepresentante(id, dto, usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PutMapping("/{id}/representantes/{representanteId}")
+    @Operation(summary = "Actualizar representante legal",
+               description = "Actualiza representante legal principal o suplente. Solo ADMINISTRADOR.")
+    public ResponseEntity<NombramientoDto> actualizarRepresentante(
+            @PathVariable Long id,
+            @PathVariable Long representanteId,
+            @RequestBody NombramientoDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalMaintenanceService.actualizarRepresentante(id, representanteId, dto, usuario));
     }
 
     // =========================================================================

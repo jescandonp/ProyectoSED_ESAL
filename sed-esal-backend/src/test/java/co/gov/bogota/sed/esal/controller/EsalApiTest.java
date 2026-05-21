@@ -238,4 +238,79 @@ class EsalApiTest {
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void mantenimientoRepresentantesPermiteCrearListarYActualizarComoAdmin() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Representantes API");
+        createBody.put("idSipej", "SIPEJ-I5-API-002");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> representanteBody = new HashMap<>();
+        representanteBody.put("tipoNombramiento", "REPRESENTANTE_LEGAL");
+        representanteBody.put("nombre", "Representante API");
+        representanteBody.put("numeroDocumento", "123456");
+        representanteBody.put("vigente", true);
+
+        MvcResult representanteResult = mockMvc.perform(post("/api/esales/" + id + "/representantes")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(representanteBody)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.nombre").value("Representante API"))
+                .andReturn();
+
+        Long representanteId = objectMapper.readTree(representanteResult.getResponse().getContentAsString()).get("id").asLong();
+
+        mockMvc.perform(get("/api/esales/" + id + "/representantes")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(representanteId));
+
+        Map<String, Object> updateBody = new HashMap<>();
+        updateBody.put("nombre", "Representante API Actualizado");
+        updateBody.put("vigente", false);
+
+        mockMvc.perform(put("/api/esales/" + id + "/representantes/" + representanteId)
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Representante API Actualizado"))
+                .andExpect(jsonPath("$.vigente").value(false));
+    }
+
+    @Test
+    void expedidorNoPuedeCrearRepresentante() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Representantes Seguridad");
+        createBody.put("idSipej", "SIPEJ-I5-API-003");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> representanteBody = new HashMap<>();
+        representanteBody.put("tipoNombramiento", "REPRESENTANTE_LEGAL");
+        representanteBody.put("nombre", "Representante Bloqueado");
+
+        mockMvc.perform(post("/api/esales/" + id + "/representantes")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(representanteBody)))
+                .andExpect(status().isForbidden());
+    }
 }

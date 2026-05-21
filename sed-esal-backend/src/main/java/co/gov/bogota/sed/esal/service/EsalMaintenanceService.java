@@ -1,12 +1,16 @@
 package co.gov.bogota.sed.esal.service;
 
 import co.gov.bogota.sed.esal.domain.Esal;
+import co.gov.bogota.sed.esal.domain.Nombramiento;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
 import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
+import co.gov.bogota.sed.esal.dto.NombramientoDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
+import co.gov.bogota.sed.esal.repository.NombramientoRepository;
 import co.gov.bogota.sed.esal.repository.PersoneriaJuridicaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -22,15 +27,18 @@ public class EsalMaintenanceService {
 
     private final EsalRepository esalRepository;
     private final PersoneriaJuridicaRepository personeriaRepository;
+    private final NombramientoRepository nombramientoRepository;
     private final CompletitudService completitudService;
     private final AuditoriaService auditoriaService;
 
     public EsalMaintenanceService(EsalRepository esalRepository,
                                   PersoneriaJuridicaRepository personeriaRepository,
+                                  NombramientoRepository nombramientoRepository,
                                   CompletitudService completitudService,
                                   AuditoriaService auditoriaService) {
         this.esalRepository = esalRepository;
         this.personeriaRepository = personeriaRepository;
+        this.nombramientoRepository = nombramientoRepository;
         this.completitudService = completitudService;
         this.auditoriaService = auditoriaService;
     }
@@ -62,6 +70,7 @@ public class EsalMaintenanceService {
         dto.setId(esal.getId());
         dto.setInformacionPrincipal(toInformacionPrincipalDto(esal));
         dto.setPersoneriaJuridica(obtenerPersoneria(esal.getId()));
+        dto.setRepresentantes(listarRepresentantes(esal.getId()));
         return dto;
     }
 
@@ -114,6 +123,52 @@ public class EsalMaintenanceService {
 
         completitudService.calcular(esalId);
         return obtenerMantenimiento(esalId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NombramientoDto> listarRepresentantes(Long esalId) {
+        obtenerEsal(esalId);
+        return nombramientoRepository.findByEsalId(esalId).stream()
+                .filter(n -> esTipoRepresentantePermitido(n.getTipoNombramiento()))
+                .map(this::toNombramientoDto)
+                .collect(Collectors.toList());
+    }
+
+    public NombramientoDto crearRepresentante(Long esalId, NombramientoDto dto, String usuario) {
+        Esal esal = obtenerEsal(esalId);
+        validarTipoRepresentante(dto.getTipoNombramiento());
+
+        Nombramiento nombramiento = new Nombramiento();
+        nombramiento.setEsalId(esalId);
+        aplicarNombramiento(nombramiento, dto);
+        Nombramiento saved = nombramientoRepository.save(nombramiento);
+
+        registrarAuditoriaNombramiento(usuario, AuditoriaAcciones.ESAL_REPRESENTANTE_CREADO, esal, saved);
+        tocarEsalYRecalcular(esal, usuario);
+
+        return toNombramientoDto(saved);
+    }
+
+    public NombramientoDto actualizarRepresentante(Long esalId,
+                                                   Long representanteId,
+                                                   NombramientoDto dto,
+                                                   String usuario) {
+        Esal esal = obtenerEsal(esalId);
+        Nombramiento nombramiento = obtenerNombramiento(esalId, representanteId);
+        if (dto.getTipoNombramiento() != null) {
+            validarTipoRepresentante(dto.getTipoNombramiento());
+        }
+        Boolean vigenteAntes = nombramiento.getVigente();
+        aplicarNombramiento(nombramiento, dto);
+        Nombramiento saved = nombramientoRepository.save(nombramiento);
+
+        String accion = vigenteAntes != null && dto.getVigente() != null && !vigenteAntes.equals(dto.getVigente())
+                ? AuditoriaAcciones.ESAL_REPRESENTANTE_VIGENCIA_CAMBIADA
+                : AuditoriaAcciones.ESAL_REPRESENTANTE_ACTUALIZADO;
+        registrarAuditoriaNombramiento(usuario, accion, esal, saved);
+        tocarEsalYRecalcular(esal, usuario);
+
+        return toNombramientoDto(saved);
     }
 
     private void aplicarInformacionPrincipal(Esal esal, EsalInformacionPrincipalDto dto, boolean crear) {
@@ -173,6 +228,77 @@ public class EsalMaintenanceService {
         return registros.isEmpty() ? null : registros.get(0);
     }
 
+    private Nombramiento obtenerNombramiento(Long esalId, Long representanteId) {
+        Nombramiento nombramiento = nombramientoRepository.findById(representanteId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Representante no encontrado con id: " + representanteId));
+        if (!esalId.equals(nombramiento.getEsalId()) || !esTipoRepresentantePermitido(nombramiento.getTipoNombramiento())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Representante no encontrado con id: " + representanteId);
+        }
+        return nombramiento;
+    }
+
+    private void validarTipoRepresentante(TipoNombramiento tipo) {
+        if (!esTipoRepresentantePermitido(tipo)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El campo 'tipoNombramiento' solo permite REPRESENTANTE_LEGAL o REPRESENTANTE_LEGAL_SUPLENTE.");
+        }
+    }
+
+    private boolean esTipoRepresentantePermitido(TipoNombramiento tipo) {
+        return TipoNombramiento.REPRESENTANTE_LEGAL.equals(tipo)
+                || TipoNombramiento.REPRESENTANTE_LEGAL_SUPLENTE.equals(tipo);
+    }
+
+    private void aplicarNombramiento(Nombramiento nombramiento, NombramientoDto dto) {
+        if (dto.getTipoNombramiento() != null) {
+            nombramiento.setTipoNombramiento(dto.getTipoNombramiento());
+        }
+        if (dto.getNombre() != null) {
+            nombramiento.setNombre(dto.getNombre());
+        }
+        if (dto.getTipoDocumento() != null) {
+            nombramiento.setTipoDocumento(dto.getTipoDocumento());
+        }
+        if (dto.getNumeroDocumento() != null) {
+            nombramiento.setNumeroDocumento(dto.getNumeroDocumento());
+        }
+        if (dto.getCargo() != null) {
+            nombramiento.setCargo(dto.getCargo());
+        }
+        if (dto.getActaAprueba() != null) {
+            nombramiento.setActaAprueba(dto.getActaAprueba());
+        }
+        if (dto.getFechaActa() != null) {
+            nombramiento.setFechaActa(dto.getFechaActa());
+        }
+        if (dto.getTarjetaProfesional() != null) {
+            nombramiento.setTarjetaProfesional(dto.getTarjetaProfesional());
+        }
+        if (dto.getFacultadesLimitaciones() != null) {
+            nombramiento.setFacultadesLimitaciones(dto.getFacultadesLimitaciones());
+        }
+        if (dto.getVigente() != null) {
+            nombramiento.setVigente(dto.getVigente());
+        }
+    }
+
+    private void tocarEsalYRecalcular(Esal esal, String usuario) {
+        esal.setUpdatedAt(LocalDateTime.now());
+        esal.setUpdatedBy(usuario);
+        esalRepository.save(esal);
+        completitudService.calcular(esal.getId());
+    }
+
+    private void registrarAuditoriaNombramiento(String usuario, String accion, Esal esal, Nombramiento nombramiento) {
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                accion,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esal.getId(), esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO,
+                "Nombramiento: " + nombramiento.getId());
+    }
+
     private PersoneriaJuridicaDto obtenerPersoneria(Long esalId) {
         PersoneriaJuridica personeria = buscarPersoneriaEntidad(esalId);
         return personeria == null ? null : toPersoneriaDto(personeria);
@@ -203,6 +329,23 @@ public class EsalMaintenanceService {
         dto.setInscripcion(personeria.getInscripcion());
         dto.setFechaInscripcion(personeria.getFechaInscripcion());
         dto.setEntidadQueInscribio(personeria.getEntidadQueInscribio());
+        return dto;
+    }
+
+    private NombramientoDto toNombramientoDto(Nombramiento nombramiento) {
+        NombramientoDto dto = new NombramientoDto();
+        dto.setId(nombramiento.getId());
+        dto.setEsalId(nombramiento.getEsalId());
+        dto.setTipoNombramiento(nombramiento.getTipoNombramiento());
+        dto.setNombre(nombramiento.getNombre());
+        dto.setTipoDocumento(nombramiento.getTipoDocumento());
+        dto.setNumeroDocumento(nombramiento.getNumeroDocumento());
+        dto.setCargo(nombramiento.getCargo());
+        dto.setActaAprueba(nombramiento.getActaAprueba());
+        dto.setFechaActa(nombramiento.getFechaActa());
+        dto.setTarjetaProfesional(nombramiento.getTarjetaProfesional());
+        dto.setFacultadesLimitaciones(nombramiento.getFacultadesLimitaciones());
+        dto.setVigente(nombramiento.getVigente());
         return dto;
     }
 }
