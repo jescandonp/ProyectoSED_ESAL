@@ -9,6 +9,7 @@ public class MantenimientoEsalDto {
     private EsalInformacionPrincipalDto informacionPrincipal;
     private PersoneriaJuridicaDto personeriaJuridica;
     private List<NombramientoDto> representantes = new ArrayList<>();
+    private List<OrganoAdministracionDto> organosAdministracion = new ArrayList<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -25,4 +26,9 @@ public class MantenimientoEsalDto {
 
     public List<NombramientoDto> getRepresentantes() { return representantes; }
     public void setRepresentantes(List<NombramientoDto> representantes) { this.representantes = representantes; }
+
+    public List<OrganoAdministracionDto> getOrganosAdministracion() { return organosAdministracion; }
+    public void setOrganosAdministracion(List<OrganoAdministracionDto> organosAdministracion) {
+        this.organosAdministracion = organosAdministracion;
+    }
 }

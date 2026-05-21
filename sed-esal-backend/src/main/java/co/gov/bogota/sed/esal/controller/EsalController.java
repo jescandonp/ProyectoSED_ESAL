@@ -11,6 +11,7 @@ import co.gov.bogota.sed.esal.dto.EsalResumenDto;
 import co.gov.bogota.sed.esal.dto.EsalUpdateDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.NombramientoDto;
+import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PageDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
 import co.gov.bogota.sed.esal.service.CompletitudService;
@@ -251,6 +252,37 @@ public class EsalController {
             Authentication authentication) {
         String usuario = authentication != null ? authentication.getName() : "sistema";
         return ResponseEntity.ok(esalMaintenanceService.actualizarRepresentante(id, representanteId, dto, usuario));
+    }
+
+    @GetMapping("/{id}/organos-administracion")
+    @Operation(summary = "Listar organos de administracion",
+               description = "Lista miembros del organo de administracion de la ESAL.")
+    public ResponseEntity<List<OrganoAdministracionDto>> listarOrganosAdministracion(@PathVariable Long id) {
+        return ResponseEntity.ok(esalMaintenanceService.listarMiembrosOrgano(id));
+    }
+
+    @PostMapping("/{id}/organos-administracion")
+    @Operation(summary = "Crear miembro de organo de administracion",
+               description = "Crea un miembro del organo de administracion. Solo ADMINISTRADOR.")
+    public ResponseEntity<OrganoAdministracionDto> crearMiembroOrgano(
+            @PathVariable Long id,
+            @RequestBody OrganoAdministracionDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        OrganoAdministracionDto result = esalMaintenanceService.crearMiembroOrgano(id, dto, usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PutMapping("/{id}/organos-administracion/{miembroId}")
+    @Operation(summary = "Actualizar miembro de organo de administracion",
+               description = "Actualiza un miembro del organo de administracion. Solo ADMINISTRADOR.")
+    public ResponseEntity<OrganoAdministracionDto> actualizarMiembroOrgano(
+            @PathVariable Long id,
+            @PathVariable Long miembroId,
+            @RequestBody OrganoAdministracionDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalMaintenanceService.actualizarMiembroOrgano(id, miembroId, dto, usuario));
     }
 
     // =========================================================================

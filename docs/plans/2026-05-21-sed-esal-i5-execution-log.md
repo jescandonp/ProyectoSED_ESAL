@@ -27,9 +27,13 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T8 parcial | Seguridad endpoints representantes | `ADMINISTRADOR` puede mutar representantes; `EXPEDIDOR` recibe 403 en creacion |
 | 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 15 tests |
 | 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 113 tests |
+| 2026-05-21 | T5 | CRUD de organo de administracion | Miembros de organo se pueden crear, actualizar y listar por ESAL |
+| 2026-05-21 | T5 | Manejo de inactivacion | No se implementa eliminacion fisica ni inactivacion porque el modelo actual no tiene campo de vigencia para `OrganoAdministracion` |
+| 2026-05-21 | T8 parcial | Seguridad endpoints organo de administracion | `ADMINISTRADOR` puede mutar miembros; `EXPEDIDOR` recibe 403 en creacion |
+| 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 19 tests |
+| 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 117 tests |
 
 ## Pendientes Del Siguiente Bloque
 
-- T5 Organo de administracion.
 - T6 Cancelacion formal.
 - T7 Reactivacion desde `CANCELADO`.

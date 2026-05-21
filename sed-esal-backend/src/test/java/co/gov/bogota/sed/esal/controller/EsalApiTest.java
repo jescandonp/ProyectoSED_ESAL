@@ -313,4 +313,79 @@ class EsalApiTest {
                         .content(objectMapper.writeValueAsString(representanteBody)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void mantenimientoOrganoPermiteCrearListarYActualizarComoAdmin() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Organo API");
+        createBody.put("idSipej", "SIPEJ-I5-API-004");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> miembroBody = new HashMap<>();
+        miembroBody.put("organo", "Junta Directiva");
+        miembroBody.put("miembro", "Miembro API");
+        miembroBody.put("cargo", "Presidente");
+        miembroBody.put("numeroDocumento", "987654");
+
+        MvcResult miembroResult = mockMvc.perform(post("/api/esales/" + id + "/organos-administracion")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(miembroBody)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.miembro").value("Miembro API"))
+                .andReturn();
+
+        Long miembroId = objectMapper.readTree(miembroResult.getResponse().getContentAsString()).get("id").asLong();
+
+        mockMvc.perform(get("/api/esales/" + id + "/organos-administracion")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(miembroId));
+
+        Map<String, Object> updateBody = new HashMap<>();
+        updateBody.put("miembro", "Miembro API Actualizado");
+        updateBody.put("cargo", "Secretario");
+
+        mockMvc.perform(put("/api/esales/" + id + "/organos-administracion/" + miembroId)
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.miembro").value("Miembro API Actualizado"))
+                .andExpect(jsonPath("$.cargo").value("Secretario"));
+    }
+
+    @Test
+    void expedidorNoPuedeCrearMiembroOrgano() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Organo Seguridad");
+        createBody.put("idSipej", "SIPEJ-I5-API-005");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> miembroBody = new HashMap<>();
+        miembroBody.put("organo", "Junta Directiva");
+        miembroBody.put("miembro", "Miembro Bloqueado");
+
+        mockMvc.perform(post("/api/esales/" + id + "/organos-administracion")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(miembroBody)))
+                .andExpect(status().isForbidden());
+    }
 }

@@ -2,15 +2,18 @@ package co.gov.bogota.sed.esal.service;
 
 import co.gov.bogota.sed.esal.domain.Esal;
 import co.gov.bogota.sed.esal.domain.Nombramiento;
+import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
 import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.NombramientoDto;
+import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
 import co.gov.bogota.sed.esal.repository.NombramientoRepository;
+import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
 import co.gov.bogota.sed.esal.repository.PersoneriaJuridicaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,9 @@ class EsalMaintenanceServiceTest {
 
     @Autowired
     private NombramientoRepository nombramientoRepository;
+
+    @Autowired
+    private OrganoAdministracionRepository organoRepository;
 
     @Test
     void crearEsalDesdeMantenimientoGuardaInformacionPrincipalYRecalculaCompletitud() {
@@ -164,5 +170,71 @@ class EsalMaintenanceServiceTest {
         Long esalId = esal.getId();
         assertThatThrownBy(() -> maintenanceService.crearRepresentante(esalId, revisor, "admin-i5"))
                 .hasMessageContaining("tipoNombramiento");
+    }
+
+    @Test
+    void crearEditarYListarMiembroOrganoAdministracion() {
+        Esal esal = new Esal();
+        esal.setNombre("Fundacion Organo");
+        esal.setIdSipej("I5-006");
+        esal = esalRepository.save(esal);
+
+        OrganoAdministracionDto miembro = new OrganoAdministracionDto();
+        miembro.setOrgano("Junta Directiva");
+        miembro.setMiembro("Miembro Original");
+        miembro.setCargo("Presidente");
+        miembro.setTipoDocumento("CC");
+        miembro.setNumeroDocumento("789");
+        miembro.setActaAprueba("Acta 10");
+        miembro.setFechaActa(LocalDate.of(2025, 3, 10));
+        miembro.setFacultadesLimitaciones("Facultades del organo");
+
+        OrganoAdministracionDto creado = maintenanceService.crearMiembroOrgano(esal.getId(), miembro, "admin-i5");
+
+        OrganoAdministracionDto actualizacion = new OrganoAdministracionDto();
+        actualizacion.setMiembro("Miembro Actualizado");
+        actualizacion.setCargo("Secretario");
+        actualizacion.setNumeroDocumento("987");
+        actualizacion.setActaAclaratoria("Acta aclaratoria 11");
+        actualizacion.setFechaActaAclaratoria(LocalDate.of(2025, 4, 11));
+
+        OrganoAdministracionDto actualizado = maintenanceService.actualizarMiembroOrgano(
+                esal.getId(), creado.getId(), actualizacion, "admin-i5");
+
+        List<OrganoAdministracionDto> miembros = maintenanceService.listarMiembrosOrgano(esal.getId());
+        List<OrganoAdministracion> entidades = organoRepository.findByEsalId(esal.getId());
+
+        assertThat(actualizado.getMiembro()).isEqualTo("Miembro Actualizado");
+        assertThat(actualizado.getCargo()).isEqualTo("Secretario");
+        assertThat(actualizado.getOrgano()).isEqualTo("Junta Directiva");
+        assertThat(miembros).hasSize(1);
+        assertThat(entidades).hasSize(1);
+        assertThat(entidades.get(0).getNumeroDocumento()).isEqualTo("987");
+    }
+
+    @Test
+    void actualizarMiembroOrganoNoPermiteCruzarEsal() {
+        Esal esalUno = new Esal();
+        esalUno.setNombre("Fundacion Organo Uno");
+        esalUno.setIdSipej("I5-007");
+        esalUno = esalRepository.save(esalUno);
+
+        Esal esalDos = new Esal();
+        esalDos.setNombre("Fundacion Organo Dos");
+        esalDos.setIdSipej("I5-008");
+        esalDos = esalRepository.save(esalDos);
+
+        OrganoAdministracionDto miembro = new OrganoAdministracionDto();
+        miembro.setOrgano("Consejo Directivo");
+        miembro.setMiembro("Miembro Asociado");
+
+        OrganoAdministracionDto creado = maintenanceService.crearMiembroOrgano(esalUno.getId(), miembro, "admin-i5");
+        OrganoAdministracionDto actualizacion = new OrganoAdministracionDto();
+        actualizacion.setMiembro("Cruce no permitido");
+
+        Long esalDosId = esalDos.getId();
+        assertThatThrownBy(() -> maintenanceService.actualizarMiembroOrgano(
+                esalDosId, creado.getId(), actualizacion, "admin-i5"))
+                .hasMessageContaining("Miembro de organo no encontrado");
     }
 }

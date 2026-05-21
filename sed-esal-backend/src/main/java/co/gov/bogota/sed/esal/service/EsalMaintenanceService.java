@@ -2,15 +2,18 @@ package co.gov.bogota.sed.esal.service;
 
 import co.gov.bogota.sed.esal.domain.Esal;
 import co.gov.bogota.sed.esal.domain.Nombramiento;
+import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
 import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.NombramientoDto;
+import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
 import co.gov.bogota.sed.esal.repository.NombramientoRepository;
+import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
 import co.gov.bogota.sed.esal.repository.PersoneriaJuridicaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,17 +31,20 @@ public class EsalMaintenanceService {
     private final EsalRepository esalRepository;
     private final PersoneriaJuridicaRepository personeriaRepository;
     private final NombramientoRepository nombramientoRepository;
+    private final OrganoAdministracionRepository organoRepository;
     private final CompletitudService completitudService;
     private final AuditoriaService auditoriaService;
 
     public EsalMaintenanceService(EsalRepository esalRepository,
                                   PersoneriaJuridicaRepository personeriaRepository,
                                   NombramientoRepository nombramientoRepository,
+                                  OrganoAdministracionRepository organoRepository,
                                   CompletitudService completitudService,
                                   AuditoriaService auditoriaService) {
         this.esalRepository = esalRepository;
         this.personeriaRepository = personeriaRepository;
         this.nombramientoRepository = nombramientoRepository;
+        this.organoRepository = organoRepository;
         this.completitudService = completitudService;
         this.auditoriaService = auditoriaService;
     }
@@ -71,6 +77,7 @@ public class EsalMaintenanceService {
         dto.setInformacionPrincipal(toInformacionPrincipalDto(esal));
         dto.setPersoneriaJuridica(obtenerPersoneria(esal.getId()));
         dto.setRepresentantes(listarRepresentantes(esal.getId()));
+        dto.setOrganosAdministracion(listarMiembrosOrgano(esal.getId()));
         return dto;
     }
 
@@ -171,6 +178,44 @@ public class EsalMaintenanceService {
         return toNombramientoDto(saved);
     }
 
+    @Transactional(readOnly = true)
+    public List<OrganoAdministracionDto> listarMiembrosOrgano(Long esalId) {
+        obtenerEsal(esalId);
+        return organoRepository.findByEsalId(esalId).stream()
+                .map(this::toOrganoAdministracionDto)
+                .collect(Collectors.toList());
+    }
+
+    public OrganoAdministracionDto crearMiembroOrgano(Long esalId, OrganoAdministracionDto dto, String usuario) {
+        Esal esal = obtenerEsal(esalId);
+
+        OrganoAdministracion organo = new OrganoAdministracion();
+        organo.setEsalId(esalId);
+        aplicarOrganoAdministracion(organo, dto);
+        OrganoAdministracion saved = organoRepository.save(organo);
+
+        registrarAuditoriaOrgano(usuario, AuditoriaAcciones.ESAL_ORGANO_MIEMBRO_CREADO, esal, saved);
+        tocarEsalYRecalcular(esal, usuario);
+
+        return toOrganoAdministracionDto(saved);
+    }
+
+    public OrganoAdministracionDto actualizarMiembroOrgano(Long esalId,
+                                                           Long miembroId,
+                                                           OrganoAdministracionDto dto,
+                                                           String usuario) {
+        Esal esal = obtenerEsal(esalId);
+        OrganoAdministracion organo = obtenerMiembroOrgano(esalId, miembroId);
+
+        aplicarOrganoAdministracion(organo, dto);
+        OrganoAdministracion saved = organoRepository.save(organo);
+
+        registrarAuditoriaOrgano(usuario, AuditoriaAcciones.ESAL_ORGANO_MIEMBRO_ACTUALIZADO, esal, saved);
+        tocarEsalYRecalcular(esal, usuario);
+
+        return toOrganoAdministracionDto(saved);
+    }
+
     private void aplicarInformacionPrincipal(Esal esal, EsalInformacionPrincipalDto dto, boolean crear) {
         if (dto.getNombre() != null) {
             esal.setNombre(dto.getNombre().trim());
@@ -238,6 +283,17 @@ public class EsalMaintenanceService {
         return nombramiento;
     }
 
+    private OrganoAdministracion obtenerMiembroOrgano(Long esalId, Long miembroId) {
+        OrganoAdministracion organo = organoRepository.findById(miembroId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Miembro de organo no encontrado con id: " + miembroId));
+        if (!esalId.equals(organo.getEsalId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Miembro de organo no encontrado con id: " + miembroId);
+        }
+        return organo;
+    }
+
     private void validarTipoRepresentante(TipoNombramiento tipo) {
         if (!esTipoRepresentantePermitido(tipo)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -283,6 +339,39 @@ public class EsalMaintenanceService {
         }
     }
 
+    private void aplicarOrganoAdministracion(OrganoAdministracion organo, OrganoAdministracionDto dto) {
+        if (dto.getOrgano() != null) {
+            organo.setOrgano(dto.getOrgano());
+        }
+        if (dto.getMiembro() != null) {
+            organo.setMiembro(dto.getMiembro());
+        }
+        if (dto.getCargo() != null) {
+            organo.setCargo(dto.getCargo());
+        }
+        if (dto.getTipoDocumento() != null) {
+            organo.setTipoDocumento(dto.getTipoDocumento());
+        }
+        if (dto.getNumeroDocumento() != null) {
+            organo.setNumeroDocumento(dto.getNumeroDocumento());
+        }
+        if (dto.getActaAprueba() != null) {
+            organo.setActaAprueba(dto.getActaAprueba());
+        }
+        if (dto.getFechaActa() != null) {
+            organo.setFechaActa(dto.getFechaActa());
+        }
+        if (dto.getActaAclaratoria() != null) {
+            organo.setActaAclaratoria(dto.getActaAclaratoria());
+        }
+        if (dto.getFechaActaAclaratoria() != null) {
+            organo.setFechaActaAclaratoria(dto.getFechaActaAclaratoria());
+        }
+        if (dto.getFacultadesLimitaciones() != null) {
+            organo.setFacultadesLimitaciones(dto.getFacultadesLimitaciones());
+        }
+    }
+
     private void tocarEsalYRecalcular(Esal esal, String usuario) {
         esal.setUpdatedAt(LocalDateTime.now());
         esal.setUpdatedBy(usuario);
@@ -297,6 +386,15 @@ public class EsalMaintenanceService {
                 esal.getId(), esal.getIdSipej(),
                 AuditoriaAcciones.RESULTADO_EXITO,
                 "Nombramiento: " + nombramiento.getId());
+    }
+
+    private void registrarAuditoriaOrgano(String usuario, String accion, Esal esal, OrganoAdministracion organo) {
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                accion,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esal.getId(), esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO,
+                "OrganoAdministracion: " + organo.getId());
     }
 
     private PersoneriaJuridicaDto obtenerPersoneria(Long esalId) {
@@ -346,6 +444,23 @@ public class EsalMaintenanceService {
         dto.setTarjetaProfesional(nombramiento.getTarjetaProfesional());
         dto.setFacultadesLimitaciones(nombramiento.getFacultadesLimitaciones());
         dto.setVigente(nombramiento.getVigente());
+        return dto;
+    }
+
+    private OrganoAdministracionDto toOrganoAdministracionDto(OrganoAdministracion organo) {
+        OrganoAdministracionDto dto = new OrganoAdministracionDto();
+        dto.setId(organo.getId());
+        dto.setEsalId(organo.getEsalId());
+        dto.setOrgano(organo.getOrgano());
+        dto.setMiembro(organo.getMiembro());
+        dto.setCargo(organo.getCargo());
+        dto.setTipoDocumento(organo.getTipoDocumento());
+        dto.setNumeroDocumento(organo.getNumeroDocumento());
+        dto.setActaAprueba(organo.getActaAprueba());
+        dto.setFechaActa(organo.getFechaActa());
+        dto.setActaAclaratoria(organo.getActaAclaratoria());
+        dto.setFechaActaAclaratoria(organo.getFechaActaAclaratoria());
+        dto.setFacultadesLimitaciones(organo.getFacultadesLimitaciones());
         return dto;
     }
 }
