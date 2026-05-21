@@ -39,9 +39,11 @@ class GeneracionServiceTest {
     @Autowired private NombramientoRepository nombramientoRepository;
 
     private Long esalId;
+    private LocalDateTime versionInicial;
 
     @BeforeEach
     void setUp() {
+        versionInicial = LocalDateTime.of(2026, 5, 21, 9, 0);
         Esal esal = new Esal();
         esal.setNombre("Fundacion Test Generacion");
         esal.setNit("900111222-3");
@@ -52,6 +54,7 @@ class GeneracionServiceTest {
         esal.setEstado(EstadoEsal.ACTIVO);
         esal.setEstadoCompletitud(EstadoCompletitud.LISTO_PARA_CERTIFICAR);
         esal.setCreatedAt(LocalDateTime.now());
+        esal.setUpdatedAt(versionInicial);
         esal.setCreatedBy("test");
         esal = esalRepository.save(esal);
         esalId = esal.getId();
@@ -110,5 +113,22 @@ class GeneracionServiceTest {
     void listarPorEsal_despuesDeGenerar_retornaHistorial() {
         generacionService.generar(esalId, "expedidor");
         assertThat(generacionService.listarPorEsal(esalId)).hasSize(1);
+    }
+
+    @Test
+    void certificadoHistoricoConservaVersionDatosDespuesDeEditarEsal() {
+        CertificadoDto historico = generacionService.generar(esalId, "expedidor");
+
+        LocalDateTime nuevaVersion = versionInicial.plusDays(1);
+        Esal esal = esalRepository.findById(esalId).orElseThrow(IllegalStateException::new);
+        esal.setNombre("Fundacion Test Generacion Actualizada I5");
+        esal.setUpdatedAt(nuevaVersion);
+        esalRepository.save(esal);
+
+        CertificadoDto historicoConsultado = generacionService.obtener(historico.getCertificadoId());
+        CertificadoDto nuevo = generacionService.generar(esalId, "expedidor");
+
+        assertThat(historicoConsultado.getVersionDatos()).isEqualTo(versionInicial);
+        assertThat(nuevo.getVersionDatos()).isEqualTo(nuevaVersion);
     }
 }

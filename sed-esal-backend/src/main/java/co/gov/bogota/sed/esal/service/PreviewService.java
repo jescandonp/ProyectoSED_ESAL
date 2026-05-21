@@ -105,7 +105,13 @@ public class PreviewService {
         // Representante legal
         Nombramiento representante = nombramientos.stream()
                 .filter(n -> TipoNombramiento.REPRESENTANTE_LEGAL.equals(n.getTipoNombramiento()))
+                .filter(n -> Boolean.TRUE.equals(n.getVigente()))
                 .findFirst().orElse(null);
+        if (representante == null) {
+            representante = nombramientos.stream()
+                    .filter(n -> TipoNombramiento.REPRESENTANTE_LEGAL.equals(n.getTipoNombramiento()))
+                    .findFirst().orElse(null);
+        }
         if (representante != null) {
             verificarCampo(bloqueos, "NOMBRAMIENTOS", "REPRESENTANTE LEGAL - NOMBRE",
                     representante.getNombre(), true, "El nombre del representante legal es obligatorio.");

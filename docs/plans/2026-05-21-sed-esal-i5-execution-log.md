@@ -51,8 +51,11 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T9 | Bloqueo por cancelacion | La pantalla bloquea edicion ordinaria cuando la ESAL esta `CANCELADO` y mantiene accion explicita de reactivacion |
 | 2026-05-21 | Verificacion | `npm test -- --watch=false --browsers=ChromeHeadless` | SUCCESS, 3 tests |
 | 2026-05-21 | Verificacion | `npm run build` en `sed-esal-angular` | BUILD SUCCESS con warnings preexistentes de optional/nullish checks |
+| 2026-05-21 | T10 | Preview con datos vigentes | Preview de certificado usa representante legal vigente despues de mantenimiento I5 y conserva fallback para registros historicos sin vigencia |
+| 2026-05-21 | T10 | Certificados historicos | Certificado generado conserva `versionDatos` aunque despues se edite la ESAL; nuevos certificados usan version vigente |
+| 2026-05-21 | Verificacion | `mvn test "-Dtest=PreviewServiceTest,GeneracionServiceTest"` | BUILD SUCCESS, 14 tests |
+| 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 131 tests |
 
 ## Pendientes Del Siguiente Bloque
 
-- T10 Integracion con preview y certificados.
 - T11 Documentacion y guia funcional.

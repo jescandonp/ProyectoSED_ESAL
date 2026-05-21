@@ -84,6 +84,34 @@ class PreviewServiceTest {
     }
 
     @Test
+    void previewUsaRepresentanteLegalVigenteDespuesDeMantenimientoI5() {
+        Esal esal = crearEsalCompleta("Fundacion Preview Vigencia I5", "PRE-I5-001", EstadoEsal.ACTIVO);
+        nombramientoRepository.findByEsalId(esal.getId()).forEach(n -> {
+            n.setNombre("Representante Historico");
+            n.setVigente(Boolean.FALSE);
+            nombramientoRepository.save(n);
+        });
+
+        Nombramiento vigente = new Nombramiento();
+        vigente.setEsalId(esal.getId());
+        vigente.setTipoNombramiento(TipoNombramiento.REPRESENTANTE_LEGAL);
+        vigente.setNombre("Representante Vigente I5");
+        vigente.setNumeroDocumento("987654");
+        vigente.setVigente(Boolean.TRUE);
+        nombramientoRepository.save(vigente);
+
+        PreviewCertificadoDto preview = previewService.obtenerPreview(esal.getId(), "tester");
+
+        assertThat(preview.getSecciones()).anySatisfy(seccion -> {
+            assertThat(seccion.getNombre()).isEqualTo("REPRESENTANTE LEGAL");
+            assertThat(seccion.getCampos()).anySatisfy(campo -> {
+                assertThat(campo.getEtiqueta()).isEqualTo("Nombre");
+                assertThat(campo.getValor()).isEqualTo("Representante Vigente I5");
+            });
+        });
+    }
+
+    @Test
     void previewSuspendidaCompleta_habilitada() {
         Esal esal = crearEsalCompleta("Fundacion Preview Suspendida I2", "PRE-I2-004", EstadoEsal.SUSPENDIDO);
         crearActuacion(esal.getId(), TipoActuacion.SUSPENSION);
@@ -165,6 +193,7 @@ class PreviewServiceTest {
         representante.setFacultadesLimitaciones("Facultades amplias");
         representante.setActaAprueba("Acta 001");
         representante.setFechaActa(LocalDate.of(2024, 1, 1));
+        representante.setVigente(Boolean.TRUE);
         nombramientoRepository.save(representante);
 
         OrganoAdministracion organo = new OrganoAdministracion();
