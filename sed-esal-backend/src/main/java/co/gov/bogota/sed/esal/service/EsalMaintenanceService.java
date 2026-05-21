@@ -4,13 +4,22 @@ import co.gov.bogota.sed.esal.domain.Esal;
 import co.gov.bogota.sed.esal.domain.Nombramiento;
 import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
+import co.gov.bogota.sed.esal.domain.ActuacionAdministrativa;
+import co.gov.bogota.sed.esal.domain.AdvertenciaCompletitud;
+import co.gov.bogota.sed.esal.domain.DocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.domain.enums.TipoActuacion;
+import co.gov.bogota.sed.esal.domain.enums.TipoAdvertencia;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
+import co.gov.bogota.sed.esal.dto.CancelacionEsalDto;
 import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.NombramientoDto;
 import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
+import co.gov.bogota.sed.esal.repository.ActuacionAdministrativaRepository;
+import co.gov.bogota.sed.esal.repository.AdvertenciaCompletitudRepository;
+import co.gov.bogota.sed.esal.repository.DocumentoSoporteRepository;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
 import co.gov.bogota.sed.esal.repository.NombramientoRepository;
 import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
@@ -32,6 +41,9 @@ public class EsalMaintenanceService {
     private final PersoneriaJuridicaRepository personeriaRepository;
     private final NombramientoRepository nombramientoRepository;
     private final OrganoAdministracionRepository organoRepository;
+    private final ActuacionAdministrativaRepository actuacionRepository;
+    private final DocumentoSoporteRepository documentoRepository;
+    private final AdvertenciaCompletitudRepository advertenciaRepository;
     private final CompletitudService completitudService;
     private final AuditoriaService auditoriaService;
 
@@ -39,12 +51,18 @@ public class EsalMaintenanceService {
                                   PersoneriaJuridicaRepository personeriaRepository,
                                   NombramientoRepository nombramientoRepository,
                                   OrganoAdministracionRepository organoRepository,
+                                  ActuacionAdministrativaRepository actuacionRepository,
+                                  DocumentoSoporteRepository documentoRepository,
+                                  AdvertenciaCompletitudRepository advertenciaRepository,
                                   CompletitudService completitudService,
                                   AuditoriaService auditoriaService) {
         this.esalRepository = esalRepository;
         this.personeriaRepository = personeriaRepository;
         this.nombramientoRepository = nombramientoRepository;
         this.organoRepository = organoRepository;
+        this.actuacionRepository = actuacionRepository;
+        this.documentoRepository = documentoRepository;
+        this.advertenciaRepository = advertenciaRepository;
         this.completitudService = completitudService;
         this.auditoriaService = auditoriaService;
     }
@@ -216,6 +234,36 @@ public class EsalMaintenanceService {
         return toOrganoAdministracionDto(saved);
     }
 
+    public MantenimientoEsalDto cancelar(Long esalId, CancelacionEsalDto dto, String usuario) {
+        validarCancelacion(dto);
+        Esal esal = obtenerEsal(esalId);
+
+        ActuacionAdministrativa actuacion = new ActuacionAdministrativa();
+        actuacion.setEsalId(esalId);
+        actuacion.setTipoActuacion(TipoActuacion.CANCELACION);
+        actuacion.setResolucion(dto.getResolucion().trim());
+        actuacion.setFechaResolucion(dto.getFechaResolucion());
+        actuacion.setMotivo(dto.getMotivo().trim());
+        ActuacionAdministrativa saved = actuacionRepository.save(actuacion);
+
+        esal.setEstado(EstadoEsal.CANCELADO);
+        esal.setUpdatedAt(LocalDateTime.now());
+        esal.setUpdatedBy(usuario);
+        esalRepository.save(esal);
+
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                AuditoriaAcciones.ESAL_CANCELADA,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esal.getId(), esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_EXITO,
+                "Actuacion cancelacion: " + saved.getId());
+
+        completitudService.calcular(esalId);
+        registrarAdvertenciaSoporteCancelacionSiFalta(esalId);
+
+        return obtenerMantenimiento(esalId);
+    }
+
     private void aplicarInformacionPrincipal(Esal esal, EsalInformacionPrincipalDto dto, boolean crear) {
         if (dto.getNombre() != null) {
             esal.setNombre(dto.getNombre().trim());
@@ -298,6 +346,18 @@ public class EsalMaintenanceService {
         if (!esTipoRepresentantePermitido(tipo)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El campo 'tipoNombramiento' solo permite REPRESENTANTE_LEGAL o REPRESENTANTE_LEGAL_SUPLENTE.");
+        }
+    }
+
+    private void validarCancelacion(CancelacionEsalDto dto) {
+        if (dto == null || dto.getResolucion() == null || dto.getResolucion().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'resolucion' es obligatorio.");
+        }
+        if (dto.getFechaResolucion() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'fechaResolucion' es obligatorio.");
+        }
+        if (dto.getMotivo() == null || dto.getMotivo().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'motivo' es obligatorio.");
         }
     }
 
@@ -395,6 +455,33 @@ public class EsalMaintenanceService {
                 esal.getId(), esal.getIdSipej(),
                 AuditoriaAcciones.RESULTADO_EXITO,
                 "OrganoAdministracion: " + organo.getId());
+    }
+
+    private void registrarAdvertenciaSoporteCancelacionSiFalta(Long esalId) {
+        boolean existePdfCancelacion = documentoRepository.findByEsalId(esalId).stream()
+                .anyMatch(this::esSoportePdfCancelacion);
+        if (existePdfCancelacion) {
+            return;
+        }
+
+        AdvertenciaCompletitud advertencia = new AdvertenciaCompletitud();
+        advertencia.setEsalId(esalId);
+        advertencia.setSeccion("ACTUACIONES");
+        advertencia.setCampo("PDF SOPORTE CANCELACION");
+        advertencia.setTipo(TipoAdvertencia.DOCUMENTO_REQUERIDO_FALTANTE);
+        advertencia.setBloqueante(Boolean.FALSE);
+        advertencia.setMensaje("La cancelacion fue registrada sin PDF soporte asociado.");
+        advertencia.setCreatedAt(LocalDateTime.now());
+        advertenciaRepository.save(advertencia);
+    }
+
+    private boolean esSoportePdfCancelacion(DocumentoSoporte documento) {
+        if (!"application/pdf".equalsIgnoreCase(documento.getContentType())) {
+            return false;
+        }
+        String tipoProceso = documento.getTipoProceso() == null ? "" : documento.getTipoProceso().toUpperCase();
+        String tipoDocumento = documento.getTipoDocumento() == null ? "" : documento.getTipoDocumento().toUpperCase();
+        return tipoProceso.contains("CANCELACION") || tipoDocumento.contains("CANCELACION");
     }
 
     private PersoneriaJuridicaDto obtenerPersoneria(Long esalId) {

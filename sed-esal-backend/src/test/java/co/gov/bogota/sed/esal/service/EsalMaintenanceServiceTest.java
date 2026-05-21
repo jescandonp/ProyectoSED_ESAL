@@ -4,13 +4,18 @@ import co.gov.bogota.sed.esal.domain.Esal;
 import co.gov.bogota.sed.esal.domain.Nombramiento;
 import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
+import co.gov.bogota.sed.esal.domain.enums.TipoActuacion;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
+import co.gov.bogota.sed.esal.domain.enums.TipoAdvertencia;
+import co.gov.bogota.sed.esal.dto.CancelacionEsalDto;
 import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.NombramientoDto;
 import co.gov.bogota.sed.esal.dto.OrganoAdministracionDto;
 import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
+import co.gov.bogota.sed.esal.repository.ActuacionAdministrativaRepository;
+import co.gov.bogota.sed.esal.repository.AdvertenciaCompletitudRepository;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
 import co.gov.bogota.sed.esal.repository.NombramientoRepository;
 import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
@@ -46,6 +51,12 @@ class EsalMaintenanceServiceTest {
 
     @Autowired
     private OrganoAdministracionRepository organoRepository;
+
+    @Autowired
+    private ActuacionAdministrativaRepository actuacionRepository;
+
+    @Autowired
+    private AdvertenciaCompletitudRepository advertenciaRepository;
 
     @Test
     void crearEsalDesdeMantenimientoGuardaInformacionPrincipalYRecalculaCompletitud() {
@@ -236,5 +247,68 @@ class EsalMaintenanceServiceTest {
         assertThatThrownBy(() -> maintenanceService.actualizarMiembroOrgano(
                 esalDosId, creado.getId(), actualizacion, "admin-i5"))
                 .hasMessageContaining("Miembro de organo no encontrado");
+    }
+
+    @Test
+    void cancelarEsalCreaActuacionCambiaEstadoYAdvierteSiFaltaPdf() {
+        Esal esal = new Esal();
+        esal.setNombre("Fundacion Cancelacion");
+        esal.setIdSipej("I5-009");
+        esal.setEstado(EstadoEsal.ACTIVO);
+        esal = esalRepository.save(esal);
+
+        CancelacionEsalDto dto = new CancelacionEsalDto();
+        dto.setResolucion("Resolucion Cancelacion 001");
+        dto.setFechaResolucion(LocalDate.of(2026, 5, 20));
+        dto.setMotivo("Cancelacion por solicitud formal");
+
+        MantenimientoEsalDto result = maintenanceService.cancelar(esal.getId(), dto, "admin-i5");
+
+        Esal actualizada = esalRepository.findById(esal.getId()).orElseThrow(AssertionError::new);
+
+        assertThat(result.getInformacionPrincipal().getEstado()).isEqualTo(EstadoEsal.CANCELADO);
+        assertThat(actualizada.getEstado()).isEqualTo(EstadoEsal.CANCELADO);
+        assertThat(actuacionRepository.findByEsalId(esal.getId()))
+                .anySatisfy(actuacion -> {
+                    assertThat(actuacion.getTipoActuacion()).isEqualTo(TipoActuacion.CANCELACION);
+                    assertThat(actuacion.getResolucion()).isEqualTo("Resolucion Cancelacion 001");
+                    assertThat(actuacion.getFechaResolucion()).isEqualTo(LocalDate.of(2026, 5, 20));
+                    assertThat(actuacion.getMotivo()).isEqualTo("Cancelacion por solicitud formal");
+                });
+        assertThat(advertenciaRepository.findByEsalId(esal.getId()))
+                .anySatisfy(advertencia -> {
+                    assertThat(advertencia.getTipo()).isEqualTo(TipoAdvertencia.DOCUMENTO_REQUERIDO_FALTANTE);
+                    assertThat(advertencia.getCampo()).isEqualTo("PDF SOPORTE CANCELACION");
+                    assertThat(advertencia.getBloqueante()).isFalse();
+                });
+    }
+
+    @Test
+    void cancelarEsalValidaResolucionFechaYMotivo() {
+        Esal esal = new Esal();
+        esal.setNombre("Fundacion Cancelacion Validaciones");
+        esal.setIdSipej("I5-010");
+        esal.setEstado(EstadoEsal.ACTIVO);
+        esal = esalRepository.save(esal);
+
+        CancelacionEsalDto sinResolucion = new CancelacionEsalDto();
+        sinResolucion.setFechaResolucion(LocalDate.of(2026, 5, 20));
+        sinResolucion.setMotivo("Motivo informado");
+
+        CancelacionEsalDto sinFecha = new CancelacionEsalDto();
+        sinFecha.setResolucion("Resolucion 002");
+        sinFecha.setMotivo("Motivo informado");
+
+        CancelacionEsalDto sinMotivo = new CancelacionEsalDto();
+        sinMotivo.setResolucion("Resolucion 003");
+        sinMotivo.setFechaResolucion(LocalDate.of(2026, 5, 20));
+
+        Long esalId = esal.getId();
+        assertThatThrownBy(() -> maintenanceService.cancelar(esalId, sinResolucion, "admin-i5"))
+                .hasMessageContaining("resolucion");
+        assertThatThrownBy(() -> maintenanceService.cancelar(esalId, sinFecha, "admin-i5"))
+                .hasMessageContaining("fechaResolucion");
+        assertThatThrownBy(() -> maintenanceService.cancelar(esalId, sinMotivo, "admin-i5"))
+                .hasMessageContaining("motivo");
     }
 }

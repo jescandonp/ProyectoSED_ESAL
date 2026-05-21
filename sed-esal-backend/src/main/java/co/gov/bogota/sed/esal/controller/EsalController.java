@@ -2,6 +2,7 @@ package co.gov.bogota.sed.esal.controller;
 
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.dto.CambiarEstadoDto;
+import co.gov.bogota.sed.esal.dto.CancelacionEsalDto;
 import co.gov.bogota.sed.esal.dto.CompletitudDto;
 import co.gov.bogota.sed.esal.dto.DocumentoSoporteDto;
 import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
@@ -283,6 +284,17 @@ public class EsalController {
             Authentication authentication) {
         String usuario = authentication != null ? authentication.getName() : "sistema";
         return ResponseEntity.ok(esalMaintenanceService.actualizarMiembroOrgano(id, miembroId, dto, usuario));
+    }
+
+    @PostMapping("/{id}/cancelacion")
+    @Operation(summary = "Cancelar ESAL",
+               description = "Registra actuacion administrativa de cancelacion y cambia estado a CANCELADO. Solo ADMINISTRADOR.")
+    public ResponseEntity<MantenimientoEsalDto> cancelar(
+            @PathVariable Long id,
+            @RequestBody CancelacionEsalDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalMaintenanceService.cancelar(id, dto, usuario));
     }
 
     // =========================================================================

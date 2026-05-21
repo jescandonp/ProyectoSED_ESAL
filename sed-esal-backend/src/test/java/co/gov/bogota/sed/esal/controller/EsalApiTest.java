@@ -388,4 +388,85 @@ class EsalApiTest {
                         .content(objectMapper.writeValueAsString(miembroBody)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void mantenimientoCancelacionPermiteCancelarComoAdmin() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Cancelacion API");
+        createBody.put("idSipej", "SIPEJ-I5-API-006");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> cancelacionBody = new HashMap<>();
+        cancelacionBody.put("resolucion", "Resolucion API Cancelacion 001");
+        cancelacionBody.put("fechaResolucion", "2026-05-20");
+        cancelacionBody.put("motivo", "Cancelacion API formal");
+
+        mockMvc.perform(post("/api/esales/" + id + "/cancelacion")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelacionBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.informacionPrincipal.estado").value("CANCELADO"));
+    }
+
+    @Test
+    void cancelacionSinCamposObligatoriosRetorna400() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Cancelacion Validacion API");
+        createBody.put("idSipej", "SIPEJ-I5-API-007");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> cancelacionBody = new HashMap<>();
+        cancelacionBody.put("fechaResolucion", "2026-05-20");
+        cancelacionBody.put("motivo", "Cancelacion incompleta");
+
+        mockMvc.perform(post("/api/esales/" + id + "/cancelacion")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelacionBody)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void expedidorNoPuedeCancelarEsal() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Cancelacion Seguridad");
+        createBody.put("idSipej", "SIPEJ-I5-API-008");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, Object> cancelacionBody = new HashMap<>();
+        cancelacionBody.put("resolucion", "Resolucion Bloqueada");
+        cancelacionBody.put("fechaResolucion", "2026-05-20");
+        cancelacionBody.put("motivo", "No permitido");
+
+        mockMvc.perform(post("/api/esales/" + id + "/cancelacion")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelacionBody)))
+                .andExpect(status().isForbidden());
+    }
 }

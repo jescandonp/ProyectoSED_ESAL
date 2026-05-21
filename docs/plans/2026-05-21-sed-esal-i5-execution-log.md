@@ -32,8 +32,12 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T8 parcial | Seguridad endpoints organo de administracion | `ADMINISTRADOR` puede mutar miembros; `EXPEDIDOR` recibe 403 en creacion |
 | 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 19 tests |
 | 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 117 tests |
+| 2026-05-21 | T6 | Cancelacion formal | `POST /api/esales/{id}/cancelacion` valida resolucion, fecha y motivo, crea actuacion `CANCELACION` y cambia estado a `CANCELADO` |
+| 2026-05-21 | T6 | Advertencia por soporte faltante | Cancelacion sin PDF soporte se guarda y registra advertencia no bloqueante `PDF SOPORTE CANCELACION` |
+| 2026-05-21 | T8 parcial | Seguridad endpoint cancelacion | `ADMINISTRADOR` puede cancelar; `EXPEDIDOR` recibe 403 |
+| 2026-05-21 | Verificacion | `mvn test "-Dtest=EsalMaintenanceServiceTest,EsalApiTest"` | BUILD SUCCESS, 24 tests |
+| 2026-05-21 | Verificacion | `mvn test` en `sed-esal-backend` | BUILD SUCCESS, 122 tests |
 
 ## Pendientes Del Siguiente Bloque
 
-- T6 Cancelacion formal.
 - T7 Reactivacion desde `CANCELADO`.
