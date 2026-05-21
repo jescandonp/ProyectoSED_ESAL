@@ -58,4 +58,8 @@ public final class AuditoriaAcciones {
     public static final String ACCESO_DENEGADO              = "ACCESO_DENEGADO";
     public static final String TOKEN_INVALIDO_O_AUSENTE     = "TOKEN_INVALIDO_O_AUSENTE";
     public static final String DOCUMENTO_DESCARGADO         = "DOCUMENTO_DESCARGADO";
+
+    // ── I5 ───────────────────────────────────────────────────────────────────
+    public static final String ESAL_INFORMACION_PRINCIPAL_ACTUALIZADA = "ESAL_INFORMACION_PRINCIPAL_ACTUALIZADA";
+    public static final String ESAL_PERSONERIA_ACTUALIZADA            = "ESAL_PERSONERIA_ACTUALIZADA";
 }

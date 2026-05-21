@@ -186,4 +186,56 @@ class EsalApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("SUSPENDIDO"));
     }
+
+    @Test
+    void mantenimientoPermiteGuardarInformacionPrincipalYPersoneriaComoAdmin() throws Exception {
+        Map<String, String> createBody = new HashMap<>();
+        createBody.put("nombre", "ESAL Mantenimiento I5");
+        createBody.put("idSipej", "SIPEJ-I5-API-001");
+
+        MvcResult createResult = mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.informacionPrincipal.nombre").value("ESAL Mantenimiento I5"))
+                .andReturn();
+
+        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        Map<String, String> updateBody = new HashMap<>();
+        updateBody.put("nombre", "ESAL Mantenimiento I5 Actualizada");
+        updateBody.put("domicilio", "Bogota D.C.");
+
+        mockMvc.perform(put("/api/esales/" + id + "/informacion-principal")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.informacionPrincipal.nombre").value("ESAL Mantenimiento I5 Actualizada"));
+
+        Map<String, String> personeriaBody = new HashMap<>();
+        personeriaBody.put("reconocimientoPersoneriaJuridica", "Resolucion API 001");
+        personeriaBody.put("fechaReconocimientoPersoneriaJuridica", "2025-01-20");
+        personeriaBody.put("entidadQueExpide", "SED");
+
+        mockMvc.perform(put("/api/esales/" + id + "/personeria-juridica")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personeriaBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.personeriaJuridica.reconocimientoPersoneriaJuridica").value("Resolucion API 001"));
+    }
+
+    @Test
+    void expedidorNoPuedeUsarEndpointsDeMantenimiento() throws Exception {
+        Map<String, String> body = new HashMap<>();
+        body.put("nombre", "ESAL Mantenimiento No Permitida");
+
+        mockMvc.perform(post("/api/esales/mantenimiento")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isForbidden());
+    }
 }

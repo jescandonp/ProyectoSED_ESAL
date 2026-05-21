@@ -4,13 +4,17 @@ import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.dto.CambiarEstadoDto;
 import co.gov.bogota.sed.esal.dto.CompletitudDto;
 import co.gov.bogota.sed.esal.dto.DocumentoSoporteDto;
+import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
 import co.gov.bogota.sed.esal.dto.EsalCreateDto;
 import co.gov.bogota.sed.esal.dto.EsalDetalleDto;
 import co.gov.bogota.sed.esal.dto.EsalResumenDto;
 import co.gov.bogota.sed.esal.dto.EsalUpdateDto;
+import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
 import co.gov.bogota.sed.esal.dto.PageDto;
+import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
 import co.gov.bogota.sed.esal.service.CompletitudService;
 import co.gov.bogota.sed.esal.service.DocumentoSoporteService;
+import co.gov.bogota.sed.esal.service.EsalMaintenanceService;
 import co.gov.bogota.sed.esal.service.EsalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -59,13 +63,16 @@ import java.util.List;
 public class EsalController {
 
     private final EsalService esalService;
+    private final EsalMaintenanceService esalMaintenanceService;
     private final CompletitudService completitudService;
     private final DocumentoSoporteService documentoSoporteService;
 
     public EsalController(EsalService esalService,
+                          EsalMaintenanceService esalMaintenanceService,
                           CompletitudService completitudService,
                           DocumentoSoporteService documentoSoporteService) {
         this.esalService = esalService;
+        this.esalMaintenanceService = esalMaintenanceService;
         this.completitudService = completitudService;
         this.documentoSoporteService = documentoSoporteService;
     }
@@ -168,6 +175,50 @@ public class EsalController {
             Authentication authentication) {
         String usuario = authentication != null ? authentication.getName() : "sistema";
         return ResponseEntity.ok(esalService.cambiarEstado(id, dto.getEstado(), usuario));
+    }
+
+    // =========================================================================
+    // I5 - Mantenimiento seccional
+    // =========================================================================
+
+    @PostMapping("/mantenimiento")
+    @Operation(summary = "Crear ESAL desde mantenimiento",
+               description = "Crea una ESAL para mantenimiento operativo I5. Solo ADMINISTRADOR.")
+    public ResponseEntity<MantenimientoEsalDto> crearDesdeMantenimiento(
+            @RequestBody EsalInformacionPrincipalDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        MantenimientoEsalDto result = esalMaintenanceService.crear(dto, usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @GetMapping("/{id}/mantenimiento")
+    @Operation(summary = "Obtener mantenimiento de ESAL",
+               description = "Devuelve la vista seccional de mantenimiento I5.")
+    public ResponseEntity<MantenimientoEsalDto> obtenerMantenimiento(@PathVariable Long id) {
+        return ResponseEntity.ok(esalMaintenanceService.obtenerMantenimiento(id));
+    }
+
+    @PutMapping("/{id}/informacion-principal")
+    @Operation(summary = "Actualizar informacion principal",
+               description = "Actualiza la seccion de informacion principal. Solo ADMINISTRADOR.")
+    public ResponseEntity<MantenimientoEsalDto> actualizarInformacionPrincipal(
+            @PathVariable Long id,
+            @RequestBody EsalInformacionPrincipalDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalMaintenanceService.actualizarInformacionPrincipal(id, dto, usuario));
+    }
+
+    @PutMapping("/{id}/personeria-juridica")
+    @Operation(summary = "Guardar personeria juridica",
+               description = "Crea o actualiza la seccion de personeria juridica. Solo ADMINISTRADOR.")
+    public ResponseEntity<MantenimientoEsalDto> guardarPersoneriaJuridica(
+            @PathVariable Long id,
+            @RequestBody PersoneriaJuridicaDto dto,
+            Authentication authentication) {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        return ResponseEntity.ok(esalMaintenanceService.guardarPersoneriaJuridica(id, dto, usuario));
     }
 
     // =========================================================================

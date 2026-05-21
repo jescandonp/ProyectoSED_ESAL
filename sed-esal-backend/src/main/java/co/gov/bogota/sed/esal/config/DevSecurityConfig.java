@@ -64,6 +64,7 @@ public class DevSecurityConfig {
                 .antMatchers(HttpMethod.PUT,  "/api/admin/**").hasRole("ADMINISTRADOR")
                 // Solo ADMINISTRADOR — escritura ESAL
                 .antMatchers(HttpMethod.POST, "/api/esales").hasRole("ADMINISTRADOR")
+                .antMatchers(HttpMethod.POST, "/api/esales/mantenimiento").hasRole("ADMINISTRADOR")
                 .antMatchers(HttpMethod.PUT,  "/api/esales/**").hasRole("ADMINISTRADOR")
                 .antMatchers(HttpMethod.POST, "/api/esales/*/documentos").hasRole("ADMINISTRADOR")
                 // ADMINISTRADOR o EXPEDIDOR — consultas ESAL
