@@ -4,6 +4,7 @@ import co.gov.bogota.sed.esal.domain.Certificado;
 import co.gov.bogota.sed.esal.domain.Firmante;
 import co.gov.bogota.sed.esal.domain.enums.EstadoCertificado;
 import co.gov.bogota.sed.esal.dto.CertificadoDto;
+import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto;
 import co.gov.bogota.sed.esal.dto.PreviewCertificadoDto;
 import co.gov.bogota.sed.esal.repository.CertificadoRepository;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ public class GeneracionService {
     private final NumeracionService numeracionService;
     private final FirmanteService firmanteService;
     private final CertificadoPdfService pdfService;
+    private final CertificadoAssembler certificadoAssembler;
     private final AlmacenamientoService almacenamientoService;
     private final CertificadoRepository certificadoRepository;
     private final AuditoriaService auditoriaService;
@@ -33,6 +35,7 @@ public class GeneracionService {
                              NumeracionService numeracionService,
                              FirmanteService firmanteService,
                              CertificadoPdfService pdfService,
+                             CertificadoAssembler certificadoAssembler,
                              AlmacenamientoService almacenamientoService,
                              CertificadoRepository certificadoRepository,
                              AuditoriaService auditoriaService) {
@@ -40,6 +43,7 @@ public class GeneracionService {
         this.numeracionService    = numeracionService;
         this.firmanteService      = firmanteService;
         this.pdfService           = pdfService;
+        this.certificadoAssembler = certificadoAssembler;
         this.almacenamientoService = almacenamientoService;
         this.certificadoRepository = certificadoRepository;
         this.auditoriaService     = auditoriaService;
@@ -78,7 +82,8 @@ public class GeneracionService {
         // 4. Generar PDF
         byte[] pdfBytes;
         try {
-            pdfBytes = pdfService.generar(preview, numero, firmante.getNombre(), firmante.getCargo(), ahora);
+            CertificadoNarrativoDto narrativo = certificadoAssembler.ensamblar(esalId);
+            pdfBytes = pdfService.generar(narrativo, numero, firmante.getNombre(), firmante.getCargo(), ahora);
         } catch (Exception e) {
             Certificado fallido = registrarEstado(esalId, preview, EstadoCertificado.FALLIDO,
                     numero, firmante, ahora, null, "Error al generar PDF: " + e.getMessage(), usuario);

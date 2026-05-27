@@ -310,7 +310,28 @@ Estado: completado. Implementado en commits I5 hasta `feat: align SED ESAL I5 pr
 | I5-CERT-02 | Editar ESAL despues de generar certificado | Endpoints I5 + consulta certificado historico | Cambiar nombre u otro dato base | Certificado historico conserva `versionDatos` y contenido historico |
 | I5-CERT-03 | Generar nuevo certificado despues de editar | `POST /api/certificados/esales/{id}` | ESAL editada y certificable | Nuevo certificado usa version vigente de datos |
 
-## 13. Incrementos Posteriores
+## 13. Incremento 6 - Certificado Narrativo
+
+Fuente de especificacion: `docs/specs/2026-05-27-sed-esal-i6-spec.md`.
+
+Estado: en progreso. Implementacion backend verificada con tests enfocados.
+
+### I6 - Verificacion Layout PDF
+
+| ID | Accion | Datos | Esperado |
+|---|---|---|---|
+| I6-PDF-01 | Generar certificado para ESAL certificable | ESAL completa con representante legal vigente | PDF se genera con `Plantilla: I6-v1` |
+| I6-PDF-02 | Revisar preambulo | PDF generado | Incluye `LA SUSCRITA DIRECTORA DE INSPECCION Y VIGILANCIA` |
+| I6-PDF-03 | Revisar decretos habilitantes | PDF generado | Incluye Decretos Distritales 479 de 2024 y 650 de 2025 |
+| I6-PDF-04 | Revisar bloque `CERTIFICA` | PDF generado | `CERTIFICA` aparece centrado antes del parrafo narrativo |
+| I6-PDF-05 | Revisar parrafo narrativo inicial | ESAL con nombre, domicilio, SIPEJ, NIT y personeria | Datos principales aparecen en prosa juridica |
+| I6-PDF-06 | Revisar tabla de representacion legal | Representante legal vigente | Tabla con NOMBRE, IDENTIFICACION, CARGO, ACTA NOMBRAMIENTO, RADICADO SED |
+| I6-PDF-07 | Revisar tablas opcionales | ESAL con junta, asamblea o revisor fiscal | Secciones separadas por organo cuando existan datos |
+| I6-PDF-08 | Revisar formula de cierre | PDF generado | Texto `Se expide en Bogota D.C., a los...` con fecha en letras |
+| I6-PDF-09 | Revisar firmante | Firmante vigente | Nombre del firmante aparece en verde bold con cargo |
+| I6-PDF-10 | Revisar NOTA 1 | PDF generado | Incluye nota legal con linea separadora al pie |
+
+## 14. Incrementos Posteriores
 
 ### Verificacion Externa Futura
 
