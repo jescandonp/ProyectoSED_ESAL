@@ -58,6 +58,11 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-21 | T11 | Documentacion funcional I5 | `README.md`, `docs/ARRANQUE.md` y `docs/GUIA_PRUEBAS_FUNCIONALES.md` actualizados a estado I5 |
 | 2026-05-21 | T11 | Guia funcional I5 | Casos de creacion, edicion seccional, cancelacion, reactivacion, seguridad, preview y certificados documentados |
 | 2026-05-21 | Cierre I5 | Incremento completado | CRUD y mantenimiento operativo de ESAL queda documentado y verificable por bloques |
+| 2026-05-27 | Ajuste I5 | Revision post-cierre de visibilidad | Se confirma que I5 estaba implementado en backend/frontend, pero con acceso frontend poco descubrible |
+| 2026-05-27 | Ajuste I5 | Navegacion lateral corregida | Se retira `Buscar ESAL` del sidebar porque apuntaba a `/busqueda`, ruta no registrada en el router Angular actual |
+| 2026-05-27 | Ajuste I5 | Acceso a mantenimiento expuesto | El detalle general de ESAL muestra `Actualizar informacion` para `ADMINISTRADOR` y navega a `/admin/esales/:id/mantenimiento` |
+| 2026-05-27 | Verificacion | `npm test -- --watch=false --browsers=ChromeHeadless` | SUCCESS, 4 tests |
+| 2026-05-27 | Verificacion | `npm run build` en `sed-esal-angular` | BUILD SUCCESS con warnings Angular preexistentes de optional/nullish checks |
 
 ## Pendientes Del Siguiente Bloque
 

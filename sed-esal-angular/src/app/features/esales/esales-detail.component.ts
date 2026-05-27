@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import {
   EsalDetalle,
@@ -42,6 +43,11 @@ type TabActiva = 'info' | 'completitud' | 'documentos';
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <span [class]="'sed-chip ' + chipEstado(esal()!.estado)">{{ labelEstado(esal()!.estado) }}</span>
             <span [class]="'sed-chip ' + chipCompletitud(esal()!.estadoCompletitud)">{{ labelCompletitud(esal()!.estadoCompletitud) }}</span>
+            @if (esAdministrador()) {
+              <button class="sed-btn-primary" style="padding: 6px 14px; font-size: 12px;" (click)="irAMantenimiento()">
+                ✏️ Actualizar información
+              </button>
+            }
             <button class="sed-btn-primary" style="padding: 6px 14px; font-size: 12px;" (click)="verPreview()">
               📋 Vista Previa
             </button>
@@ -243,6 +249,7 @@ export class EsalesDetailComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
   readonly id = this.route.snapshot.paramMap.get('id') ?? '';
 
@@ -289,6 +296,14 @@ export class EsalesDetailComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/esales']);
+  }
+
+  esAdministrador(): boolean {
+    return this.auth.isAdmin();
+  }
+
+  irAMantenimiento(): void {
+    this.router.navigate(['/admin/esales', this.id, 'mantenimiento']);
   }
 
   verPreview(): void {

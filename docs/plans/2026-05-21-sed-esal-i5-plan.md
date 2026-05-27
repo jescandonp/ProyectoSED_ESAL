@@ -215,3 +215,22 @@ Verificacion:
 ## 7. Resultado Esperado
 
 Al cerrar I5, `SED_ESAL` debe permitir mantenimiento operativo por aplicativo para las secciones prioritarias de una ESAL, registrar cancelaciones formalmente, conservar trazabilidad, proteger certificados historicos y dejar preparada la extension posterior a mas secciones del PRD.
+
+## 8. Ajuste Post-Cierre 2026-05-27
+
+Hallazgo posterior al cierre funcional:
+
+- La funcionalidad I5 estaba implementada, pero su descubribilidad en frontend era incompleta.
+- El menu lateral exponia `Buscar ESAL` hacia `/busqueda`, ruta no registrada en el router Angular actual.
+- El acceso a mantenimiento I5 quedaba visible en el detalle administrativo, pero no en el detalle general consultado por un `ADMINISTRADOR`.
+
+Acciones de ajuste:
+
+- Retirar la entrada de menu con ruta rota para evitar redireccion al login por fallback.
+- Exponer `Actualizar informacion` en el detalle general cuando el usuario autenticado sea `ADMINISTRADOR`.
+- Verificar nuevamente navegacion, tests y build frontend.
+
+Verificacion del ajuste:
+
+- `npm test -- --watch=false --browsers=ChromeHeadless`
+- `npm run build`

@@ -34,4 +34,13 @@ describe('App', () => {
     expect(maintenanceRoute).toBeTruthy();
     expect(maintenanceRoute?.canActivate).toBeTruthy();
   });
+
+  it('should not keep stale busqueda route references in the router', () => {
+    const shellRoute = routes.find((route) => route.component);
+    const busquedaRoute = shellRoute?.children?.find(
+      (route) => route.path === 'busqueda'
+    );
+
+    expect(busquedaRoute).toBeUndefined();
+  });
 });
