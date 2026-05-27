@@ -64,4 +64,11 @@ export class ApiService {
     }
     return this.http.post<T>(path, formData, { headers });
   }
+
+  download(path: string): Observable<Blob> {
+    return this.http.get(path, {
+      headers: this.getHeaders(),
+      responseType: 'blob',
+    });
+  }
 }

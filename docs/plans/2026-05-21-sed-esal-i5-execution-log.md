@@ -61,7 +61,11 @@ Se inicia la implementacion incremental de I5 bajo SDD, con avance por tareas y 
 | 2026-05-27 | Ajuste I5 | Revision post-cierre de visibilidad | Se confirma que I5 estaba implementado en backend/frontend, pero con acceso frontend poco descubrible |
 | 2026-05-27 | Ajuste I5 | Navegacion lateral corregida | Se retira `Buscar ESAL` del sidebar porque apuntaba a `/busqueda`, ruta no registrada en el router Angular actual |
 | 2026-05-27 | Ajuste I5 | Acceso a mantenimiento expuesto | El detalle general de ESAL muestra `Actualizar informacion` para `ADMINISTRADOR` y navega a `/admin/esales/:id/mantenimiento` |
+| 2026-05-27 | Ajuste I5 | Descarga PDF corregida | El resultado de certificado reemplaza `href` directo por descarga via `HttpClient` autenticado para evitar `401` del backend |
+| 2026-05-27 | Ajuste I5 | Prueba de regresion descarga | Se agrega prueba frontend del resultado de certificado para validar que la descarga usa `ApiService` autenticado |
 | 2026-05-27 | Verificacion | `npm test -- --watch=false --browsers=ChromeHeadless` | SUCCESS, 4 tests |
+| 2026-05-27 | Verificacion | `ng test` focalizado en `resultado-certificado.component.spec.ts` | SUCCESS, 1 test |
+| 2026-05-27 | Verificacion | `npm test -- --watch=false --browsers=ChromeHeadless` | SUCCESS, 5 tests |
 | 2026-05-27 | Verificacion | `npm run build` en `sed-esal-angular` | BUILD SUCCESS con warnings Angular preexistentes de optional/nullish checks |
 
 ## Pendientes Del Siguiente Bloque

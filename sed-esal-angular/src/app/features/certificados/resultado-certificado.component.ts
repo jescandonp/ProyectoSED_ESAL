@@ -62,7 +62,9 @@ import { CertificadoDto, EstadoCertificado } from '../../core/models/esal.model'
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
           <button class="sed-btn-secondary" (click)="volver()">← Volver a ESAL</button>
           @if (cert()!.estadoCertificado === 'GENERADO') {
-            <a [href]="descargarUrl()" class="btn-descargar" target="_blank">⬇ Descargar PDF</a>
+            <button class="btn-descargar" type="button" [disabled]="descargando()" (click)="descargarPdf()">
+              {{ descargando() ? 'Descargando...' : '⬇ Descargar PDF' }}
+            </button>
           }
           <button class="sed-btn-secondary" (click)="verHistorial()">📋 Ver historial</button>
         </div>
@@ -77,7 +79,7 @@ import { CertificadoDto, EstadoCertificado } from '../../core/models/esal.model'
     .info-valor { font-size: 14px; color: var(--color-on-surface); }
     .btn-descargar {
       background: #1b5e20; color: #fff; padding: 8px 18px; border-radius: 6px;
-      text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-block;
+      border: none; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-block;
     }
   `],
 })
@@ -92,6 +94,7 @@ export class ResultadoCertificadoComponent implements OnInit {
   cert     = signal<CertificadoDto | null>(null);
   cargando = signal(false);
   error    = signal<string | null>(null);
+  descargando = signal(false);
 
   ngOnInit(): void {
     this.cargando.set(true);
@@ -111,8 +114,23 @@ export class ResultadoCertificadoComponent implements OnInit {
     else this.router.navigate(['/esales']);
   }
 
-  descargarUrl(): string {
-    return `/sed-esal/api/certificados/${this.certificadoId}/descargar`;
+  descargarPdf(): void {
+    this.descargando.set(true);
+    this.api.download(`/api/certificados/${this.certificadoId}/descargar`).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = this.cert()?.nombreArchivo ?? 'certificado.pdf';
+        enlace.click();
+        URL.revokeObjectURL(url);
+        this.descargando.set(false);
+      },
+      error: () => {
+        this.error.set('No se pudo descargar el certificado.');
+        this.descargando.set(false);
+      },
+    });
   }
 
   chipEstado(e: EstadoCertificado): string {

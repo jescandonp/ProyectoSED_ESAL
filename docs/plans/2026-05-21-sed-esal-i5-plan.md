@@ -228,6 +228,7 @@ Acciones de ajuste:
 
 - Retirar la entrada de menu con ruta rota para evitar redireccion al login por fallback.
 - Exponer `Actualizar informacion` en el detalle general cuando el usuario autenticado sea `ADMINISTRADOR`.
+- Corregir la descarga de PDF del resultado de certificado para que use `HttpClient` autenticado y no un `href` directo sin cabecera `Authorization`.
 - Verificar nuevamente navegacion, tests y build frontend.
 
 Verificacion del ajuste:
