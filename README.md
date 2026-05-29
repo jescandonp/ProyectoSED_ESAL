@@ -4,7 +4,7 @@ Aplicativo interno para la Direccion de Inspeccion y Vigilancia de la Secretaria
 
 ## Estado
 
-Fase actual: I6 en progreso bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
+Fase actual: I6 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
 
 `SED_ESAL` cuenta con backend Spring Boot WAR y frontend Angular para busqueda, preview, generacion de certificados, seguridad por roles y mantenimiento operativo de ESAL. La carga Excel se conserva como mecanismo inicial o esporadico; el mantenimiento posterior se realiza desde el aplicativo por secciones administrativas.
 
@@ -35,7 +35,7 @@ Fase actual: I6 en progreso bajo Spec-Driven Development (SDD), nivel Spec-Ancho
 | I3 | Completado | Generacion PDF, numeracion, firmante y trazabilidad |
 | I4 | Completado | Seguridad institucional, autorizacion y hardening |
 | I5 | Completado | CRUD y mantenimiento operativo de ESAL |
-| I6 | En progreso | Fidelidad del certificado PDF a plantilla oficial |
+| I6 | Completado | Fidelidad del certificado PDF a plantilla oficial |
 
 ## Coordenadas Canonicas
 

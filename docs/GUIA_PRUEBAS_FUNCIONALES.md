@@ -1,8 +1,8 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: I5 completado.
-> Tests backend: 131 (BUILD SUCCESS). Frontend Angular: tests y build en verde.
-> Fecha: 2026-05-21.
+> Estado: I6 completado.
+> Tests backend: 136 (BUILD SUCCESS). Frontend Angular: build en verde.
+> Fecha: 2026-05-29.
 > Marco: SDD Spec-Anchored por incrementos.
 
 ## 1. Objetivo
@@ -53,7 +53,7 @@ Requisito: backend levantado en `http://localhost:8080` y frontend en `http://lo
 | T-00-03 | Abrir frontend | `http://localhost:4200` | Pantalla login carga |
 | T-00-04 | Login ADMINISTRADOR | Usuario `admin@educacionbogota.edu.co` / `admin123` | Sidebar con modulos admin visibles |
 | T-00-05 | Login EXPEDIDOR | Usuario `expedidor@educacionbogota.edu.co` / `expedidor123` | Sidebar solo con busqueda/consulta |
-| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 131 tests, BUILD SUCCESS |
+| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 136 tests, BUILD SUCCESS |
 | T-00-07 | Verificar build frontend | `npm run build` en `sed-esal-angular` | BUILD SUCCESS sin errores |
 
 ## 5. Incremento 0 - Base Documental Y Arquitectura
@@ -314,7 +314,7 @@ Estado: completado. Implementado en commits I5 hasta `feat: align SED ESAL I5 pr
 
 Fuente de especificacion: `docs/specs/2026-05-27-sed-esal-i6-spec.md`.
 
-Estado: en progreso. Implementacion backend verificada con tests enfocados.
+Estado: completado. Implementacion backend verificada con tests enfocados y suite completa.
 
 ### I6 - Verificacion Layout PDF
 

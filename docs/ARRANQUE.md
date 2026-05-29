@@ -1,8 +1,8 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I5 completado (131 tests backend, build Angular OK).
+> Estado: I6 completado (136 tests backend, build Angular OK).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
-> Ultima actualizacion: 2026-05-21.
+> Ultima actualizacion: 2026-05-29.
 
 ## Orden De Documentos
 
@@ -28,11 +28,14 @@
 20. Spec I5: `docs/specs/2026-05-21-sed-esal-i5-spec.md`
 21. Plan I5: `docs/plans/2026-05-21-sed-esal-i5-plan.md`
 22. Log I5: `docs/plans/2026-05-21-sed-esal-i5-execution-log.md`
-23. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+23. Spec I6: `docs/specs/2026-05-27-sed-esal-i6-spec.md`
+24. Plan I6: `docs/plans/2026-05-27-sed-esal-i6-plan.md`
+25. Log I6: `docs/plans/2026-05-27-sed-esal-i6-execution-log.md`
+26. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Estado Del Proyecto
 
-`SED_ESAL` tiene I5 completado. El backend tiene 131 tests en verde (BUILD SUCCESS). El frontend Angular compila sin errores. Ambos artefactos listos para ejecucion local-dev.
+`SED_ESAL` tiene I6 completado. El backend tiene 136 tests en verde (BUILD SUCCESS). El frontend Angular compila sin errores. Ambos artefactos listos para ejecucion local-dev.
 
 - Spec 0 de fundacion documental y arquitectura: completado.
 - Spec I1 de modelo base, carga inicial y completitud: completado.
@@ -40,6 +43,7 @@
 - Spec I3 de generacion PDF, numeracion, firmante y trazabilidad: completado (78 tests, build Angular OK).
 - Spec I4 de seguridad institucional, autorizacion y hardening: completado (99 tests, build Angular OK).
 - Spec I5 de CRUD y mantenimiento operativo de ESAL: completado (131 tests backend, build Angular OK).
+- Spec I6 de fidelidad del certificado PDF a la plantilla oficial: completado (136 tests backend, build Angular OK).
 - Pendiente: confirmar con TI SED tenant, issuer, audience, JWKS y CORS institucional para activar perfil weblogic.
 
 ## Artefactos Fuente
@@ -84,7 +88,7 @@ Estas coordenadas quedan aprobadas para iniciar I1. Cualquier cambio posterior p
 ```powershell
 # Backend
 Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
-mvn test                    # 131 tests, BUILD SUCCESS
+mvn test                    # 136 tests, BUILD SUCCESS
 mvn package -DskipTests     # genera target/sed-esal-backend.war
 mvn spring-boot:run -Dspring-boot.run.profiles=local-dev  # levanta en :8080
 

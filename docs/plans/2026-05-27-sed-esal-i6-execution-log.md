@@ -2,7 +2,7 @@
 
 > Spec: `docs/specs/2026-05-27-sed-esal-i6-spec.md`
 > Plan: `docs/plans/2026-05-27-sed-esal-i6-plan.md`
-> Estado: en progreso.
+> Estado: completado.
 > Fecha inicio: 2026-05-27.
 
 ## Resumen
@@ -24,3 +24,7 @@ con formato narrativo fiel a la plantilla.
 | 2026-05-27 | Docs | README y guia funcional actualizados con spec/validacion I6 | I6 queda visible en estructura canonica |
 | 2026-05-27 | Verificacion | Suite backend completa ejecutada | `mvn test` pasa 136 tests, 0 fallos |
 | 2026-05-27 | Verificacion | Build Angular ejecutado | `node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build` pasa con warnings NG8102/NG8107 preexistentes |
+| 2026-05-29 | Verificacion | Smoke test PDF fortalecido con extraccion de texto y validacion de bloques I6 | `mvn test "-Dtest=CertificadoPdfServiceTest"` pasa 1/1 |
+| 2026-05-29 | Docs | README, ARRANQUE y guia funcional actualizados a cierre I6 | I6 marcado como completado con 136 tests backend |
+| 2026-05-29 | Verificacion final | Suite backend completa ejecutada para cierre | `mvn test` pasa 136 tests, 0 fallos |
+| 2026-05-29 | Verificacion final | Build Angular ejecutado para cierre | `node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build` pasa con warnings NG8102/NG8107 preexistentes |
