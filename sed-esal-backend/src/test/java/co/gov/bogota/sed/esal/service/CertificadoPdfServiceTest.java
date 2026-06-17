@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 class CertificadoPdfServiceTest {
 
@@ -148,10 +149,13 @@ class CertificadoPdfServiceTest {
         reader.close();
         assertThat(pageSize.getWidth()).isEqualTo(612.0f);
         assertThat(pageSize.getHeight()).isEqualTo(792.0f);
+        assertThat(CertificadoPdfService.LOGO_HEADER_ANCHO).isCloseTo(154.49f, within(0.01f));
+        assertThat(CertificadoPdfService.LOGO_HEADER_ALTO).isCloseTo(57.54f, within(0.01f));
         assertThat(xobjects)
                 .as("El encabezado debe incluir el logo institucional como imagen PDF")
                 .isNotNull();
         assertThat(xobjects.getKeys()).isNotEmpty();
+        assertThat(tieneImagen(xobjects)).isTrue();
 
         String texto = extraerTexto(pdf);
         assertThat(texto).contains("Plantilla: I8-EYRL-v1");
@@ -193,6 +197,16 @@ class CertificadoPdfServiceTest {
         }
         reader.close();
         return texto.toString();
+    }
+
+    private boolean tieneImagen(PdfDictionary xobjects) {
+        for (Object key : xobjects.getKeys()) {
+            PdfDictionary candidate = (PdfDictionary) PdfReader.getPdfObject(xobjects.get((PdfName) key));
+            if (PdfName.IMAGE.equals(candidate.getAsName(PdfName.SUBTYPE))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void assertOrden(String texto, String... fragmentos) {

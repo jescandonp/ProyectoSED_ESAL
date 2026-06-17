@@ -123,6 +123,22 @@ Implementacion:
 - El encabezado textual anterior se reemplaza por el logo institucional como imagen centrada.
 - `CertificadoPdfServiceTest` valida que la primera pagina del PDF tenga una imagen en recursos XObject.
 
+### Ajuste De Tamano Del Logo
+
+Fecha: 2026-06-17.
+
+Solicitud: fijar el logo del header con tamano absoluto:
+
+- Alto: 2,03 cm.
+- Ancho: 5,45 cm.
+
+Implementacion:
+
+- `LOGO_HEADER_ANCHO = 154.49f` puntos PDF.
+- `LOGO_HEADER_ALTO = 57.54f` puntos PDF.
+- El logo usa `scaleAbsolute(LOGO_HEADER_ANCHO, LOGO_HEADER_ALTO)`.
+- `CertificadoPdfServiceTest` valida las constantes de tamano y la presencia de imagen en PDF.
+
 Verificacion:
 
 ```powershell

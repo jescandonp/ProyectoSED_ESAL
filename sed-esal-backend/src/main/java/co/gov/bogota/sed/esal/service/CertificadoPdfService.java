@@ -44,6 +44,8 @@ public class CertificadoPdfService {
     private static final float MARGEN_VERTICAL = 106f;
     private static final String FUENTE_BASE = "Arial";
     private static final String LOGO_HEADER_CLASSPATH = "/certificado/logo-sed-header.png";
+    static final float LOGO_HEADER_ANCHO = 154.49f; // 5.45 cm
+    static final float LOGO_HEADER_ALTO = 57.54f;   // 2.03 cm
 
     public byte[] generar(CertificadoNarrativoDto narrativo,
                           String numeroCertificado,
@@ -71,7 +73,7 @@ public class CertificadoPdfService {
         Font firmante = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
 
         Image logoHeader = cargarLogoHeader();
-        logoHeader.scaleToFit(270f, 86f);
+        logoHeader.scaleAbsolute(LOGO_HEADER_ANCHO, LOGO_HEADER_ALTO);
         logoHeader.setAlignment(Element.ALIGN_CENTER);
         logoHeader.setSpacingAfter(16f);
         doc.add(logoHeader);
