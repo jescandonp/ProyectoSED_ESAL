@@ -104,6 +104,39 @@ Cambios principales:
 - Cierre incluye `Atentamente,`.
 - Articulos estatutarios no normalizados usan marcador controlado `no registrado`.
 
+## Ajuste Posterior - Header Con Logo Institucional
+
+Fecha: 2026-06-17.
+
+Solicitud: incorporar en el header del formato el logo oficial compartido por el usuario.
+
+Archivo fuente recibido:
+
+```text
+C:\Users\jmep2\AppData\Local\Temp\codex-clipboard-db51e4f1-0db6-4e1b-8a10-de9e125ea952.png
+```
+
+Implementacion:
+
+- Se agrega el recurso versionado `sed-esal-backend/src/main/resources/certificado/logo-sed-header.png`.
+- `CertificadoPdfService` carga el logo desde classpath.
+- El encabezado textual anterior se reemplaza por el logo institucional como imagen centrada.
+- `CertificadoPdfServiceTest` valida que la primera pagina del PDF tenga una imagen en recursos XObject.
+
+Verificacion:
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test "-Dtest=CertificadoPdfServiceTest"
+mvn package -DskipTests
+```
+
+Resultado:
+
+- `CertificadoPdfServiceTest`: 2 tests, BUILD SUCCESS.
+- Package backend: BUILD SUCCESS.
+- Maven copio 1 recurso adicional y genero `sed-esal-backend/target/sed-esal-backend.war`.
+
 ## Evidencia De Verificacion
 
 ### RED

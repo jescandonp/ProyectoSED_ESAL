@@ -8,6 +8,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
@@ -18,9 +19,11 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.draw.LineSeparator;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,6 +43,7 @@ public class CertificadoPdfService {
     private static final float MARGEN_HORIZONTAL = 85f;
     private static final float MARGEN_VERTICAL = 106f;
     private static final String FUENTE_BASE = "Arial";
+    private static final String LOGO_HEADER_CLASSPATH = "/certificado/logo-sed-header.png";
 
     public byte[] generar(CertificadoNarrativoDto narrativo,
                           String numeroCertificado,
@@ -66,13 +70,11 @@ public class CertificadoPdfService {
         Font pie = FontFactory.getFont(FUENTE_BASE, 8, COLOR_GRIS);
         Font firmante = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
 
-        Paragraph encabezado = new Paragraph();
-        encabezado.add(new Chunk("ALCALDIA MAYOR DE BOGOTA D.C.", label));
-        encabezado.add(Chunk.NEWLINE);
-        encabezado.add(new Chunk("Secretaria de Educacion del Distrito - SED", label));
-        encabezado.setAlignment(Element.ALIGN_CENTER);
-        doc.add(encabezado);
-        doc.add(new Paragraph(" "));
+        Image logoHeader = cargarLogoHeader();
+        logoHeader.scaleToFit(270f, 86f);
+        logoHeader.setAlignment(Element.ALIGN_CENTER);
+        logoHeader.setSpacingAfter(16f);
+        doc.add(logoHeader);
 
         Paragraph pTitulo = new Paragraph("CERTIFICADO DE EXISTENCIA Y REPRESENTACION LEGAL", titulo);
         pTitulo.setAlignment(Element.ALIGN_CENTER);
@@ -306,6 +308,15 @@ public class CertificadoPdfService {
         }
         p.add(new Chunk(".", normal));
         return p;
+    }
+
+    private Image cargarLogoHeader() throws Exception {
+        try (InputStream in = CertificadoPdfService.class.getResourceAsStream(LOGO_HEADER_CLASSPATH)) {
+            if (in == null) {
+                throw new IllegalStateException("No se encontro el logo institucional: " + LOGO_HEADER_CLASSPATH);
+            }
+            return Image.getInstance(StreamUtils.copyToByteArray(in));
+        }
     }
 
     private void agregarClausula(Paragraph p, String prefijo, String valor, Font normal, Font bold) {

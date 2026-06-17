@@ -4,6 +4,8 @@ import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto.MiembroDto;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfDictionary;
+import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import org.junit.jupiter.api.Test;
@@ -141,9 +143,15 @@ class CertificadoPdfServiceTest {
 
         PdfReader reader = new PdfReader(new ByteArrayInputStream(pdf));
         Rectangle pageSize = reader.getPageSize(1);
+        PdfDictionary resources = reader.getPageN(1).getAsDict(PdfName.RESOURCES);
+        PdfDictionary xobjects = resources.getAsDict(PdfName.XOBJECT);
         reader.close();
         assertThat(pageSize.getWidth()).isEqualTo(612.0f);
         assertThat(pageSize.getHeight()).isEqualTo(792.0f);
+        assertThat(xobjects)
+                .as("El encabezado debe incluir el logo institucional como imagen PDF")
+                .isNotNull();
+        assertThat(xobjects.getKeys()).isNotEmpty();
 
         String texto = extraerTexto(pdf);
         assertThat(texto).contains("Plantilla: I8-EYRL-v1");
