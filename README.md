@@ -4,7 +4,7 @@ Aplicativo interno para la Direccion de Inspeccion y Vigilancia de la Secretaria
 
 ## Estado
 
-Fase actual: I7 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
+Fase actual: I8 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
 
 `SED_ESAL` cuenta con backend Spring Boot WAR y frontend Angular para busqueda, preview, generacion de certificados, seguridad por roles y mantenimiento operativo de ESAL. La carga Excel se conserva como mecanismo inicial o esporadico; el mantenimiento posterior se realiza desde el aplicativo por secciones administrativas.
 
@@ -24,7 +24,8 @@ Fase actual: I7 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchor
 12. `docs/specs/2026-05-21-sed-esal-i5-spec.md`
 13. `docs/specs/2026-05-27-sed-esal-i6-spec.md`
 14. `docs/specs/2026-05-29-sed-esal-i7-spec.md`
-15. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+15. `docs/specs/2026-06-17-sed-esal-i8-spec.md`
+16. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Incrementos Especificados
 
@@ -38,6 +39,7 @@ Fase actual: I7 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchor
 | I5 | Completado | CRUD y mantenimiento operativo de ESAL |
 | I6 | Completado | Fidelidad del certificado PDF a plantilla oficial |
 | I7 | Completado | Alineacion UI institucional SED_ESAL |
+| I8 | Completado | Reproduccion exacta del certificado PDF desde plantilla EYRL |
 
 ## Coordenadas Canonicas
 
@@ -74,7 +76,7 @@ node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
 
 Resultados esperados:
 
-- Tests backend pasan.
+- Tests backend pasan (137 tests en I8).
 - Tests y build Angular pasan.
 - Health expone `/actuator/health`.
 - OpenAPI expone `BearerAuth`.

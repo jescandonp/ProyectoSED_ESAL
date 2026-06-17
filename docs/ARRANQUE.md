@@ -1,8 +1,8 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I7 completado (Angular 5 tests OK, build Angular OK).
+> Estado: I8 completado (backend 137 tests OK, WAR OK, Angular 5 tests OK, build Angular OK).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
-> Ultima actualizacion: 2026-05-29.
+> Ultima actualizacion: 2026-06-17.
 
 ## Orden De Documentos
 
@@ -34,11 +34,14 @@
 26. Spec I7: `docs/specs/2026-05-29-sed-esal-i7-spec.md`
 27. Plan I7: `docs/plans/2026-05-29-sed-esal-i7-plan.md`
 28. Log I7: `docs/plans/2026-05-29-sed-esal-i7-execution-log.md`
-29. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+29. Spec I8: `docs/specs/2026-06-17-sed-esal-i8-spec.md`
+30. Plan I8: `docs/plans/2026-06-17-sed-esal-i8-plan.md`
+31. Log I8: `docs/plans/2026-06-17-sed-esal-i8-execution-log.md`
+32. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Estado Del Proyecto
 
-`SED_ESAL` tiene I7 completado. El backend se mantiene sin cambios desde I6 (136 tests en verde, BUILD SUCCESS). El frontend Angular fue actualizado visualmente y verifica con 5 tests ChromeHeadless en verde y build Angular OK.
+`SED_ESAL` tiene I8 completado. El backend actualiza el certificado PDF para reproducir la plantilla EYRL y verifica con 137 tests en verde y WAR generado. El frontend Angular se mantiene sin cambios funcionales desde I7 y verifica con 5 tests ChromeHeadless en verde y build Angular OK.
 
 - Spec 0 de fundacion documental y arquitectura: completado.
 - Spec I1 de modelo base, carga inicial y completitud: completado.
@@ -48,6 +51,7 @@
 - Spec I5 de CRUD y mantenimiento operativo de ESAL: completado (131 tests backend, build Angular OK).
 - Spec I6 de fidelidad del certificado PDF a la plantilla oficial: completado (136 tests backend, build Angular OK).
 - Spec I7 de alineacion UI institucional SED_ESAL: completado (5 tests Angular, build Angular OK).
+- Spec I8 de reproduccion exacta del certificado PDF desde plantilla EYRL: completado (137 tests backend, WAR OK, 5 tests Angular, build Angular OK).
 - Pendiente: confirmar con TI SED tenant, issuer, audience, JWKS y CORS institucional para activar perfil weblogic.
 
 ## Artefactos Fuente
@@ -92,7 +96,7 @@ Estas coordenadas quedan aprobadas para iniciar I1. Cualquier cambio posterior p
 ```powershell
 # Backend
 Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
-mvn test                    # 136 tests, BUILD SUCCESS
+mvn test                    # 137 tests, BUILD SUCCESS
 mvn package -DskipTests     # genera target/sed-esal-backend.war
 mvn spring-boot:run -Dspring-boot.run.profiles=local-dev  # levanta en :8080
 
@@ -105,11 +109,10 @@ node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" start
 
 ## Proximo Orden De Trabajo
 
-1. Iniciar el siguiente incremento solo despues de crear spec, plan y execution log aprobados.
-2. Mantener execution log, commits y push al finalizar cada bloque de trabajo.
-3. Mantener `Documentos_Referencia/` fuera del repositorio salvo aprobacion explicita de publicacion.
-4. Cerrar decisiones tecnicas diferidas antes del incremento que las requiera: activacion Azure AD/WebLogic institucional, vigencia tecnica de organo de administracion y posibles reglas futuras de verificacion externa.
-5. Actualizar `docs/ARCHITECTURE.md` si la seccion de seguridad confirmada por SED cambia esta base.
+1. Mantener execution log, commits y push al finalizar cada bloque de trabajo.
+2. Mantener `Documentos_Referencia/` fuera del repositorio salvo aprobacion explicita de publicacion.
+3. Cerrar decisiones tecnicas diferidas antes del incremento que las requiera: activacion Azure AD/WebLogic institucional, vigencia tecnica de organo de administracion y posibles reglas futuras de verificacion externa.
+4. Actualizar `docs/ARCHITECTURE.md` si la seccion de seguridad confirmada por SED cambia esta base.
 
 ## Prerrequisitos Locales Esperados
 

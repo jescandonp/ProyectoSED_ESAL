@@ -13,6 +13,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.draw.LineSeparator;
@@ -28,14 +29,17 @@ import java.util.List;
 @Service
 public class CertificadoPdfService {
 
-    static final String VERSION_PLANTILLA = "I6-v1";
+    static final String VERSION_PLANTILLA = "I8-EYRL-v1";
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter FMT_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    private static final Color COLOR_PRIMARIO = new Color(0x1B, 0x5E, 0x20);
+    private static final Color COLOR_PRIMARIO = new Color(0x00, 0x33, 0x66);
     private static final Color COLOR_TABLA = new Color(0xC8, 0xE6, 0xC9);
     private static final Color COLOR_GRIS = new Color(0x60, 0x60, 0x60);
+    private static final float MARGEN_HORIZONTAL = 85f;
+    private static final float MARGEN_VERTICAL = 106f;
+    private static final String FUENTE_BASE = "Arial";
 
     public byte[] generar(CertificadoNarrativoDto narrativo,
                           String numeroCertificado,
@@ -44,20 +48,23 @@ public class CertificadoPdfService {
                           LocalDateTime fechaExpedicion) throws Exception {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Document doc = new Document(PageSize.A4, 56, 56, 62, 56);
-        PdfWriter.getInstance(doc, out);
+        Document doc = new Document(PageSize.LETTER, MARGEN_HORIZONTAL, MARGEN_HORIZONTAL,
+                MARGEN_VERTICAL, MARGEN_VERTICAL);
+        PdfWriter writer = PdfWriter.getInstance(doc, out);
+        writer.setPageEvent(new FooterInstitucional());
         doc.open();
 
-        Font titulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, COLOR_PRIMARIO);
-        Font subtitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, COLOR_PRIMARIO);
-        Font normal = FontFactory.getFont(FontFactory.HELVETICA, 10, Color.BLACK);
-        Font bold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.BLACK);
-        Font label = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, COLOR_GRIS);
-        Font tablaHeader = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.BLACK);
-        Font tablaValor = FontFactory.getFont(FontFactory.HELVETICA, 8, Color.BLACK);
-        Font alerta = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, new Color(0xD9, 0x7F, 0x06));
-        Font pie = FontFactory.getFont(FontFactory.HELVETICA, 8, COLOR_GRIS);
-        Font firmante = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, COLOR_PRIMARIO);
+        Font titulo = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
+        Font subtitulo = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
+        Font normal = FontFactory.getFont(FUENTE_BASE, 11, Color.BLACK);
+        Font bold = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, Color.BLACK);
+        Font italica = FontFactory.getFont(FUENTE_BASE, 11, Font.ITALIC, Color.BLACK);
+        Font label = FontFactory.getFont(FUENTE_BASE, 9, Font.BOLD, COLOR_GRIS);
+        Font tablaHeader = FontFactory.getFont(FUENTE_BASE, 8, Font.BOLD, Color.BLACK);
+        Font tablaValor = FontFactory.getFont(FUENTE_BASE, 8, Color.BLACK);
+        Font alerta = FontFactory.getFont(FUENTE_BASE, 9, Font.BOLD, new Color(0xD9, 0x7F, 0x06));
+        Font pie = FontFactory.getFont(FUENTE_BASE, 8, COLOR_GRIS);
+        Font firmante = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
 
         Paragraph encabezado = new Paragraph();
         encabezado.add(new Chunk("ALCALDIA MAYOR DE BOGOTA D.C.", label));
@@ -94,28 +101,124 @@ public class CertificadoPdfService {
         doc.add(datos);
 
         if (texto(narrativo.getObjetoSocial())) {
+            Paragraph objetoIntro = new Paragraph();
+            objetoIntro.setAlignment(Element.ALIGN_JUSTIFIED);
+            objetoIntro.add(new Chunk("Que, revisados los estatutos de la entidad se encuentra en el articulo ", normal));
+            objetoIntro.add(new Chunk("no registrado", bold));
+            objetoIntro.add(new Chunk(", que su objeto social es el siguiente: ", normal));
+            objetoIntro.setSpacingAfter(8);
+            doc.add(objetoIntro);
+
             Paragraph objeto = new Paragraph();
             objeto.setAlignment(Element.ALIGN_JUSTIFIED);
-            objeto.add(new Chunk("Que, revisados los estatutos de la entidad, su objeto social es el siguiente: ", normal));
-            objeto.add(new Chunk("\"" + narrativo.getObjetoSocial() + "\"", normal));
+            objeto.add(new Chunk("\"" + narrativo.getObjetoSocial() + "\".", italica));
             objeto.setSpacingAfter(8);
             doc.add(objeto);
         }
 
-        agregarTablaSiExiste(doc, "REPRESENTACION LEGAL:", narrativo.getRepresentantesLegales(), tablaHeader, tablaValor, label);
+        agregarParrafoJustificado(doc,
+                "REPRESENTACION LEGAL:",
+                bold,
+                8,
+                4);
+        agregarParrafoJustificado(doc,
+                "Que, una vez revisados los estatutos de la ESAL, respecto de la representacion legal se encuentra en el articulo no registrado que:",
+                normal,
+                0,
+                8);
+        agregarParrafoJustificado(doc,
+                "\"Informacion tomada de las facultades y limitaciones registradas para la representacion legal.\".",
+                italica,
+                0,
+                8);
+        agregarParrafoJustificado(doc,
+                "Que, a la fecha de expedicion del presente Certificado, la representacion legal de la ESAL, esta conformada como se expresa a continuacion:",
+                normal,
+                0,
+                6);
+        agregarTablaSiExiste(doc, narrativo.getRepresentantesLegales(), tablaHeader, tablaValor);
         if (texto(narrativo.getFacultadesRepresentante())) {
-            Paragraph facultades = new Paragraph("FUNCIONES DE LA REPRESENTACION LEGAL: \"" +
-                    narrativo.getFacultadesRepresentante() + "\"", normal);
-            facultades.setAlignment(Element.ALIGN_JUSTIFIED);
-            facultades.setSpacingAfter(8);
-            doc.add(facultades);
+            agregarParrafoJustificado(doc, "FUNCIONES DE LA REPRESENTACION LEGAL:", bold, 8, 4);
+            agregarParrafoJustificado(doc,
+                    "Dispone el articulo no registrado de los estatutos que las facultades de la representacion legal son:",
+                    normal,
+                    0,
+                    4);
+            agregarParrafoJustificado(doc, "\"" + narrativo.getFacultadesRepresentante() + "\".", italica, 0, 8);
         }
-        agregarTablaSiExiste(doc, "JUNTA DIRECTIVA:", narrativo.getMiembrosJunta(), tablaHeader, tablaValor, label);
-        agregarTablaSiExiste(doc, "ASAMBLEA GENERAL:", narrativo.getMiembrosAsamblea(), tablaHeader, tablaValor, label);
-        agregarTablaSiExiste(doc, "REVISORIA FISCAL:", narrativo.getRevisoresFiscales(), tablaHeader, tablaValor, label);
+
+        agregarParrafoJustificado(doc, "ASAMBLEA GENERAL", bold, 8, 4);
+        agregarParrafoJustificado(doc,
+                "Respecto de la Asamblea General, consagra el articulo no registrado de los estatutos que sus funciones son:",
+                normal,
+                0,
+                4);
+        agregarParrafoJustificado(doc,
+                "\"Informacion estatutaria no registrada como campo independiente en el sistema.\".",
+                italica,
+                0,
+                8);
+        agregarParrafoJustificado(doc, "FUNCIONES DE LA ASAMBLEA GENERAL:", bold, 8, 4);
+        agregarParrafoJustificado(doc,
+                "Dispone el articulo no registrado de los estatutos que las facultades de la ASAMBLEA GENERAL son:",
+                normal,
+                0,
+                4);
+        agregarParrafoJustificado(doc,
+                "\"Informacion estatutaria no registrada como campo independiente en el sistema.\".",
+                italica,
+                0,
+                8);
+
+        agregarParrafoJustificado(doc, "JUNTA DIRECTIVA:", bold, 8, 4);
+        agregarParrafoJustificado(doc,
+                "Respecto de la Junta Directiva, consagra el articulo no registrado de los estatutos que sus funciones son:",
+                normal,
+                0,
+                4);
+        agregarParrafoJustificado(doc,
+                "\"Informacion estatutaria no registrada como campo independiente en el sistema.\".",
+                italica,
+                0,
+                8);
+        agregarParrafoJustificado(doc,
+                "Que, a la fecha de expedicion del presente Certificado, la Junta Directiva de la ESAL, esta conformada como se expresa a continuacion:",
+                normal,
+                0,
+                6);
+        agregarTablaSiExiste(doc, narrativo.getMiembrosJunta(), tablaHeader, tablaValor);
+        agregarParrafoJustificado(doc, "FUNCIONES DE LA JUNTA DIRECTIVA:", bold, 8, 4);
+        agregarParrafoJustificado(doc,
+                "Dispone el articulo no registrado de los estatutos que las facultades de la JUNTA DIRECTIVA son:",
+                normal,
+                0,
+                4);
+        agregarParrafoJustificado(doc,
+                "\"Informacion estatutaria no registrada como campo independiente en el sistema.\".",
+                italica,
+                0,
+                8);
+
+        agregarParrafoJustificado(doc, "REVISORIA FISCAL:", bold, 8, 4);
+        agregarParrafoJustificado(doc,
+                "Que, una vez revisados los estatutos de la ESAL, respecto de la revisoria fiscal se encuentra en el articulo no registrado que:",
+                normal,
+                0,
+                4);
+        agregarParrafoJustificado(doc,
+                "\"Informacion estatutaria no registrada como campo independiente en el sistema.\".",
+                italica,
+                0,
+                8);
+        agregarParrafoJustificado(doc,
+                "Que, a la fecha de expedicion del presente Certificado, la revisoria fiscal de la ESAL, esta conformada como se expresa a continuacion:",
+                normal,
+                0,
+                6);
+        agregarTablaRevisoriaSiExiste(doc, narrativo.getRevisoresFiscales(), tablaHeader, tablaValor);
 
         if (texto(narrativo.getTerminoDuracion())) {
-            Paragraph duracion = new Paragraph("DURACION: De acuerdo con los estatutos, la entidad tendra una duracion "
+            Paragraph duracion = new Paragraph("DURACION: Que, de acuerdo con lo definido en el articulo no registrado de los estatutos, la entidad tendra una duracion "
                     + narrativo.getTerminoDuracion() + ".", normal);
             duracion.setAlignment(Element.ALIGN_JUSTIFIED);
             duracion.setSpacingAfter(8);
@@ -142,6 +245,11 @@ public class CertificadoPdfService {
         }
 
         doc.add(new Paragraph(" "));
+        Paragraph atentamente = new Paragraph("Atentamente,", normal);
+        atentamente.setAlignment(Element.ALIGN_JUSTIFIED);
+        atentamente.setSpacingAfter(18);
+        doc.add(atentamente);
+
         Paragraph pFirmante = new Paragraph();
         pFirmante.add(new Chunk(firmanteNombre, firmante));
         pFirmante.add(Chunk.NEWLINE);
@@ -207,16 +315,22 @@ public class CertificadoPdfService {
         }
     }
 
-    private void agregarTablaSiExiste(Document doc, String titulo, List<MiembroDto> miembros,
-                                      Font header, Font valor, Font label) throws Exception {
+    private void agregarTablaSiExiste(Document doc, List<MiembroDto> miembros,
+                                      Font header, Font valor) throws Exception {
         if (miembros == null || miembros.isEmpty()) {
             return;
         }
-        Paragraph pTitulo = new Paragraph(titulo, label);
-        pTitulo.setSpacingBefore(8);
-        pTitulo.setSpacingAfter(4);
-        doc.add(pTitulo);
         doc.add(tablaOrgano(miembros, header, valor));
+    }
+
+    private void agregarParrafoJustificado(Document doc, String texto, Font fuente,
+                                           int spacingBefore, int spacingAfter) throws Exception {
+        Paragraph parrafo = new Paragraph(texto, fuente);
+        parrafo.setAlignment(Element.ALIGN_JUSTIFIED);
+        parrafo.setLeading(0, 1.15f);
+        parrafo.setSpacingBefore(spacingBefore);
+        parrafo.setSpacingAfter(spacingAfter);
+        doc.add(parrafo);
     }
 
     private PdfPTable tablaOrgano(List<MiembroDto> miembros, Font header, Font valor) throws Exception {
@@ -242,6 +356,33 @@ public class CertificadoPdfService {
             tabla.addCell(celda("", valor));
         }
         return tabla;
+    }
+
+    private void agregarTablaRevisoriaSiExiste(Document doc, List<MiembroDto> revisores,
+                                               Font header, Font valor) throws Exception {
+        if (revisores == null || revisores.isEmpty()) {
+            return;
+        }
+        PdfPTable tabla = new PdfPTable(3);
+        tabla.setWidthPercentage(100);
+        tabla.setWidths(new float[]{3f, 2f, 2f});
+        tabla.setSpacingAfter(8);
+
+        String[] cabeceras = {"NOMBRE", "IDENTIFICACION", "CARGO"};
+        for (String cabecera : cabeceras) {
+            PdfPCell celda = new PdfPCell(new Phrase(cabecera, header));
+            celda.setBackgroundColor(COLOR_TABLA);
+            celda.setPadding(4);
+            tabla.addCell(celda);
+        }
+
+        for (MiembroDto revisor : revisores) {
+            tabla.addCell(celda(nvl(revisor.getNombre()), valor));
+            tabla.addCell(celda(((texto(revisor.getTipoDocumento()) ? revisor.getTipoDocumento() + " " : "")
+                    + nvl(revisor.getNumeroDocumento())).trim(), valor));
+            tabla.addCell(celda(nvl(revisor.getCargo()), valor));
+        }
+        doc.add(tabla);
     }
 
     private PdfPCell celda(String texto, Font fuente) {
@@ -277,6 +418,30 @@ public class CertificadoPdfService {
 
     private String nvl(String valor) {
         return texto(valor) ? valor : "-";
+    }
+
+    private static final class FooterInstitucional extends PdfPageEventHelper {
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            try {
+                Font footer = FontFactory.getFont(FUENTE_BASE, 7, COLOR_GRIS);
+                PdfPTable tabla = new PdfPTable(1);
+                tabla.setTotalWidth(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
+                tabla.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+                tabla.getDefaultCell().setHorizontalAlignment(Element.ALIGN_RIGHT);
+                tabla.addCell(new Phrase("Av. El Dorado No. 66 - 63", footer));
+                tabla.addCell(new Phrase("PBX: 324 1000 - Fax: 315 34 48", footer));
+                tabla.addCell(new Phrase("Codigo postal: 111321", footer));
+                tabla.addCell(new Phrase("www.educacionbogota.edu.co", footer));
+                tabla.addCell(new Phrase("Info: Linea 195", footer));
+                tabla.writeSelectedRows(0, -1, document.leftMargin(), 54, writer.getDirectContent());
+            } catch (RuntimeException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                throw new IllegalStateException("No fue posible escribir el footer institucional", ex);
+            }
+        }
     }
 
     static final class FechaEnLetras {

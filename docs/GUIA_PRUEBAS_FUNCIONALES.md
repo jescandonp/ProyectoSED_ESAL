@@ -369,6 +369,50 @@ Resultado registrado:
 
 ## 15. Incrementos Posteriores
 
+## 15. Incremento 8 - Certificado EYRL Exacto
+
+Fuente de especificacion: `docs/specs/2026-06-17-sed-esal-i8-spec.md`.
+
+Estado: completado. Implementacion backend verificada con test PDF focalizado, suite completa y WAR.
+
+### I8 - Verificacion Layout PDF EYRL
+
+| ID | Accion | Datos | Esperado |
+|---|---|---|---|
+| I8-PDF-01 | Generar certificado para ESAL certificable | ESAL completa con representante legal vigente | PDF se genera en pagina Letter |
+| I8-PDF-02 | Revisar version de plantilla | PDF generado | Pie tecnico contiene `Plantilla: I8-EYRL-v1` |
+| I8-PDF-03 | Revisar footer institucional | PDF generado | Incluye `Av. El Dorado No. 66 - 63`, PBX, codigo postal, web e Info Linea 195 |
+| I8-PDF-04 | Revisar orden juridico | PDF generado | Orden: CERTIFICA, datos narrativos, representacion, funciones, asamblea, junta, revisoria, duracion, cierre, `Atentamente,` |
+| I8-PDF-05 | Revisar representacion legal | Representante legal vigente | Tabla con NOMBRE, IDENTIFICACION, CARGO, ACTA NOMBRAMIENTO, RADICADO SED |
+| I8-PDF-06 | Revisar junta directiva | Miembros de junta registrados | Tabla con NOMBRE, IDENTIFICACION, CARGO, ACTA NOMBRAMIENTO, RADICADO SED |
+| I8-PDF-07 | Revisar revisoría fiscal | Revisor fiscal principal o suplente vigente | Tabla de 3 columnas: NOMBRE, IDENTIFICACION, CARGO |
+| I8-PDF-08 | Revisar campos no normalizados | Articulos estatutarios no disponibles como campo | No se inventan datos; aparece marcador controlado `no registrado` |
+
+### I8 - Evidencia Tecnica
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test "-Dtest=CertificadoPdfServiceTest"
+mvn test "-Dtest=CertificadoPdfServiceTest,CertificadoAssemblerTest,GeneracionServiceTest"
+mvn test
+mvn package -DskipTests
+
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" test -- --watch=false --browsers=ChromeHeadless
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
+```
+
+Resultado registrado:
+
+- `CertificadoPdfServiceTest`: 2 tests, BUILD SUCCESS.
+- Bateria enfocada PDF/assembler/generacion: 11 tests, BUILD SUCCESS.
+- Suite backend completa: 137 tests, BUILD SUCCESS.
+- WAR generado: `sed-esal-backend/target/sed-esal-backend.war`.
+- Angular ChromeHeadless: `TOTAL: 5 SUCCESS`.
+- Angular build: exitoso con advertencias NG8102/NG8107 preexistentes.
+
+## 16. Incrementos Posteriores
+
 ### Verificacion Externa Futura
 
 - QR o codigo de verificacion.
