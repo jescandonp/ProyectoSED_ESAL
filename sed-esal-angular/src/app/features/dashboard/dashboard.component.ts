@@ -15,28 +15,28 @@ const CARDS: DashboardCard[] = [
   {
     titulo: 'Carga Inicial',
     descripcion: 'Importar base histórica de ESALes desde Excel e inicializar diccionario.',
-    icono: '📤',
+    icono: 'pi pi-upload',
     ruta: '/admin/carga-inicial',
     roles: ['ADMINISTRADOR'],
   },
   {
     titulo: 'Gestionar ESAL',
     descripcion: 'Crear, editar y gestionar el estado de las ESALes registradas.',
-    icono: '🏢',
+    icono: 'pi pi-building',
     ruta: '/admin/esales',
     roles: ['ADMINISTRADOR'],
   },
   {
     titulo: 'Auditoría',
     descripcion: 'Consultar el registro de eventos y acciones del sistema.',
-    icono: '📋',
+    icono: 'pi pi-list-check',
     ruta: '/admin/auditoria',
     roles: ['ADMINISTRADOR'],
   },
   {
     titulo: 'Consultar ESAL',
     descripcion: 'Buscar y consultar el detalle de las ESALes registradas.',
-    icono: '🔍',
+    icono: 'pi pi-search',
     ruta: '/esales',
     roles: ['ADMINISTRADOR', 'EXPEDIDOR'],
   },
@@ -48,41 +48,69 @@ const CARDS: DashboardCard[] = [
   imports: [CommonModule, RouterLink],
   template: `
     <div>
-      <h2 class="sed-page-title">Dashboard</h2>
-
-      <div class="dashboard-welcome sed-card" style="margin-bottom: 24px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 32px;">👤</span>
+      <header class="sed-page-header">
+        <div>
+          <span class="sed-page-kicker">Panel operativo</span>
+          <h2 class="sed-page-title">Inicio</h2>
+          <p class="sed-page-subtitle">
+            Acceso rápido a los módulos disponibles para su rol institucional.
+          </p>
+        </div>
+        <div class="dashboard-user sed-card">
+          <i class="pi pi-user" aria-hidden="true"></i>
           <div>
-            <p style="font-size: 18px; font-weight: 600; color: var(--color-primary);">
-              Bienvenido/a, {{ currentUser()?.nombre }}
-            </p>
-            <p style="margin-top: 4px; color: var(--color-on-surface-variant); font-size: 13px;">
-              Rol: <strong>{{ currentUser()?.rol }}</strong>
-            </p>
+            <span class="sed-meta">Usuario autenticado</span>
+            <strong>{{ currentUser()?.nombre }}</strong>
+            <span class="sed-chip sed-chip--activo">{{ currentUser()?.rol }}</span>
           </div>
         </div>
-      </div>
+      </header>
 
-      <h3 style="font-size: 16px; font-weight: 600; color: var(--color-on-surface-variant); margin-bottom: 16px;">
-        Acceso rápido
-      </h3>
-
-      <div class="dashboard-cards">
+      <section class="sed-section">
+        <h3 class="sed-section-title">
+          <i class="pi pi-th-large" aria-hidden="true"></i>
+          Módulos disponibles
+        </h3>
+        <div class="dashboard-cards">
         @for (card of visibleCards(); track card.ruta) {
           <a [routerLink]="card.ruta" class="dashboard-card sed-card">
-            <div class="dashboard-card__icon">{{ card.icono }}</div>
+            <div class="dashboard-card__icon">
+              <i [class]="card.icono" aria-hidden="true"></i>
+            </div>
             <div class="dashboard-card__content">
               <h4 class="dashboard-card__title">{{ card.titulo }}</h4>
               <p class="dashboard-card__desc">{{ card.descripcion }}</p>
             </div>
-            <span class="dashboard-card__arrow">→</span>
+            <span class="dashboard-card__arrow" aria-hidden="true">
+              <i class="pi pi-arrow-right"></i>
+            </span>
           </a>
         }
-      </div>
+        </div>
+      </section>
     </div>
   `,
   styles: [`
+    .dashboard-user {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      min-width: 280px;
+      padding: var(--space-sm) var(--space-md);
+    }
+    .dashboard-user i {
+      color: var(--color-secondary);
+      font-size: 22px;
+    }
+    .dashboard-user div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .dashboard-user strong {
+      color: var(--color-primary);
+      font-size: var(--text-body-md);
+    }
     .dashboard-cards {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -103,7 +131,15 @@ const CARDS: DashboardCard[] = [
       text-decoration: none;
     }
     .dashboard-card__icon {
-      font-size: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      color: var(--color-primary-container);
+      background-color: var(--color-surface-container-low);
+      border-radius: var(--radius-lg);
+      font-size: 18px;
       flex-shrink: 0;
     }
     .dashboard-card__content {

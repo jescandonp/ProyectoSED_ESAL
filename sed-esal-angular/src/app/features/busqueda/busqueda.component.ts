@@ -16,12 +16,39 @@ import {
   imports: [CommonModule, FormsModule],
   template: `
     <div>
-      <h2 class="sed-page-title">Buscar ESAL</h2>
+      <header class="sed-page-header">
+        <div>
+          <span class="sed-page-kicker">Consulta institucional</span>
+          <h2 class="sed-page-title">Buscar ESAL</h2>
+          <p class="sed-page-subtitle">
+            Consulte entidades por nombre, ID SIPEJ, NIT, estado y completitud.
+          </p>
+        </div>
+        @if (buscado()) {
+          <span class="sed-version">{{ totalElements() }} registro(s)</span>
+        }
+      </header>
 
-      <!-- Filtros -->
-      <div class="sed-card" style="margin-bottom: 16px;">
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
-          <div class="sed-field" style="flex: 2; min-width: 200px;">
+      <section class="sed-section" style="margin-bottom: 16px;">
+        <div class="sed-toolbar">
+          <h3 class="sed-section-title" style="margin-bottom: 0;">
+            <i class="pi pi-filter" aria-hidden="true"></i>
+            Filtros de búsqueda
+          </h3>
+          <div class="sed-actions">
+            <button class="sed-btn-primary" (click)="buscar()">
+              <i class="pi pi-search" aria-hidden="true"></i>
+              Buscar
+            </button>
+            <button class="sed-btn-secondary" (click)="limpiar()">
+              <i class="pi pi-times" aria-hidden="true"></i>
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <div class="sed-form-grid" style="margin-top: 16px;">
+          <div class="sed-field span-6">
             <label>Búsqueda general</label>
             <input
               type="text"
@@ -31,15 +58,15 @@ import {
               (keyup.enter)="buscar()"
             />
           </div>
-          <div class="sed-field" style="flex: 1; min-width: 140px;">
+          <div class="sed-field">
             <label>ID SIPEJ</label>
             <input type="text" class="sed-input" placeholder="SIPEJ exacto..." [(ngModel)]="filtroIdSipej" (keyup.enter)="buscar()" />
           </div>
-          <div class="sed-field" style="flex: 1; min-width: 140px;">
+          <div class="sed-field">
             <label>NIT</label>
             <input type="text" class="sed-input" placeholder="NIT..." [(ngModel)]="filtroNit" (keyup.enter)="buscar()" />
           </div>
-          <div class="sed-field" style="min-width: 150px;">
+          <div class="sed-field">
             <label>Estado</label>
             <select class="sed-input" [(ngModel)]="filtroEstado" (change)="buscar()">
               <option value="">Todos</option>
@@ -49,7 +76,7 @@ import {
               <option value="CANCELADO">Cancelado</option>
             </select>
           </div>
-          <div class="sed-field" style="min-width: 180px;">
+          <div class="sed-field">
             <label>Completitud</label>
             <select class="sed-input" [(ngModel)]="filtroCompletitud" (change)="buscar()">
               <option value="">Todas</option>
@@ -59,23 +86,21 @@ import {
             </select>
           </div>
         </div>
-        <div style="display: flex; gap: 8px; margin-top: 12px;">
-          <button class="sed-btn-primary" (click)="buscar()">Buscar</button>
-          <button class="sed-btn-secondary" (click)="limpiar()">Limpiar</button>
-        </div>
-      </div>
+      </section>
 
       <!-- Resultados -->
       @if (cargando()) {
-        <div style="text-align: center; padding: 40px; color: var(--color-on-surface-variant);">
-          Buscando ESALes...
+        <div class="sed-loading-state" role="status">
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          <span>Buscando ESALes...</span>
         </div>
       } @else if (error()) {
-        <div class="sed-card" style="color: var(--color-error); text-align: center; padding: 24px;">
-          {{ error() }}
+        <div class="sed-alert sed-alert--error" role="alert">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          <span>{{ error() }}</span>
         </div>
       } @else if (buscado()) {
-        <div class="sed-card" style="padding: 0; overflow: hidden;">
+        <div class="sed-table-wrapper">
           <table class="sed-table">
             <thead>
               <tr>
@@ -91,8 +116,12 @@ import {
             <tbody>
               @if (resultados().length === 0) {
                 <tr>
-                  <td colspan="7" style="text-align: center; color: var(--color-on-surface-variant); padding: 32px;">
-                    No se encontraron ESALes con los filtros indicados.
+                  <td colspan="7">
+                    <div class="sed-empty-state">
+                      <i class="pi pi-search" aria-hidden="true"></i>
+                      <span class="sed-empty-state__title">No se encontraron ESALes</span>
+                      <span>Revise los filtros o intente con ID SIPEJ, nombre o NIT.</span>
+                    </div>
                   </td>
                 </tr>
               }
@@ -109,10 +138,12 @@ import {
                     <span [class]="'sed-chip ' + chipCompletitud(r.estadoCompletitud)">{{ labelCompletitud(r.estadoCompletitud) }}</span>
                   </td>
                   <td style="white-space: nowrap;">
-                    <button class="sed-btn-secondary" style="padding: 4px 10px; font-size: 12px;" (click)="verDetalle(r.id)">
+                    <button class="sed-btn-secondary sed-btn-compact" (click)="verDetalle(r.id)">
+                      <i class="pi pi-eye" aria-hidden="true"></i>
                       Detalle
                     </button>
-                    <button class="sed-btn-secondary" style="padding: 4px 10px; font-size: 12px; margin-left: 4px;" (click)="verPreview(r.id)">
+                    <button class="sed-btn-secondary sed-btn-compact" style="margin-left: 4px;" (click)="verPreview(r.id)">
+                      <i class="pi pi-file-pdf" aria-hidden="true"></i>
                       Preview
                     </button>
                   </td>
@@ -123,20 +154,22 @@ import {
         </div>
 
         @if (totalPages() > 1) {
-          <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 16px;">
+          <div class="sed-pagination">
             <button class="sed-btn-secondary" [disabled]="pagina() === 0" (click)="cambiarPagina(pagina() - 1)">
-              ← Anterior
+              <i class="pi pi-chevron-left" aria-hidden="true"></i>
+              Anterior
             </button>
-            <span style="font-size: 13px; color: var(--color-on-surface-variant);">
+            <span>
               Página {{ pagina() + 1 }} de {{ totalPages() }} ({{ totalElements() }} registros)
             </span>
             <button class="sed-btn-secondary" [disabled]="pagina() >= totalPages() - 1" (click)="cambiarPagina(pagina() + 1)">
-              Siguiente →
+              Siguiente
+              <i class="pi pi-chevron-right" aria-hidden="true"></i>
             </button>
           </div>
         }
         @if (totalPages() <= 1 && buscado()) {
-          <div style="font-size: 12px; color: var(--color-on-surface-variant); margin-top: 8px; text-align: right;">
+          <div class="sed-meta" style="margin-top: 8px; text-align: right;">
             {{ totalElements() }} registro(s) encontrado(s)
           </div>
         }

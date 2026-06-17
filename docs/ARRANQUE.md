@@ -1,6 +1,6 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I6 completado (136 tests backend, build Angular OK).
+> Estado: I7 completado (Angular 5 tests OK, build Angular OK).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
 > Ultima actualizacion: 2026-05-29.
 
@@ -31,11 +31,14 @@
 23. Spec I6: `docs/specs/2026-05-27-sed-esal-i6-spec.md`
 24. Plan I6: `docs/plans/2026-05-27-sed-esal-i6-plan.md`
 25. Log I6: `docs/plans/2026-05-27-sed-esal-i6-execution-log.md`
-26. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+26. Spec I7: `docs/specs/2026-05-29-sed-esal-i7-spec.md`
+27. Plan I7: `docs/plans/2026-05-29-sed-esal-i7-plan.md`
+28. Log I7: `docs/plans/2026-05-29-sed-esal-i7-execution-log.md`
+29. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Estado Del Proyecto
 
-`SED_ESAL` tiene I6 completado. El backend tiene 136 tests en verde (BUILD SUCCESS). El frontend Angular compila sin errores. Ambos artefactos listos para ejecucion local-dev.
+`SED_ESAL` tiene I7 completado. El backend se mantiene sin cambios desde I6 (136 tests en verde, BUILD SUCCESS). El frontend Angular fue actualizado visualmente y verifica con 5 tests ChromeHeadless en verde y build Angular OK.
 
 - Spec 0 de fundacion documental y arquitectura: completado.
 - Spec I1 de modelo base, carga inicial y completitud: completado.
@@ -44,6 +47,7 @@
 - Spec I4 de seguridad institucional, autorizacion y hardening: completado (99 tests, build Angular OK).
 - Spec I5 de CRUD y mantenimiento operativo de ESAL: completado (131 tests backend, build Angular OK).
 - Spec I6 de fidelidad del certificado PDF a la plantilla oficial: completado (136 tests backend, build Angular OK).
+- Spec I7 de alineacion UI institucional SED_ESAL: completado (5 tests Angular, build Angular OK).
 - Pendiente: confirmar con TI SED tenant, issuer, audience, JWKS y CORS institucional para activar perfil weblogic.
 
 ## Artefactos Fuente

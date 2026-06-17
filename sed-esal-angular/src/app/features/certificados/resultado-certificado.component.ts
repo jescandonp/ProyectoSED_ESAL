@@ -10,18 +10,32 @@ import { CertificadoDto, EstadoCertificado } from '../../core/models/esal.model'
   imports: [CommonModule],
   template: `
     <div>
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-        <button class="sed-btn-secondary" style="padding: 6px 12px;" (click)="volver()">← Volver</button>
-        <h2 class="sed-page-title" style="margin-bottom: 0;">Resultado de Certificado</h2>
-      </div>
+      <header class="sed-page-header">
+        <div>
+          <span class="sed-page-kicker">Certificados</span>
+          <h2 class="sed-page-title">Resultado de Certificado</h2>
+          <p class="sed-page-subtitle">Número, trazabilidad y descarga autenticada del certificado generado.</p>
+        </div>
+        <button class="sed-btn-secondary" (click)="volver()">
+          <i class="pi pi-arrow-left" aria-hidden="true"></i>
+          Volver
+        </button>
+      </header>
 
       @if (cargando()) {
-        <div style="text-align: center; padding: 40px; color: var(--color-on-surface-variant);">Cargando...</div>
+        <div class="sed-loading-state" role="status">
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          <span>Cargando certificado...</span>
+        </div>
       } @else if (error()) {
-        <div class="sed-card" style="color: var(--color-error); text-align: center; padding: 24px;">{{ error() }}</div>
+        <div class="sed-alert sed-alert--error" role="alert">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          <span>{{ error() }}</span>
+        </div>
       } @else if (cert()) {
         <!-- Estado -->
-        <div class="sed-card" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div class="sed-section" style="margin-bottom: 16px;">
+          <div class="sed-toolbar">
           <div>
             <h3 style="font-size: 18px; font-weight: 700; color: var(--color-primary);">
               {{ cert()!.numeroCertificado ?? '—' }}
@@ -33,17 +47,22 @@ import { CertificadoDto, EstadoCertificado } from '../../core/models/esal.model'
           <span [class]="'sed-chip ' + chipEstado(cert()!.estadoCertificado)">
             {{ labelEstado(cert()!.estadoCertificado) }}
           </span>
+          </div>
         </div>
 
         @if (cert()!.errorDetalle) {
-          <div class="sed-card" style="margin-bottom: 16px; background: #fef2f2; border-left: 4px solid var(--color-error);">
-            <h4 style="font-size: 14px; font-weight: 600; color: var(--color-error); margin-bottom: 8px;">Error</h4>
-            <p style="font-size: 13px;">{{ cert()!.errorDetalle }}</p>
+          <div class="sed-alert sed-alert--error" style="margin-bottom: 16px;" role="alert">
+            <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+            <span>{{ cert()!.errorDetalle }}</span>
           </div>
         }
 
         <!-- Detalle -->
-        <div class="sed-card" style="margin-bottom: 16px;">
+        <div class="sed-section" style="margin-bottom: 16px;">
+          <h3 class="sed-section-title">
+            <i class="pi pi-shield" aria-hidden="true"></i>
+            Trazabilidad
+          </h3>
           <div class="info-grid">
             <div class="info-item"><span class="info-label">ID SIPEJ</span><span class="info-valor">{{ cert()!.idSipej ?? '—' }}</span></div>
             <div class="info-item"><span class="info-label">NIT</span><span class="info-valor">{{ cert()!.nit ?? '—' }}</span></div>
@@ -59,14 +78,26 @@ import { CertificadoDto, EstadoCertificado } from '../../core/models/esal.model'
         </div>
 
         <!-- Acciones -->
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <button class="sed-btn-secondary" (click)="volver()">← Volver a ESAL</button>
+        <div class="sed-actions">
+          <button class="sed-btn-secondary" (click)="volver()">
+            <i class="pi pi-arrow-left" aria-hidden="true"></i>
+            Volver a ESAL
+          </button>
           @if (cert()!.estadoCertificado === 'GENERADO') {
             <button class="btn-descargar" type="button" [disabled]="descargando()" (click)="descargarPdf()">
-              {{ descargando() ? 'Descargando...' : '⬇ Descargar PDF' }}
+              @if (descargando()) {
+                <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                Descargando...
+              } @else {
+                <i class="pi pi-download" aria-hidden="true"></i>
+                Descargar PDF
+              }
             </button>
           }
-          <button class="sed-btn-secondary" (click)="verHistorial()">📋 Ver historial</button>
+          <button class="sed-btn-secondary" (click)="verHistorial()">
+            <i class="pi pi-list" aria-hidden="true"></i>
+            Ver historial
+          </button>
         </div>
       }
     </div>
@@ -78,8 +109,9 @@ import { CertificadoDto, EstadoCertificado } from '../../core/models/esal.model'
     .info-label { font-size: 11px; font-weight: 600; color: var(--color-on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em; }
     .info-valor { font-size: 14px; color: var(--color-on-surface); }
     .btn-descargar {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--space-xs);
       background: #1b5e20; color: #fff; padding: 8px 18px; border-radius: 6px;
-      border: none; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-block;
+      border: none; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: 600;
     }
   `],
 })

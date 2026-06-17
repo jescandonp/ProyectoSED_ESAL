@@ -178,3 +178,76 @@ The component library is built for high-utility administrative workflows.
 - **Cards:** Used for grouping related administrative information. Cards should have a 1px #D1D5DB border and no shadow by default.
 - **Chips:** Small, rounded indicators for status (e.g., "En Proceso", "Completado"). Use low-saturation background tints of the status color with high-contrast text.
 - **Navigation:** A vertical sidebar is preferred for administrative profiles to allow for deeply nested information structures (folders and sub-pages).
+
+## I7 - Adaptacion Referencia SIGCON
+
+I7 incorpora como insumo visual la propuesta `PRO-mockup-site-SIGCON_.pdf`, pero no adopta el dominio funcional de SIGCON ni sus textos de contratos. La referencia se usa para reforzar patrones institucionales comunes: login SED, version visible, navegacion lateral, usuario/rol, breadcrumb, busqueda compacta, resultados tabulares, detalle por secciones y bloque de contacto.
+
+### Principios De Adaptacion
+
+- `SED_ESAL` conserva nombre, rutas, roles, textos funcionales y coordenadas canonicas propias.
+- La maqueta SIGCON es guia visual, no fuente de reglas de negocio.
+- La interfaz debe sentirse como herramienta administrativa interna, no como landing page.
+- Todo cambio visual amplio debe reflejarse primero en este documento o en la spec activa.
+- Los componentes existentes evolucionan en sitio; no se crean pantallas paralelas para representar el mismo flujo.
+
+### Paleta I7
+
+La paleta se mantiene institucional y de alto contraste:
+
+| Uso | Token | Valor |
+|---|---|---|
+| Primario institucional | `--color-primary` | `#001e40` |
+| Primario navegacion/acciones | `--color-primary-container` | `#003366` |
+| Naranja SED/CTA | `--color-secondary-container` | `#fe6500` |
+| Interaccion/enlaces/foco | `--color-interactive` | `#3366cc` |
+| Fondo app | `--color-background` | `#f9f9f9` |
+| Superficie | `--color-surface` | `#ffffff` |
+| Superficie alterna | `--color-surface-container-low` | `#f3f3f3` |
+| Borde suave | `--color-outline-variant` | `#c3c6d1` |
+
+Los colores alternos de SIGCON (`#f9e04b`, `#64d9d5`, `#54a2e6`) quedan reservados para estados o elementos informativos puntuales si hay una regla de uso clara. No deben convertirse en paleta dominante.
+
+### Tipografia I7
+
+La referencia SIGCON propone Montserrat para titulos y Work Sans para texto. En I7 se conserva `Public Sans` como fuente base por estabilidad, legibilidad administrativa y consistencia con el sistema ya documentado. Un cambio futuro a Montserrat/Work Sans requiere aprobacion explicita y validacion de disponibilidad de fuentes en el entorno SED.
+
+Reglas:
+
+- Titulos de pagina: `headline-md`, 24px, 600.
+- Encabezados internos: 16px-20px, 600.
+- Formularios y tablas: 14px como base.
+- Metadata, version y ayuda: 12px.
+- No usar escalamiento por ancho de viewport.
+
+### Layout Administrativo I7
+
+El shell toma de SIGCON estos patrones:
+
+- Barra lateral fija o compacta con secciones por rol.
+- Header sobrio con breadcrumb, usuario, rol y version.
+- Contenido principal con ancho util y densidad operativa.
+- Footer/contacto institucional cuando no compita con el flujo principal.
+- Estados vacios, errores y carga siempre visibles.
+
+El layout debe responder a escritorio y anchos reducidos sin solapar texto. Si una pantalla no puede ofrecer navegacion lateral completa en movil, debe degradar a una version apilada legible.
+
+### Componentes I7
+
+- **Botones:** primario azul institucional; secundario con borde azul; CTA naranja solo para accion principal excepcional.
+- **Inputs:** label visible sobre campo, ayuda/error debajo, foco azul accesible.
+- **Tablas:** cabecera azul, filas de 40px aprox., zebra suave, acciones compactas por fila.
+- **Chips:** estado textual mas color; el color nunca es el unico indicador.
+- **Cards:** solo para agrupar informacion funcional; no usar cards anidadas.
+- **Iconografia:** preferir PrimeIcons sobre emojis para navegacion, modulos y acciones.
+- **Breadcrumb:** texto compacto bajo el header o dentro del header, derivado de ruta funcional.
+- **Version:** visible como metadata, no como elemento de marketing.
+
+### Restricciones I7
+
+- No copiar nombres, menus ni datos de contratos de SIGCON.
+- No introducir gradientes decorativos, sombras fuertes, orbes ni composiciones promocionales.
+- No usar hero sections para flujos administrativos.
+- No agregar dependencias visuales sin aprobacion.
+- No mover autorizacion al frontend.
+- No cambiar PDF, endpoints, base de datos ni reglas de dominio dentro de I7.

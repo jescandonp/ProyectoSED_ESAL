@@ -23,21 +23,42 @@ export class ShellComponent {
   private readonly router = inject(Router);
 
   readonly currentUser = this.auth.currentUser;
+  readonly appVersion = 'VS 1.0.0';
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', route: '/dashboard', icon: '📊', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
-    { label: 'Carga Inicial', route: '/admin/carga-inicial', icon: '📤', roles: ['ADMINISTRADOR'] },
-    { label: 'ESAL (Admin)', route: '/admin/esales', icon: '🏢', roles: ['ADMINISTRADOR'] },
-    { label: 'Auditoría', route: '/admin/auditoria', icon: '📋', roles: ['ADMINISTRADOR'] },
-    { label: 'Firmantes', route: '/admin/firmantes', icon: '✍️', roles: ['ADMINISTRADOR'] },
-    { label: 'Numeración', route: '/admin/numeracion', icon: '🔢', roles: ['ADMINISTRADOR'] },
-    { label: 'Consultar ESAL', route: '/esales', icon: '🔍', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
+    { label: 'Inicio', route: '/dashboard', icon: 'pi pi-home', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
+    { label: 'Carga Inicial', route: '/admin/carga-inicial', icon: 'pi pi-upload', roles: ['ADMINISTRADOR'] },
+    { label: 'ESAL Admin', route: '/admin/esales', icon: 'pi pi-building', roles: ['ADMINISTRADOR'] },
+    { label: 'Auditoria', route: '/admin/auditoria', icon: 'pi pi-list-check', roles: ['ADMINISTRADOR'] },
+    { label: 'Firmantes', route: '/admin/firmantes', icon: 'pi pi-pen-to-square', roles: ['ADMINISTRADOR'] },
+    { label: 'Numeracion', route: '/admin/numeracion', icon: 'pi pi-hashtag', roles: ['ADMINISTRADOR'] },
+    { label: 'Consultar ESAL', route: '/esales', icon: 'pi pi-search', roles: ['ADMINISTRADOR', 'EXPEDIDOR'] },
   ];
 
   readonly visibleNavItems = computed(() => {
     const rol = this.currentUser()?.rol ?? '';
     return this.navItems.filter((item) => item.roles.includes(rol));
   });
+
+  breadcrumb(): string[] {
+    const path = this.router.url.split('?')[0];
+
+    if (path.startsWith('/admin/carga-inicial')) return ['Inicio', 'Administracion', 'Carga Inicial'];
+    if (path.startsWith('/admin/esales')) return ['Inicio', 'Administracion', 'ESAL'];
+    if (path.startsWith('/admin/auditoria')) return ['Inicio', 'Administracion', 'Auditoria'];
+    if (path.startsWith('/admin/firmantes')) return ['Inicio', 'Administracion', 'Firmantes'];
+    if (path.startsWith('/admin/numeracion')) return ['Inicio', 'Administracion', 'Numeracion'];
+    if (path.startsWith('/busqueda')) return ['Inicio', 'Consulta', 'Detalle ESAL'];
+    if (path.startsWith('/certificados')) return ['Inicio', 'Certificados'];
+    if (path.startsWith('/esales')) return ['Inicio', 'Consulta ESAL'];
+
+    return ['Inicio'];
+  }
+
+  pageTitle(): string {
+    const items = this.breadcrumb();
+    return items[items.length - 1] ?? 'Inicio';
+  }
 
   logout(): void {
     this.auth.logout();

@@ -1,12 +1,17 @@
 <div class="shell-layout">
-  <!-- Sidebar -->
   <aside class="shell-sidebar" role="navigation" aria-label="Navegación principal">
     <div class="sidebar-brand">
-      <span class="sidebar-brand-icon" aria-hidden="true">🏛️</span>
+      <span class="sidebar-brand-icon" aria-hidden="true">
+        <i class="pi pi-building-columns"></i>
+      </span>
       <div class="sidebar-brand-text">
         <span class="sidebar-brand-title">SED ESAL</span>
-        <span class="sidebar-brand-sub">Secretaría de Educación</span>
+        <span class="sidebar-brand-sub">Secretaría de Educación del Distrito</span>
       </div>
+    </div>
+
+    <div class="sidebar-version">
+      <span class="sed-version">{{ appVersion }}</span>
     </div>
 
     <nav class="sidebar-nav">
@@ -19,7 +24,9 @@
               class="sidebar-nav-link"
               [attr.aria-label]="item.label"
             >
-              <span class="sidebar-nav-icon" aria-hidden="true">{{ item.icon }}</span>
+              <span class="sidebar-nav-icon" aria-hidden="true">
+                <i [class]="item.icon"></i>
+              </span>
               <span class="sidebar-nav-label">{{ item.label }}</span>
             </a>
           </li>
@@ -29,20 +36,30 @@
 
     <div class="sidebar-footer">
       <div class="sidebar-user">
+        <span class="sidebar-user-label">Usuario</span>
         <span class="sidebar-user-name">{{ currentUser()?.nombre }}</span>
         <span class="sidebar-user-rol">{{ currentUser()?.rol }}</span>
       </div>
       <button class="sidebar-logout-btn" (click)="logout()" type="button" aria-label="Cerrar sesión">
-        <span aria-hidden="true">🚪</span> Salir
+        <i class="pi pi-sign-out" aria-hidden="true"></i>
+        Cerrar sesión
       </button>
+      <div class="sidebar-contact">
+        <strong>Contáctenos</strong>
+        <span>(601) 324 1000</span>
+      </div>
     </div>
   </aside>
 
-  <!-- Contenido principal -->
   <div class="shell-main">
     <header class="shell-header">
       <div class="shell-header-left">
-        <span class="shell-header-title">SED ESAL</span>
+        <nav class="shell-breadcrumb" aria-label="Ruta de navegación">
+          @for (item of breadcrumb(); track item) {
+            <span>{{ item }}</span>
+          }
+        </nav>
+        <span class="shell-header-title">{{ pageTitle() }}</span>
       </div>
       <div class="shell-header-right">
         <span class="shell-header-user">{{ currentUser()?.nombre }}</span>

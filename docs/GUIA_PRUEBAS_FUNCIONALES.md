@@ -1,7 +1,7 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: I6 completado.
-> Tests backend: 136 (BUILD SUCCESS). Frontend Angular: build en verde.
+> Estado: I7 completado.
+> Tests backend: 136 (BUILD SUCCESS en I6, sin cambios backend en I7). Frontend Angular: 5 tests ChromeHeadless y build en verde.
 > Fecha: 2026-05-29.
 > Marco: SDD Spec-Anchored por incrementos.
 
@@ -55,6 +55,7 @@ Requisito: backend levantado en `http://localhost:8080` y frontend en `http://lo
 | T-00-05 | Login EXPEDIDOR | Usuario `expedidor@educacionbogota.edu.co` / `expedidor123` | Sidebar solo con busqueda/consulta |
 | T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 136 tests, BUILD SUCCESS |
 | T-00-07 | Verificar build frontend | `npm run build` en `sed-esal-angular` | BUILD SUCCESS sin errores |
+| T-00-08 | Verificar tests frontend | `npm test -- --watch=false --browsers=ChromeHeadless` en `sed-esal-angular` | 5 tests, TOTAL SUCCESS |
 
 ## 5. Incremento 0 - Base Documental Y Arquitectura
 
@@ -331,7 +332,42 @@ Estado: completado. Implementacion backend verificada con tests enfocados y suit
 | I6-PDF-09 | Revisar firmante | Firmante vigente | Nombre del firmante aparece en verde bold con cargo |
 | I6-PDF-10 | Revisar NOTA 1 | PDF generado | Incluye nota legal con linea separadora al pie |
 
-## 14. Incrementos Posteriores
+## 14. Incremento 7 - Alineacion UI Institucional
+
+Fuente de especificacion: `docs/specs/2026-05-29-sed-esal-i7-spec.md`.
+
+Estado: completado. Implementacion frontend verificada con tests Angular y build productivo. No modifica backend, base de datos, endpoints, roles ni reglas del certificado.
+
+### I7 - Verificacion Visual Frontend
+
+| ID | Accion | URL / Pantalla | Esperado |
+|---|---|---|---|
+| I7-UI-01 | Abrir login | `http://localhost:4200/login` | Se muestra `SED ESAL`, version, descripcion institucional, formulario local-dev, placeholder Office 365 deshabilitado y contacto SED |
+| I7-UI-02 | Login ADMINISTRADOR | Credenciales local-dev admin | Shell con menu admin, usuario, rol, version y breadcrumb |
+| I7-UI-03 | Login EXPEDIDOR | Credenciales local-dev expedidor | Shell solo con modulos permitidos por rol |
+| I7-UI-04 | Revisar dashboard | `/dashboard` | Panel operativo compacto con modulos disponibles, PrimeIcons y rol visible |
+| I7-UI-05 | Ejecutar busqueda | `/esales` | Filtros densos, tabla responsiva, acciones Detalle/Preview y contador de registros |
+| I7-UI-06 | Busqueda sin resultados | `/esales` con filtros restrictivos | Estado vacio claro sin flujo de alta nuevo |
+| I7-UI-07 | Abrir detalle ESAL | `/busqueda/:id` o ruta equivalente desde resultados | Header institucional, estado/completitud y secciones existentes conservadas |
+| I7-UI-08 | Abrir preview certificado | `/certificados/preview/:id` | Bloqueos, advertencias y accion de generar mantienen reglas existentes con jerarquia visual I7 |
+| I7-UI-09 | Abrir resultado certificado | `/certificados/:certificadoId` | Numero, estado, trazabilidad, hash y descarga autenticada visibles |
+| I7-UI-10 | Validar responsive basico | Login y shell en ancho reducido | No hay solapamiento incoherente; menu y acciones se apilan o desplazan horizontalmente |
+
+### I7 - Evidencia Tecnica
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" test -- --watch=false --browsers=ChromeHeadless
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
+```
+
+Resultado registrado:
+
+- `TOTAL: 5 SUCCESS` en ChromeHeadless.
+- `ng build` exitoso.
+- Persisten advertencias Angular NG8102/NG8107 preexistentes sobre nullish/optional chaining en componentes no relacionados o no corregidos dentro del alcance I7.
+
+## 15. Incrementos Posteriores
 
 ### Verificacion Externa Futura
 

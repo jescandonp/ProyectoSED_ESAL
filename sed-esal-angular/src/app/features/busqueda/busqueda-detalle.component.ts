@@ -16,22 +16,32 @@ type Tab = 'info' | 'personeria' | 'reformas' | 'nombramientos' | 'organos' | 'a
   imports: [CommonModule],
   template: `
     <div>
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-        <button class="sed-btn-secondary" style="padding: 6px 12px;" (click)="volver()">← Volver</button>
-        <h2 class="sed-page-title" style="margin-bottom: 0;">Detalle de Entidad</h2>
-      </div>
+      <header class="sed-page-header">
+        <div>
+          <span class="sed-page-kicker">Consulta ESAL</span>
+          <h2 class="sed-page-title">Detalle de Entidad</h2>
+          <p class="sed-page-subtitle">Información administrativa, soporte documental y estado de completitud.</p>
+        </div>
+        <button class="sed-btn-secondary" (click)="volver()">
+          <i class="pi pi-arrow-left" aria-hidden="true"></i>
+          Volver
+        </button>
+      </header>
 
       @if (cargando()) {
-        <div style="text-align: center; padding: 40px; color: var(--color-on-surface-variant);">
-          Cargando...
+        <div class="sed-loading-state" role="status">
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          <span>Cargando detalle de ESAL...</span>
         </div>
       } @else if (error()) {
-        <div class="sed-card" style="color: var(--color-error); text-align: center; padding: 24px;">
-          {{ error() }}
+        <div class="sed-alert sed-alert--error" role="alert">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          <span>{{ error() }}</span>
         </div>
       } @else if (detalle()) {
         <!-- Header -->
-        <div class="sed-card" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div class="sed-section" style="margin-bottom: 16px;">
+          <div class="sed-toolbar">
           <div>
             <h3 style="font-size: 18px; font-weight: 700; color: var(--color-primary);">{{ detalle()!.nombre }}</h3>
             <p style="font-size: 13px; color: var(--color-on-surface-variant); margin-top: 4px;">
@@ -42,8 +52,10 @@ type Tab = 'info' | 'personeria' | 'reformas' | 'nombramientos' | 'organos' | 'a
             <span [class]="'sed-chip ' + chipEstado(detalle()!.estado)">{{ labelEstado(detalle()!.estado) }}</span>
             <span [class]="'sed-chip ' + chipCompletitud(detalle()!.estadoCompletitud)">{{ labelCompletitud(detalle()!.estadoCompletitud) }}</span>
             <button class="sed-btn-primary" style="padding: 6px 14px; font-size: 13px;" (click)="verPreview()">
+              <i class="pi pi-file-pdf" aria-hidden="true"></i>
               Ver Preview Certificado
             </button>
+          </div>
           </div>
         </div>
 

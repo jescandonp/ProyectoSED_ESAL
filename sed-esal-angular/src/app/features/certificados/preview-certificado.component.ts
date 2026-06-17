@@ -10,22 +10,32 @@ import { PreviewCertificado, EstadoEsal, EstadoCompletitud, CertificadoDto } fro
   imports: [CommonModule],
   template: `
     <div>
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-        <button class="sed-btn-secondary" style="padding: 6px 12px;" (click)="volver()">← Volver</button>
-        <h2 class="sed-page-title" style="margin-bottom: 0;">Vista Previa del Certificado</h2>
-      </div>
+      <header class="sed-page-header">
+        <div>
+          <span class="sed-page-kicker">Certificados</span>
+          <h2 class="sed-page-title">Vista Previa del Certificado</h2>
+          <p class="sed-page-subtitle">Revise bloqueos, advertencias y contenido antes de emitir el certificado.</p>
+        </div>
+        <button class="sed-btn-secondary" (click)="volver()">
+          <i class="pi pi-arrow-left" aria-hidden="true"></i>
+          Volver
+        </button>
+      </header>
 
       @if (cargando()) {
-        <div style="text-align: center; padding: 40px; color: var(--color-on-surface-variant);">
-          Generando vista previa...
+        <div class="sed-loading-state" role="status">
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          <span>Generando vista previa...</span>
         </div>
       } @else if (error()) {
-        <div class="sed-card" style="color: var(--color-error); text-align: center; padding: 24px;">
-          {{ error() }}
+        <div class="sed-alert sed-alert--error" role="alert">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          <span>{{ error() }}</span>
         </div>
       } @else if (preview()) {
         <!-- Encabezado -->
-        <div class="sed-card" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div class="sed-section" style="margin-bottom: 16px;">
+          <div class="sed-toolbar">
           <div>
             <h3 style="font-size: 18px; font-weight: 700; color: var(--color-primary);">{{ preview()!.nombre }}</h3>
             <p style="font-size: 13px; color: var(--color-on-surface-variant); margin-top: 4px;">
@@ -45,16 +55,23 @@ import { PreviewCertificado, EstadoEsal, EstadoCompletitud, CertificadoDto } fro
             <div class="habilitada-badge"
                  [class.habilitada-badge--si]="preview()!.generacionHabilitada"
                  [class.habilitada-badge--no]="!preview()!.generacionHabilitada">
-              @if (preview()!.generacionHabilitada) { ✅ Generación habilitada }
-              @else { 🚫 Generación no habilitada }
+              @if (preview()!.generacionHabilitada) {
+                <i class="pi pi-check-circle" aria-hidden="true"></i>
+                Generación habilitada
+              } @else {
+                <i class="pi pi-ban" aria-hidden="true"></i>
+                Generación no habilitada
+              }
             </div>
+          </div>
           </div>
         </div>
 
         <!-- Alerta de estado -->
         @if (preview()!.alertaEstado) {
-          <div class="alerta-estado" style="margin-bottom: 16px;">
-            ⚠️ {{ preview()!.alertaEstado }}
+          <div class="sed-alert sed-alert--warning" style="margin-bottom: 16px;">
+            <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+            <span>{{ preview()!.alertaEstado }}</span>
           </div>
         }
 
@@ -126,20 +143,26 @@ import { PreviewCertificado, EstadoEsal, EstadoCompletitud, CertificadoDto } fro
           <button class="sed-btn-secondary" (click)="volver()">Volver al detalle</button>
           @if (!preview()!.generacionHabilitada) {
             <button class="btn-generar" disabled title="Resuelva los bloqueos para habilitar la generación">
-              🔒 Generación bloqueada
+              <i class="pi pi-lock" aria-hidden="true"></i>
+              Generación bloqueada
             </button>
           } @else if (generando()) {
-            <button class="btn-generar" disabled>⏳ Generando...</button>
+            <button class="btn-generar" disabled>
+              <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+              Generando...
+            </button>
           } @else {
             <button class="btn-generar" (click)="confirmarYGenerar()">
-              📄 Generar certificado
+              <i class="pi pi-file-pdf" aria-hidden="true"></i>
+              Generar certificado
             </button>
           }
         </div>
 
         @if (errorGeneracion()) {
-          <div class="sed-card" style="margin-top: 12px; color: var(--color-error); background: #fef2f2; border-left: 4px solid var(--color-error);">
-            ⚠️ {{ errorGeneracion() }}
+          <div class="sed-alert sed-alert--error" style="margin-top: 12px;" role="alert">
+            <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+            <span>{{ errorGeneracion() }}</span>
           </div>
         }
       }
@@ -147,11 +170,12 @@ import { PreviewCertificado, EstadoEsal, EstadoCompletitud, CertificadoDto } fro
   `,
   styles: [`
     .btn-generar {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--space-xs);
       background: #1b5e20; color: #fff; border: none; padding: 10px 22px;
       border-radius: 6px; cursor: pointer; font-size: 0.92rem; font-weight: 600;
     }
     .btn-generar:disabled { cursor: not-allowed; opacity: 0.6; }
-    .habilitada-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .habilitada-badge { display: inline-flex; align-items: center; gap: var(--space-xs); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
     .habilitada-badge--si { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
     .habilitada-badge--no { background: #fef2f2; color: var(--color-error); border: 1px solid #fca5a5; }
     .alerta-estado {

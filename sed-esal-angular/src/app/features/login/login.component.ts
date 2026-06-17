@@ -16,6 +16,11 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  readonly appVersion = 'VS 1.0.0';
+  readonly contactPhone = '(601) 324 1000';
+  readonly contactEmail = 'contactenos@educacionbogota.edu.co';
+  readonly contactAddress = 'Av. El Dorado No. 66-63, Bogota D.C.';
+
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
