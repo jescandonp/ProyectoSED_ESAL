@@ -242,4 +242,46 @@ Resultado:
 
 ## Retake Point
 
-I8 completado. Siguiente sesion debe abrir nueva SPEC/plan si se solicita otro incremento.
+## Ajuste funcional - Numeracion interna no visible en PDF
+
+Fecha: 2026-06-18.
+
+Decision de area funcional: la numeracion automatica del certificado corresponde a un codigo interno. Se conserva para trazabilidad, almacenamiento y contratos existentes, pero no debe imprimirse en el PDF del certificado.
+
+### RED
+
+Comando:
+
+```powershell
+mvn test "-Dtest=CertificadoPdfServiceTest"
+```
+
+Resultado esperado inicial:
+
+- BUILD FAILURE.
+- El PDF aun contenia `No. ESAL-2026-000001` y `No. ESAL-2026-000008`.
+
+### GREEN
+
+Cambio aplicado:
+
+- `CertificadoPdfService` deja de renderizar `No. {numeroCertificado}` en el encabezado del PDF.
+- Se mantiene la fecha de expedicion visible.
+- No se modifica `GeneracionService`, `NumeracionService`, persistencia, nombre controlado de archivo ni trazabilidad interna.
+
+Verificacion:
+
+```powershell
+mvn test "-Dtest=CertificadoPdfServiceTest"
+mvn test "-Dtest=CertificadoPdfServiceTest,GeneracionServiceTest"
+```
+
+Resultado:
+
+- `CertificadoPdfServiceTest`: 2 tests, 0 failures, BUILD SUCCESS.
+- Bateria PDF/generacion: 7 tests, 0 failures, BUILD SUCCESS.
+- Persisten advertencias H2 de cierre de base al finalizar tests Spring, sin fallar Maven.
+
+## Retake Point
+
+I8 completado con ajuste de numeracion interna no visible en PDF. Siguiente sesion debe abrir nueva SPEC/plan si se solicita otro incremento.

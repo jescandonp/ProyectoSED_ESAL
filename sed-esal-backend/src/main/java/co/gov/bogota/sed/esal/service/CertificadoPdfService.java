@@ -61,7 +61,6 @@ public class CertificadoPdfService {
         doc.open();
 
         Font titulo = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
-        Font subtitulo = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
         Font normal = FontFactory.getFont(FUENTE_BASE, 11, Color.BLACK);
         Font bold = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, Color.BLACK);
         Font italica = FontFactory.getFont(FUENTE_BASE, 11, Font.ITALIC, Color.BLACK);
@@ -84,8 +83,7 @@ public class CertificadoPdfService {
         doc.add(pTitulo);
 
         Paragraph numeroFecha = new Paragraph();
-        numeroFecha.add(new Chunk("No. " + numeroCertificado, subtitulo));
-        numeroFecha.add(new Chunk("     Expedido: " + (fechaExpedicion != null ? fechaExpedicion.format(FMT) : "-"), label));
+        numeroFecha.add(new Chunk("Expedido: " + (fechaExpedicion != null ? fechaExpedicion.format(FMT) : "-"), label));
         numeroFecha.setAlignment(Element.ALIGN_CENTER);
         numeroFecha.setSpacingAfter(12);
         doc.add(numeroFecha);

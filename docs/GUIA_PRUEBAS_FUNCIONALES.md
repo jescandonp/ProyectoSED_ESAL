@@ -388,6 +388,7 @@ Estado: completado. Implementacion backend verificada con test PDF focalizado, s
 | I8-PDF-07 | Revisar junta directiva | Miembros de junta registrados | Tabla con NOMBRE, IDENTIFICACION, CARGO, ACTA NOMBRAMIENTO, RADICADO SED |
 | I8-PDF-08 | Revisar revisoría fiscal | Revisor fiscal principal o suplente vigente | Tabla de 3 columnas: NOMBRE, IDENTIFICACION, CARGO |
 | I8-PDF-09 | Revisar campos no normalizados | Articulos estatutarios no disponibles como campo | No se inventan datos; aparece marcador controlado `no registrado` |
+| I8-PDF-10 | Revisar numeracion interna | Certificado generado con codigo interno `ESAL-*` | El codigo interno no se imprime en el PDF; solo se conserva en trazabilidad/almacenamiento |
 
 ### I8 - Evidencia Tecnica
 
@@ -407,6 +408,7 @@ Resultado registrado:
 
 - `CertificadoPdfServiceTest`: 2 tests, BUILD SUCCESS.
 - Header institucional con logo validado como imagen PDF en la primera pagina.
+- Numeracion automatica validada como codigo interno no visible en el PDF.
 - Bateria enfocada PDF/assembler/generacion: 11 tests, BUILD SUCCESS.
 - Suite backend completa: 137 tests, BUILD SUCCESS.
 - WAR generado: `sed-esal-backend/target/sed-esal-backend.war`.

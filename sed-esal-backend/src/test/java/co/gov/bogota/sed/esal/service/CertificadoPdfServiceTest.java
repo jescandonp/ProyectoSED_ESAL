@@ -69,6 +69,8 @@ class CertificadoPdfServiceTest {
         assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
 
         String texto = extraerTexto(pdf);
+        assertThat(texto).doesNotContain("ESAL-2026-000001");
+        assertThat(texto).doesNotContain("No. ESAL");
         assertThat(texto).contains("LA SUSCRITA DIRECTORA DE INSPECCION Y VIGILANCIA");
         assertThat(texto).contains("Decretos Distritales 479 de 2024");
         assertThat(texto).contains("650 de");
@@ -158,6 +160,8 @@ class CertificadoPdfServiceTest {
         assertThat(tieneImagen(xobjects)).isTrue();
 
         String texto = extraerTexto(pdf);
+        assertThat(texto).doesNotContain("ESAL-2026-000008");
+        assertThat(texto).doesNotContain("No. ESAL");
         assertThat(texto).contains("Plantilla: I8-EYRL-v1");
         assertThat(texto).contains("Av. El Dorado No. 66 - 63");
         assertThat(texto).contains("PBX: 324 1000 - Fax: 315 34 48");
