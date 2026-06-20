@@ -1,16 +1,21 @@
 package co.gov.bogota.sed.esal.service;
 
 import co.gov.bogota.sed.esal.domain.ActuacionAdministrativa;
+import co.gov.bogota.sed.esal.domain.DocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.Esal;
 import co.gov.bogota.sed.esal.domain.Nombramiento;
 import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
+import co.gov.bogota.sed.esal.domain.enums.CertificadoPlantilla;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.domain.enums.SubtipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoActuacion;
+import co.gov.bogota.sed.esal.domain.enums.TipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto.MiembroDto;
 import co.gov.bogota.sed.esal.repository.ActuacionAdministrativaRepository;
+import co.gov.bogota.sed.esal.repository.DocumentoSoporteRepository;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
 import co.gov.bogota.sed.esal.repository.NombramientoRepository;
 import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
@@ -24,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,17 +41,23 @@ public class CertificadoAssembler {
     private final NombramientoRepository nombramientoRepository;
     private final OrganoAdministracionRepository organoRepository;
     private final ActuacionAdministrativaRepository actuacionRepository;
+    private final DocumentoSoporteRepository documentoRepository;
+    private final CertificadoTemplateSelector templateSelector;
 
     public CertificadoAssembler(EsalRepository esalRepository,
                                 PersoneriaJuridicaRepository personeriaRepository,
                                 NombramientoRepository nombramientoRepository,
                                 OrganoAdministracionRepository organoRepository,
-                                ActuacionAdministrativaRepository actuacionRepository) {
+                                ActuacionAdministrativaRepository actuacionRepository,
+                                DocumentoSoporteRepository documentoRepository,
+                                CertificadoTemplateSelector templateSelector) {
         this.esalRepository = esalRepository;
         this.personeriaRepository = personeriaRepository;
         this.nombramientoRepository = nombramientoRepository;
         this.organoRepository = organoRepository;
         this.actuacionRepository = actuacionRepository;
+        this.documentoRepository = documentoRepository;
+        this.templateSelector = templateSelector;
     }
 
     public CertificadoNarrativoDto ensamblar(Long esalId) {
@@ -57,6 +69,8 @@ public class CertificadoAssembler {
         List<Nombramiento> nombramientos = nombramientoRepository.findByEsalId(esalId);
         List<OrganoAdministracion> organos = organoRepository.findByEsalId(esalId);
         List<ActuacionAdministrativa> actuaciones = actuacionRepository.findByEsalId(esalId);
+        List<DocumentoSoporte> documentos = documentoRepository.findByEsalId(esalId);
+        CertificadoPlantilla plantilla = templateSelector.seleccionar(esal.getEstado(), documentos);
 
         CertificadoNarrativoDto dto = new CertificadoNarrativoDto();
         dto.setNombre(esal.getNombre());
@@ -68,6 +82,12 @@ public class CertificadoAssembler {
         dto.setObjetoSocial(esal.getObjetoSocial());
         dto.setEstado(esal.getEstado());
         dto.setAlertaEstado(alertaEstado(esal.getEstado(), actuaciones));
+        dto.setPlantilla(plantilla);
+        documentoParaPlantilla(documentos, plantilla).ifPresent(documento -> {
+            dto.setDocumentoPlantillaReferencia(documento.getReferenciaActo());
+            dto.setDocumentoPlantillaFechaActo(documento.getFechaActo());
+            dto.setDocumentoPlantillaSubtipo(documento.getSubtipoDocumental());
+        });
 
         PersoneriaJuridica pj = personerias.isEmpty() ? null : personerias.get(0);
         if (pj != null) {
@@ -172,5 +192,35 @@ public class CertificadoAssembler {
     private boolean tieneActuacion(List<ActuacionAdministrativa> actuaciones, TipoActuacion tipo) {
         return actuaciones != null && actuaciones.stream()
                 .anyMatch(a -> tipo.equals(a.getTipoActuacion()));
+    }
+
+    private Optional<DocumentoSoporte> documentoParaPlantilla(List<DocumentoSoporte> documentos,
+                                                              CertificadoPlantilla plantilla) {
+        if (documentos == null || documentos.isEmpty()) {
+            return Optional.empty();
+        }
+        return documentos.stream()
+                .filter(documento -> Boolean.TRUE.equals(documento.getVigente()))
+                .filter(documento -> coincidePlantilla(documento, plantilla))
+                .findFirst();
+    }
+
+    private boolean coincidePlantilla(DocumentoSoporte documento, CertificadoPlantilla plantilla) {
+        switch (plantilla) {
+            case EYRL_LIQUIDACION_TRAMITE_CANCELACION_VOLUNTARIA:
+                return TipoDocumentoSoporte.LIQUIDACION.equals(documento.getTipoDocumental())
+                        && SubtipoDocumentoSoporte.TRAMITE_CANCELACION_VOLUNTARIA.equals(documento.getSubtipoDocumental());
+            case EYRL_LIQUIDACION_TERMINO_DURACION:
+                return TipoDocumentoSoporte.LIQUIDACION.equals(documento.getTipoDocumental())
+                        && SubtipoDocumentoSoporte.TERMINO_DURACION.equals(documento.getSubtipoDocumental());
+            case EYRL_CANCELADA_VOLUNTARIAMENTE:
+                return TipoDocumentoSoporte.CANCELACION.equals(documento.getTipoDocumental())
+                        && SubtipoDocumentoSoporte.CANCELACION_VOLUNTARIA.equals(documento.getSubtipoDocumental());
+            case EYRL_CANCELADA_ORDEN_AUTORIDAD:
+                return TipoDocumentoSoporte.CANCELACION.equals(documento.getTipoDocumental())
+                        && SubtipoDocumentoSoporte.ORDEN_AUTORIDAD.equals(documento.getSubtipoDocumental());
+            default:
+                return false;
+        }
     }
 }

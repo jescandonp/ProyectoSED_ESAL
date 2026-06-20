@@ -81,8 +81,9 @@ public class GeneracionService {
 
         // 4. Generar PDF
         byte[] pdfBytes;
+        CertificadoNarrativoDto narrativo;
         try {
-            CertificadoNarrativoDto narrativo = certificadoAssembler.ensamblar(esalId);
+            narrativo = certificadoAssembler.ensamblar(esalId);
             pdfBytes = pdfService.generar(narrativo, numero, firmante.getNombre(), firmante.getCargo(), ahora);
         } catch (Exception e) {
             Certificado fallido = registrarEstado(esalId, preview, EstadoCertificado.FALLIDO,
@@ -125,7 +126,7 @@ public class GeneracionService {
         cert.setFirmanteId(firmante.getId());
         cert.setFirmanteNombre(firmante.getNombre());
         cert.setFirmanteCargo(firmante.getCargo());
-        cert.setPlantillaVersion(CertificadoPdfService.VERSION_PLANTILLA);
+        cert.setPlantillaVersion(narrativo.getPlantilla().getVersion());
         cert.setHashSha256(hash);
         cert.setRutaPdf(rutaPdf);
         cert.setNombreArchivo(nombreArchivo);

@@ -4,9 +4,9 @@ Aplicativo interno para la Direccion de Inspeccion y Vigilancia de la Secretaria
 
 ## Estado
 
-Fase actual: I9 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
+Fase actual: I10 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
 
-`SED_ESAL` cuenta con backend Spring Boot WAR y frontend Angular para busqueda, preview, generacion de certificados, seguridad por roles, mantenimiento operativo de ESAL y gestion documental administrativa transversal con version vigente e historico consultable. La carga Excel se conserva como mecanismo inicial o esporadico; el mantenimiento posterior se realiza desde el aplicativo por secciones administrativas.
+`SED_ESAL` cuenta con backend Spring Boot WAR y frontend Angular para busqueda, preview, generacion de certificados, seguridad por roles, mantenimiento operativo de ESAL, gestion documental administrativa transversal con version vigente e historico consultable, y seleccion de plantilla EYRL por estado/documento vigente. La carga Excel se conserva como mecanismo inicial o esporadico; el mantenimiento posterior se realiza desde el aplicativo por secciones administrativas.
 
 ## Orden De Lectura
 
@@ -26,7 +26,8 @@ Fase actual: I9 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchor
 14. `docs/specs/2026-05-29-sed-esal-i7-spec.md`
 15. `docs/specs/2026-06-17-sed-esal-i8-spec.md`
 16. `docs/specs/2026-06-19-sed-esal-i9-spec.md`
-17. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+17. `docs/specs/2026-06-20-sed-esal-i10-spec.md`
+18. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Incrementos Especificados
 
@@ -42,6 +43,7 @@ Fase actual: I9 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchor
 | I7 | Completado | Alineacion UI institucional SED_ESAL |
 | I8 | Completado | Reproduccion exacta del certificado PDF desde plantilla EYRL |
 | I9 | Completado | Gestion documental administrativa transversal |
+| I10 | Completado | Seleccion de plantilla EYRL por estado y documento vigente I9 |
 
 ## Coordenadas Canonicas
 
@@ -78,7 +80,7 @@ node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
 
 Resultados esperados:
 
-- Tests backend pasan (148 tests en I9).
+- Tests backend pasan (164 tests en I10).
 - Build Angular pasa; el runner de tests Angular puede requerir ejecucion local fuera del sandbox/watch.
 - Health expone `/actuator/health`.
 - OpenAPI expone `BearerAuth`.

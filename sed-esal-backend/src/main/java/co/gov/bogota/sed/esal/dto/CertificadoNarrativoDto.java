@@ -1,6 +1,8 @@
 package co.gov.bogota.sed.esal.dto;
 
+import co.gov.bogota.sed.esal.domain.enums.CertificadoPlantilla;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.domain.enums.SubtipoDocumentoSoporte;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +18,10 @@ public class CertificadoNarrativoDto {
     private String objetoSocial;
     private EstadoEsal estado;
     private String alertaEstado;
+    private CertificadoPlantilla plantilla = CertificadoPlantilla.EYRL_DEFAULT;
+    private String documentoPlantillaReferencia;
+    private LocalDate documentoPlantillaFechaActo;
+    private SubtipoDocumentoSoporte documentoPlantillaSubtipo;
 
     // Personeria juridica
     private String resolucionPersoneria;
@@ -57,6 +63,24 @@ public class CertificadoNarrativoDto {
 
     public String getAlertaEstado() { return alertaEstado; }
     public void setAlertaEstado(String alertaEstado) { this.alertaEstado = alertaEstado; }
+
+    public CertificadoPlantilla getPlantilla() { return plantilla; }
+    public void setPlantilla(CertificadoPlantilla plantilla) { this.plantilla = plantilla; }
+
+    public String getDocumentoPlantillaReferencia() { return documentoPlantillaReferencia; }
+    public void setDocumentoPlantillaReferencia(String documentoPlantillaReferencia) {
+        this.documentoPlantillaReferencia = documentoPlantillaReferencia;
+    }
+
+    public LocalDate getDocumentoPlantillaFechaActo() { return documentoPlantillaFechaActo; }
+    public void setDocumentoPlantillaFechaActo(LocalDate documentoPlantillaFechaActo) {
+        this.documentoPlantillaFechaActo = documentoPlantillaFechaActo;
+    }
+
+    public SubtipoDocumentoSoporte getDocumentoPlantillaSubtipo() { return documentoPlantillaSubtipo; }
+    public void setDocumentoPlantillaSubtipo(SubtipoDocumentoSoporte documentoPlantillaSubtipo) {
+        this.documentoPlantillaSubtipo = documentoPlantillaSubtipo;
+    }
 
     public String getResolucionPersoneria() { return resolucionPersoneria; }
     public void setResolucionPersoneria(String resolucionPersoneria) { this.resolucionPersoneria = resolucionPersoneria; }

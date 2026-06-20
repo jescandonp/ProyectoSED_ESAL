@@ -1,8 +1,8 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I9 completado (backend 148 tests OK, WAR OK, build Angular OK; runner Angular test no validado por restriccion sandbox/watch).
+> Estado: I10 completado (backend 164 tests OK, WAR OK, build Angular OK; runner Angular test no validado por restriccion sandbox/watch).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
-> Ultima actualizacion: 2026-06-19.
+> Ultima actualizacion: 2026-06-20.
 
 ## Orden De Documentos
 
@@ -40,11 +40,14 @@
 32. Spec I9: `docs/specs/2026-06-19-sed-esal-i9-spec.md`
 33. Plan I9: `docs/plans/2026-06-19-sed-esal-i9-plan.md`
 34. Log I9: `docs/plans/2026-06-19-sed-esal-i9-execution-log.md`
-35. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+35. Spec I10: `docs/specs/2026-06-20-sed-esal-i10-spec.md`
+36. Plan I10: `docs/plans/2026-06-20-sed-esal-i10-plan.md`
+37. Log I10: `docs/plans/2026-06-20-sed-esal-i10-execution-log.md`
+38. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Estado Del Proyecto
 
-`SED_ESAL` tiene I9 completado. El backend agrega gestion documental administrativa transversal con version vigente, historico consultable, descarga autenticada y bloqueo de liquidacion/cancelacion sin documento vigente obligatorio. La verificacion queda en 148 tests backend en verde, WAR generado y build Angular OK.
+`SED_ESAL` tiene I10 completado. El backend agrega seleccion explicita de plantilla EYRL por estado de ESAL y documento vigente I9 para certificados suspendidos, en liquidacion y cancelados; los demas casos conservan la plantilla default. La verificacion queda en 164 tests backend en verde, WAR generado y build Angular OK.
 
 - Spec 0 de fundacion documental y arquitectura: completado.
 - Spec I1 de modelo base, carga inicial y completitud: completado.
@@ -56,6 +59,7 @@
 - Spec I7 de alineacion UI institucional SED_ESAL: completado (5 tests Angular, build Angular OK).
 - Spec I8 de reproduccion exacta del certificado PDF desde plantilla EYRL: completado (137 tests backend, WAR OK, 5 tests Angular, build Angular OK).
 - Spec I9 de gestion documental administrativa transversal: completado (148 tests backend, WAR OK, build Angular OK).
+- Spec I10 de seleccion de plantilla EYRL por estado/documento vigente I9: completado (164 tests backend, WAR OK, build Angular OK).
 - Pendiente: confirmar con TI SED tenant, issuer, audience, JWKS y CORS institucional para activar perfil weblogic.
 
 ## Artefactos Fuente
@@ -68,6 +72,12 @@
 | `Documentos_Referencia/Maqueta Buscador.xlsx` | Maqueta funcional de busqueda |
 | `Documentos_Referencia/Plantilla Certificado EYRL.docx` | Plantilla oficial de certificado |
 | `Documentos_Referencia/Iteracion/Aplicativo ESAL.docx` | Requerimiento fuente I9 de gestion documental |
+| `Documentos_Referencia/Iteracion/Plantilla Certificado EYRL.docx` | Plantilla default I10 |
+| `Documentos_Referencia/Iteracion/Plantilla Certificado EYRL - ESAL Suspendida.docx` | Plantilla I10 para ESAL suspendida |
+| `Documentos_Referencia/Iteracion/Plantilla Certificado EYRL - ESAL Estado de Liquidación.docx` | Plantilla I10 para ESAL en liquidacion por tramite |
+| `Documentos_Referencia/Iteracion/Plantilla Certificado EYRL - ESAL Estado de Liquidacion por Termino de Duración.docx` | Plantilla I10 para ESAL en liquidacion por termino |
+| `Documentos_Referencia/Iteracion/Plantilla Certificado EYRL - ESAL Cancelada Voluntariamente.docx` | Plantilla I10 para ESAL cancelada voluntariamente |
+| `Documentos_Referencia/Iteracion/Plantilla Certificado EYRL - ESAL Cancelada Por Orden de Autoridad.docx` | Plantilla I10 para ESAL cancelada por orden de autoridad |
 | `docs/DESIGN.md` | Sistema de diseno institucional |
 | `Documentos_Referencia/Prototipo/` | Prototipos visuales |
 
@@ -101,7 +111,7 @@ Estas coordenadas quedan aprobadas para iniciar I1. Cualquier cambio posterior p
 ```powershell
 # Backend
 Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
-mvn test                    # 148 tests, BUILD SUCCESS
+mvn test                    # 164 tests, BUILD SUCCESS
 mvn package -DskipTests     # genera target/sed-esal-backend.war
 mvn spring-boot:run -Dspring-boot.run.profiles=local-dev  # levanta en :8080
 

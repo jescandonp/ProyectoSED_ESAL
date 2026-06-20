@@ -1,8 +1,8 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: I9 completado.
-> Tests backend: 148, WAR OK. Frontend Angular: build en verde; runner Angular test requiere validacion local fuera de la restriccion sandbox/watch si aplica.
-> Fecha: 2026-06-19.
+> Estado: I10 completado.
+> Tests backend: 164, WAR OK. Frontend Angular: build en verde; runner Angular test requiere validacion local fuera de la restriccion sandbox/watch si aplica.
+> Fecha: 2026-06-20.
 > Marco: SDD Spec-Anchored por incrementos.
 
 ## 1. Objetivo
@@ -53,7 +53,7 @@ Requisito: backend levantado en `http://localhost:8080` y frontend en `http://lo
 | T-00-03 | Abrir frontend | `http://localhost:4200` | Pantalla login carga |
 | T-00-04 | Login ADMINISTRADOR | Usuario `admin@educacionbogota.edu.co` / `admin123` | Sidebar con modulos admin visibles |
 | T-00-05 | Login EXPEDIDOR | Usuario `expedidor@educacionbogota.edu.co` / `expedidor123` | Sidebar solo con busqueda/consulta |
-| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 148 tests, BUILD SUCCESS |
+| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 164 tests, BUILD SUCCESS |
 | T-00-07 | Verificar build frontend | `npm run build` en `sed-esal-angular` | BUILD SUCCESS sin errores |
 | T-00-08 | Verificar tests frontend | `npm test -- --watch=false --browsers=ChromeHeadless` en `sed-esal-angular` | Ejecutar en ambiente local con browser disponible; registrar si hay restriccion sandbox/watch |
 
@@ -479,7 +479,52 @@ Resultado registrado:
 - Angular build: exitoso con advertencias NG8102/NG8107 no bloqueantes.
 - `npm test -- --watch=false` no fue evidencia util en sandbox/watch; validar manualmente fuera de esa restriccion si se requiere evidencia ChromeHeadless.
 
-## 17. Incrementos Posteriores
+## 17. Incremento 10 - Seleccion De Plantilla EYRL Por Estado Y Documento Vigente
+
+Fuente de especificacion: `docs/specs/2026-06-20-sed-esal-i10-spec.md`.
+
+Estado: completado. Implementacion backend verificada con RED/GREEN, suites enfocadas, suite backend completa, WAR y build Angular.
+
+### I10 - Seleccion De Plantilla
+
+| ID | Accion | Datos | Esperado |
+|---|---|---|---|
+| I10-PDF-01 | Generar certificado para ESAL activa | ESAL sin estado especial | PDF usa `I10-EYRL-DEFAULT-v1` |
+| I10-PDF-02 | Generar certificado para ESAL suspendida | Estado `SUSPENDIDO` | PDF usa `I10-EYRL-SUSPENDIDA-v1` y texto de suspension |
+| I10-PDF-03 | Generar certificado en liquidacion por tramite | Estado `EN_LIQUIDACION` con documento vigente `LIQUIDACION.TRAMITE_CANCELACION_VOLUNTARIA` | PDF usa `I10-EYRL-LIQUIDACION-TRAMITE-v1` |
+| I10-PDF-04 | Generar certificado en liquidacion por termino | Estado `EN_LIQUIDACION` con documento vigente `LIQUIDACION.TERMINO_DURACION` | PDF usa `I10-EYRL-LIQUIDACION-TERMINO-v1` |
+| I10-PDF-05 | Generar certificado cancelada voluntariamente | Estado `CANCELADO` con documento vigente `CANCELACION.CANCELACION_VOLUNTARIA` | PDF usa `I10-EYRL-CANCELADA-VOLUNTARIA-v1` |
+| I10-PDF-06 | Generar certificado cancelada por autoridad | Estado `CANCELADO` con documento vigente `CANCELACION.ORDEN_AUTORIDAD` | PDF usa `I10-EYRL-CANCELADA-AUTORIDAD-v1` |
+| I10-PDF-07 | Generar certificado con estado/documento no compatible | Estado especial sin documento vigente compatible | PDF usa fallback `I10-EYRL-DEFAULT-v1` |
+
+### I10 - Evidencia Tecnica
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test "-Dtest=CertificadoTemplateSelectorTest"
+mvn test "-Dtest=CertificadoTemplateSelectorTest,CertificadoAssemblerTest"
+mvn test "-Dtest=CertificadoPdfServiceTest"
+mvn test "-Dtest=CertificadoTemplateSelectorTest,CertificadoAssemblerTest,CertificadoPdfServiceTest,GeneracionServiceTest"
+mvn test "-Dtest=GeneracionServiceTest"
+mvn test
+mvn package -DskipTests
+
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
+```
+
+Resultado registrado:
+
+- Selector I10: 8 tests, BUILD SUCCESS.
+- Selector + assembler: 15 tests, BUILD SUCCESS.
+- PDF I10: 7 tests, BUILD SUCCESS.
+- Regresion focalizada selector/assembler/PDF/generacion: 27 tests, BUILD SUCCESS.
+- Generacion: 5 tests, BUILD SUCCESS.
+- Suite backend completa: 164 tests, BUILD SUCCESS.
+- WAR generado: `sed-esal-backend/target/sed-esal-backend.war`.
+- Angular build: exitoso con advertencias NG8102/NG8107 no bloqueantes.
+
+## 18. Incrementos Posteriores
 
 ### Verificacion Externa Futura
 

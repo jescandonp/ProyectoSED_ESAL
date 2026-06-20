@@ -1,16 +1,22 @@
 package co.gov.bogota.sed.esal.service;
 
 import co.gov.bogota.sed.esal.domain.ActuacionAdministrativa;
+import co.gov.bogota.sed.esal.domain.DocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.Esal;
 import co.gov.bogota.sed.esal.domain.Nombramiento;
 import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
+import co.gov.bogota.sed.esal.domain.enums.CertificadoPlantilla;
 import co.gov.bogota.sed.esal.domain.enums.EstadoCompletitud;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.domain.enums.EstadoValidacionDocumento;
+import co.gov.bogota.sed.esal.domain.enums.SubtipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoActuacion;
+import co.gov.bogota.sed.esal.domain.enums.TipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto;
 import co.gov.bogota.sed.esal.repository.ActuacionAdministrativaRepository;
+import co.gov.bogota.sed.esal.repository.DocumentoSoporteRepository;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
 import co.gov.bogota.sed.esal.repository.NombramientoRepository;
 import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
@@ -47,6 +53,9 @@ class CertificadoAssemblerTest {
 
     @Autowired
     private ActuacionAdministrativaRepository actuacionRepository;
+
+    @Autowired
+    private DocumentoSoporteRepository documentoRepository;
 
     @Test
     void ensamblar_datosCompletos_mapeaCertificadoNarrativo() {
@@ -156,6 +165,41 @@ class CertificadoAssemblerTest {
     }
 
     @Test
+    void ensamblar_estadoSuspendido_asignaPlantillaSuspendida() {
+        Esal esal = crearEsal("Fundacion Suspendida I10", "I10-SUS-001", EstadoEsal.SUSPENDIDO);
+
+        CertificadoNarrativoDto dto = assembler.ensamblar(esal.getId());
+
+        assertThat(dto.getPlantilla()).isEqualTo(CertificadoPlantilla.EYRL_SUSPENDIDA);
+    }
+
+    @Test
+    void ensamblar_enLiquidacionConDocumentoTermino_asignaPlantillaLiquidacionTermino() {
+        Esal esal = crearEsal("Fundacion Liquidacion Termino I10", "I10-LIQ-001", EstadoEsal.EN_LIQUIDACION);
+        crearDocumento(esal.getId(), TipoDocumentoSoporte.LIQUIDACION,
+                SubtipoDocumentoSoporte.TERMINO_DURACION, "OF-LIQ-001");
+
+        CertificadoNarrativoDto dto = assembler.ensamblar(esal.getId());
+
+        assertThat(dto.getPlantilla()).isEqualTo(CertificadoPlantilla.EYRL_LIQUIDACION_TERMINO_DURACION);
+        assertThat(dto.getDocumentoPlantillaReferencia()).isEqualTo("OF-LIQ-001");
+        assertThat(dto.getDocumentoPlantillaSubtipo()).isEqualTo(SubtipoDocumentoSoporte.TERMINO_DURACION);
+    }
+
+    @Test
+    void ensamblar_canceladaConDocumentoOrdenAutoridad_asignaPlantillaCanceladaAutoridad() {
+        Esal esal = crearEsal("Fundacion Cancelada Autoridad I10", "I10-CAN-001", EstadoEsal.CANCELADO);
+        crearDocumento(esal.getId(), TipoDocumentoSoporte.CANCELACION,
+                SubtipoDocumentoSoporte.ORDEN_AUTORIDAD, "RES-CAN-001");
+
+        CertificadoNarrativoDto dto = assembler.ensamblar(esal.getId());
+
+        assertThat(dto.getPlantilla()).isEqualTo(CertificadoPlantilla.EYRL_CANCELADA_ORDEN_AUTORIDAD);
+        assertThat(dto.getDocumentoPlantillaReferencia()).isEqualTo("RES-CAN-001");
+        assertThat(dto.getDocumentoPlantillaSubtipo()).isEqualTo(SubtipoDocumentoSoporte.ORDEN_AUTORIDAD);
+    }
+
+    @Test
     void ensamblar_sinPersoneria_dejaCamposPersoneriaNull() {
         Esal esal = crearEsal("Fundacion Sin Personeria I6", "I6-004", EstadoEsal.ACTIVO);
 
@@ -180,5 +224,24 @@ class CertificadoAssemblerTest {
         esal.setEstado(estado);
         esal.setEstadoCompletitud(EstadoCompletitud.LISTO_PARA_CERTIFICAR);
         return esalRepository.save(esal);
+    }
+
+    private void crearDocumento(Long esalId,
+                                TipoDocumentoSoporte tipo,
+                                SubtipoDocumentoSoporte subtipo,
+                                String referencia) {
+        DocumentoSoporte documento = new DocumentoSoporte();
+        documento.setEsalId(esalId);
+        documento.setTipoDocumental(tipo);
+        documento.setSubtipoDocumental(subtipo);
+        documento.setReferenciaActo(referencia);
+        documento.setFechaActo(LocalDate.of(2026, 6, 20));
+        documento.setNombreArchivo("documento-i10.pdf");
+        documento.setContentType("application/pdf");
+        documento.setTamanoBytes(100L);
+        documento.setRutaAlmacenamiento("test/documento-i10.pdf");
+        documento.setEstadoValidacion(EstadoValidacionDocumento.PENDIENTE);
+        documento.setVigente(Boolean.TRUE);
+        documentoRepository.save(documento);
     }
 }

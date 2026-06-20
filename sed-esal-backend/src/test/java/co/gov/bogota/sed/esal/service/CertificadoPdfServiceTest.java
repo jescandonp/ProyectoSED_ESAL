@@ -1,5 +1,6 @@
 package co.gov.bogota.sed.esal.service;
 
+import co.gov.bogota.sed.esal.domain.enums.CertificadoPlantilla;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto.MiembroDto;
@@ -91,7 +92,7 @@ class CertificadoPdfServiceTest {
         assertThat(texto).contains("Se expide en Bogota D.C., a los veintisiete (27) dias del mes de mayo de dos mil");
         assertThat(texto).contains("veintiseis (2026).");
         assertThat(texto).contains("Directora Test");
-        assertThat(texto).contains("Plantilla: I8-EYRL-v1");
+        assertThat(texto).contains("Plantilla: I10-EYRL-DEFAULT-v1");
         assertThat(texto).contains("NOTA 1: Este certificado de existencia y representacion legal NO hace las veces");
     }
 
@@ -162,7 +163,7 @@ class CertificadoPdfServiceTest {
         String texto = extraerTexto(pdf);
         assertThat(texto).doesNotContain("ESAL-2026-000008");
         assertThat(texto).doesNotContain("No. ESAL");
-        assertThat(texto).contains("Plantilla: I8-EYRL-v1");
+        assertThat(texto).contains("Plantilla: I10-EYRL-DEFAULT-v1");
         assertThat(texto).contains("Av. El Dorado No. 66 - 63");
         assertThat(texto).contains("PBX: 324 1000 - Fax: 315 34 48");
         assertThat(texto).contains("Codigo postal: 111321");
@@ -190,6 +191,79 @@ class CertificadoPdfServiceTest {
                 "Se expide en Bogota D.C.",
                 "Atentamente,",
                 "LIDA DIAZ VELANDIA");
+    }
+
+    @Test
+    void generar_suspendida_usaPlantillaSuspendida() throws Exception {
+        CertificadoNarrativoDto dto = dtoBase("Fundacion Suspendida I10", EstadoEsal.SUSPENDIDO,
+                CertificadoPlantilla.EYRL_SUSPENDIDA);
+
+        byte[] pdf = service.generar(dto, "ESAL-2026-000010", "LIDA DIAZ VELANDIA",
+                "Directora de Inspeccion y Vigilancia", LocalDateTime.of(2026, 6, 20, 10, 0));
+
+        String texto = extraerTexto(pdf);
+        assertThat(texto).contains("Plantilla: I10-EYRL-SUSPENDIDA-v1");
+        assertThat(texto).contains("LA MENCIONADA ESAL TIENE PERSONERIA JURIDICA SUSPENDIDA");
+        assertThat(texto).contains("Fundacion Suspendida I10");
+    }
+
+    @Test
+    void generar_liquidacionTermino_usaPlantillaLiquidacionTermino() throws Exception {
+        CertificadoNarrativoDto dto = dtoBase("Fundacion Liquidacion Termino I10", EstadoEsal.EN_LIQUIDACION,
+                CertificadoPlantilla.EYRL_LIQUIDACION_TERMINO_DURACION);
+
+        byte[] pdf = service.generar(dto, "ESAL-2026-000011", "LIDA DIAZ VELANDIA",
+                "Directora de Inspeccion y Vigilancia", LocalDateTime.of(2026, 6, 20, 10, 0));
+
+        String texto = extraerTexto(pdf);
+        assertThat(texto).contains("Plantilla: I10-EYRL-LIQUIDACION-TERMINO-v1");
+        assertThat(texto).contains("ESTADO DE LIQUIDACION:");
+        assertThat(texto).contains("por cumplimiento del termino de duracion de la ESAL");
+    }
+
+    @Test
+    void generar_liquidacionTramite_usaPlantillaLiquidacionTramite() throws Exception {
+        CertificadoNarrativoDto dto = dtoBase("Fundacion Liquidacion Tramite I10", EstadoEsal.EN_LIQUIDACION,
+                CertificadoPlantilla.EYRL_LIQUIDACION_TRAMITE_CANCELACION_VOLUNTARIA);
+
+        byte[] pdf = service.generar(dto, "ESAL-2026-000012", "LIDA DIAZ VELANDIA",
+                "Directora de Inspeccion y Vigilancia", LocalDateTime.of(2026, 6, 20, 10, 0));
+
+        String texto = extraerTexto(pdf);
+        assertThat(texto).contains("Plantilla: I10-EYRL-LIQUIDACION-TRAMITE-v1");
+        assertThat(texto).contains("LA ENTIDAD SE ENCUENTRA DISUELTA Y EN ESTADO DE LIQUIDACION");
+    }
+
+    @Test
+    void generar_canceladaVoluntaria_usaPlantillaCanceladaVoluntaria() throws Exception {
+        CertificadoNarrativoDto dto = dtoBase("Fundacion Cancelada Voluntaria I10", EstadoEsal.CANCELADO,
+                CertificadoPlantilla.EYRL_CANCELADA_VOLUNTARIAMENTE);
+
+        byte[] pdf = service.generar(dto, "ESAL-2026-000013", "LIDA DIAZ VELANDIA",
+                "Directora de Inspeccion y Vigilancia", LocalDateTime.of(2026, 6, 20, 10, 0));
+
+        String texto = extraerTexto(pdf);
+        assertThat(texto).contains("Plantilla: I10-EYRL-CANCELADA-VOLUNTARIA-v1");
+        assertThat(texto).contains("LA MENCIONADA ESAL FUE LIQUIDADA");
+        assertThat(texto).contains("PERSONERIA JURIDICA");
+        assertThat(texto).contains("CANCELADA mediante acto administrativo");
+        assertThat(texto).contains("efectuo el");
+        assertThat(texto).contains("tramite correspondiente a su Liquidacion");
+    }
+
+    @Test
+    void generar_canceladaAutoridad_usaPlantillaCanceladaAutoridad() throws Exception {
+        CertificadoNarrativoDto dto = dtoBase("Fundacion Cancelada Autoridad I10", EstadoEsal.CANCELADO,
+                CertificadoPlantilla.EYRL_CANCELADA_ORDEN_AUTORIDAD);
+
+        byte[] pdf = service.generar(dto, "ESAL-2026-000014", "LIDA DIAZ VELANDIA",
+                "Directora de Inspeccion y Vigilancia", LocalDateTime.of(2026, 6, 20, 10, 0));
+
+        String texto = extraerTexto(pdf);
+        assertThat(texto).contains("Plantilla: I10-EYRL-CANCELADA-AUTORIDAD-v1");
+        assertThat(texto).contains("LA PERSONERIA JURIDICA DE LA MENCIONADA ESAL FUE CANCELADA");
+        assertThat(texto).contains("no ha");
+        assertThat(texto).contains("adelantado el tramite correspondiente a su Liquidacion");
     }
 
     private String extraerTexto(byte[] pdf) throws Exception {
@@ -225,5 +299,39 @@ class CertificadoPdfServiceTest {
                     .isGreaterThan(posicion);
             posicion = siguiente;
         }
+    }
+
+    private CertificadoNarrativoDto dtoBase(String nombre, EstadoEsal estado, CertificadoPlantilla plantilla) {
+        CertificadoNarrativoDto dto = new CertificadoNarrativoDto();
+        dto.setNombre(nombre);
+        dto.setIdSipej("I10-PDF-001");
+        dto.setNit("900123456-1");
+        dto.setDomicilio("Bogota D.C.");
+        dto.setCorreoElectronico("i10@test.com");
+        dto.setTerminoDuracion("INDEFINIDA");
+        dto.setObjetoSocial("Objeto social de prueba para variante I10.");
+        dto.setEstado(estado);
+        dto.setPlantilla(plantilla);
+        dto.setResolucionPersoneria("Resolucion 001");
+        dto.setFechaResolucion(LocalDate.of(2020, 1, 15));
+        dto.setEntidadQueExpide("Secretaria de Educacion del Distrito");
+        dto.setInscripcion("S100001");
+        dto.setFechaInscripcion(LocalDate.of(2020, 2, 10));
+
+        MiembroDto representante = new MiembroDto();
+        representante.setNombre("JUAN REPRESENTANTE");
+        representante.setTipoDocumento("CC");
+        representante.setNumeroDocumento("12345678");
+        representante.setCargo("Representante Legal");
+        representante.setActaNombramiento("ACT-001");
+        dto.setRepresentantesLegales(Arrays.asList(representante));
+
+        MiembroDto revisor = new MiembroDto();
+        revisor.setNombre("PEDRO REVISOR");
+        revisor.setTipoDocumento("CC");
+        revisor.setNumeroDocumento("87654321");
+        revisor.setCargo("Revisor Fiscal");
+        dto.setRevisoresFiscales(Arrays.asList(revisor));
+        return dto;
     }
 }

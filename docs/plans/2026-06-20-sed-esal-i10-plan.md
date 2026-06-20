@@ -1,6 +1,6 @@
 # I10 Seleccion De Plantilla EYRL Por Estado Y Documento Vigente Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Implementar seleccion explicita de plantilla EYRL para certificados segun estado de ESAL y documento vigente I9, conservando plantilla default para los demas casos.
 
@@ -10,7 +10,7 @@
 
 ---
 
-> Estado: pendiente de aprobacion.
+> Estado: completado.
 > Spec: `docs/specs/2026-06-20-sed-esal-i10-spec.md`.
 > Metodologia: SDD Spec-Anchored.
 > Plantillas fuente: `Documentos_Referencia/Iteracion/Plantilla Certificado EYRL*.docx`.
@@ -51,7 +51,7 @@ Docs:
 - Create: `sed-esal-backend/src/test/java/co/gov/bogota/sed/esal/service/CertificadoTemplateSelectorTest.java`
 - Create during implementation start: `docs/plans/2026-06-20-sed-esal-i10-execution-log.md`
 
-- [ ] **Step 1: Create execution log**
+- [x] **Step 1: Create execution log**
 
 Create `docs/plans/2026-06-20-sed-esal-i10-execution-log.md`:
 
@@ -72,7 +72,7 @@ I9 completado. I10 implementa seleccion explicita de plantilla de certificado EY
 Se registraran aqui RED/GREEN, suites finales, WAR, build Angular y handoffs por hitos.
 ```
 
-- [ ] **Step 2: Add RED selector tests**
+- [x] **Step 2: Add RED selector tests**
 
 Create `CertificadoTemplateSelectorTest.java`:
 
@@ -170,7 +170,7 @@ class CertificadoTemplateSelectorTest {
 }
 ```
 
-- [ ] **Step 3: Run RED**
+- [x] **Step 3: Run RED**
 
 Run:
 
@@ -181,7 +181,7 @@ mvn test "-Dtest=CertificadoTemplateSelectorTest"
 
 Expected: compilation fails because `CertificadoPlantilla` and `CertificadoTemplateSelector` do not exist yet.
 
-- [ ] **Step 4: Update execution log**
+- [x] **Step 4: Update execution log**
 
 Record the RED command and exact failure class in `docs/plans/2026-06-20-sed-esal-i10-execution-log.md`.
 
@@ -192,7 +192,7 @@ Record the RED command and exact failure class in `docs/plans/2026-06-20-sed-esa
 - Create: `sed-esal-backend/src/main/java/co/gov/bogota/sed/esal/service/CertificadoTemplateSelector.java`
 - Modify: `sed-esal-backend/src/test/java/co/gov/bogota/sed/esal/service/CertificadoTemplateSelectorTest.java`
 
-- [ ] **Step 1: Create enum**
+- [x] **Step 1: Create enum**
 
 Create `CertificadoPlantilla.java`:
 
@@ -219,7 +219,7 @@ public enum CertificadoPlantilla {
 }
 ```
 
-- [ ] **Step 2: Create selector**
+- [x] **Step 2: Create selector**
 
 Create `CertificadoTemplateSelector.java`:
 
@@ -278,7 +278,7 @@ public class CertificadoTemplateSelector {
 }
 ```
 
-- [ ] **Step 3: Run GREEN selector**
+- [x] **Step 3: Run GREEN selector**
 
 Run:
 
@@ -288,7 +288,7 @@ mvn test "-Dtest=CertificadoTemplateSelectorTest"
 
 Expected: all selector tests pass.
 
-- [ ] **Step 4: Update execution log and handoff**
+- [x] **Step 4: Update execution log and handoff**
 
 Append Task 2 result to execution log and create `docs/Handoff/handoff-20260620-i10-task2-closed-retake-task3.md` with:
 
@@ -309,7 +309,7 @@ Estado: selector de plantilla I10 implementado y testeado; pendiente integrar en
 - Modify: `sed-esal-backend/src/main/java/co/gov/bogota/sed/esal/service/CertificadoAssembler.java`
 - Modify: `sed-esal-backend/src/test/java/co/gov/bogota/sed/esal/service/CertificadoAssemblerTest.java`
 
-- [ ] **Step 1: Add RED assembler tests**
+- [x] **Step 1: Add RED assembler tests**
 
 Add imports in `CertificadoAssemblerTest.java`:
 
@@ -390,7 +390,7 @@ private void crearDocumento(Long esalId,
 }
 ```
 
-- [ ] **Step 2: Run RED assembler**
+- [x] **Step 2: Run RED assembler**
 
 Run:
 
@@ -400,7 +400,7 @@ mvn test "-Dtest=CertificadoAssemblerTest"
 
 Expected: compilation fails because `CertificadoNarrativoDto.getPlantilla()`, `getDocumentoPlantillaReferencia()` and `getDocumentoPlantillaSubtipo()` do not exist.
 
-- [ ] **Step 3: Extend DTO**
+- [x] **Step 3: Extend DTO**
 
 In `CertificadoNarrativoDto.java`, add imports:
 
@@ -440,7 +440,7 @@ public void setDocumentoPlantillaSubtipo(SubtipoDocumentoSoporte documentoPlanti
 }
 ```
 
-- [ ] **Step 4: Inject selector and document repository into assembler**
+- [x] **Step 4: Inject selector and document repository into assembler**
 
 Modify `CertificadoAssembler` constructor and fields:
 
@@ -471,7 +471,7 @@ import co.gov.bogota.sed.esal.domain.enums.CertificadoPlantilla;
 import co.gov.bogota.sed.esal.repository.DocumentoSoporteRepository;
 ```
 
-- [ ] **Step 5: Select template in `ensamblar`**
+- [x] **Step 5: Select template in `ensamblar`**
 
 After actuaciones are loaded in `ensamblar`, add:
 
@@ -538,7 +538,7 @@ import co.gov.bogota.sed.esal.domain.enums.SubtipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoDocumentoSoporte;
 ```
 
-- [ ] **Step 6: Run GREEN assembler and selector**
+- [x] **Step 6: Run GREEN assembler and selector**
 
 Run:
 
@@ -548,7 +548,7 @@ mvn test "-Dtest=CertificadoTemplateSelectorTest,CertificadoAssemblerTest"
 
 Expected: selector and assembler tests pass.
 
-- [ ] **Step 7: Update execution log and handoff**
+- [x] **Step 7: Update execution log and handoff**
 
 Append Task 3 results and create `docs/Handoff/handoff-20260620-i10-task3-closed-retake-task4.md`.
 
@@ -557,7 +557,7 @@ Append Task 3 results and create `docs/Handoff/handoff-20260620-i10-task3-closed
 **Files:**
 - Modify: `sed-esal-backend/src/test/java/co/gov/bogota/sed/esal/service/CertificadoPdfServiceTest.java`
 
-- [ ] **Step 1: Add helper imports and fixture methods**
+- [x] **Step 1: Add helper imports and fixture methods**
 
 Add import:
 
@@ -603,7 +603,7 @@ private CertificadoNarrativoDto dtoBase(String nombre, EstadoEsal estado, Certif
 }
 ```
 
-- [ ] **Step 2: Add RED tests for version/text per variant**
+- [x] **Step 2: Add RED tests for version/text per variant**
 
 Add tests:
 
@@ -678,7 +678,7 @@ void generar_canceladaAutoridad_usaPlantillaCanceladaAutoridad() throws Exceptio
 }
 ```
 
-- [ ] **Step 3: Update existing I8 version expectations**
+- [x] **Step 3: Update existing I8 version expectations**
 
 In existing tests, replace:
 
@@ -692,7 +692,7 @@ with:
 assertThat(texto).contains("Plantilla: I10-EYRL-DEFAULT-v1");
 ```
 
-- [ ] **Step 4: Run RED PDF**
+- [x] **Step 4: Run RED PDF**
 
 Run:
 
@@ -702,7 +702,7 @@ mvn test "-Dtest=CertificadoPdfServiceTest"
 
 Expected: tests fail because `CertificadoPdfService` still prints `I8-EYRL-v1` and lacks I10 variant text blocks.
 
-- [ ] **Step 5: Update execution log**
+- [x] **Step 5: Update execution log**
 
 Record RED PDF failures in execution log.
 
@@ -712,7 +712,7 @@ Record RED PDF failures in execution log.
 - Modify: `sed-esal-backend/src/main/java/co/gov/bogota/sed/esal/service/CertificadoPdfService.java`
 - Modify: `sed-esal-backend/src/test/java/co/gov/bogota/sed/esal/service/CertificadoPdfServiceTest.java`
 
-- [ ] **Step 1: Import variant enum**
+- [x] **Step 1: Import variant enum**
 
 Add import to `CertificadoPdfService.java`:
 
@@ -732,7 +732,7 @@ with:
 static final CertificadoPlantilla PLANTILLA_DEFAULT = CertificadoPlantilla.EYRL_DEFAULT;
 ```
 
-- [ ] **Step 2: Resolve template and use version**
+- [x] **Step 2: Resolve template and use version**
 
 At the beginning of `generar`, after `doc.open();`, add:
 
@@ -754,7 +754,7 @@ with:
 Paragraph tecnico = new Paragraph("Plantilla: " + plantilla.getVersion() + "  |  Generado: "
 ```
 
-- [ ] **Step 3: Replace state alert block with variant block**
+- [x] **Step 3: Replace state alert block with variant block**
 
 Replace the current block:
 
@@ -777,7 +777,7 @@ with:
 agregarBloqueVariante(doc, narrativo, plantilla, normal, bold, alerta);
 ```
 
-- [ ] **Step 4: Add variant rendering helpers**
+- [x] **Step 4: Add variant rendering helpers**
 
 Add methods before `parrafoLegalEstado` or replace it if no longer used:
 
@@ -873,7 +873,7 @@ private String referenciaDocumento(CertificadoNarrativoDto narrativo) {
 }
 ```
 
-- [ ] **Step 5: Run GREEN PDF**
+- [x] **Step 5: Run GREEN PDF**
 
 Run:
 
@@ -883,7 +883,7 @@ mvn test "-Dtest=CertificadoPdfServiceTest"
 
 Expected: PDF tests pass. If text extraction wraps accents or line breaks, adjust assertions to stable fragments without weakening the variant guarantee.
 
-- [ ] **Step 6: Run focused regression**
+- [x] **Step 6: Run focused regression**
 
 Run:
 
@@ -893,7 +893,7 @@ mvn test "-Dtest=CertificadoTemplateSelectorTest,CertificadoAssemblerTest,Certif
 
 Expected: selector, assembler, PDF and generation tests pass.
 
-- [ ] **Step 7: Update execution log and handoff**
+- [x] **Step 7: Update execution log and handoff**
 
 Append Task 5 results and create `docs/Handoff/handoff-20260620-i10-task5-closed-retake-task6.md`.
 
@@ -902,7 +902,7 @@ Append Task 5 results and create `docs/Handoff/handoff-20260620-i10-task5-closed
 **Files:**
 - Modify if needed: `sed-esal-backend/src/test/java/co/gov/bogota/sed/esal/service/GeneracionServiceTest.java`
 
-- [ ] **Step 1: Add end-to-end generation test for default variant**
+- [x] **Step 1: Add end-to-end generation test for default variant**
 
 Add to `GeneracionServiceTest.java`:
 
@@ -918,7 +918,7 @@ void generar_esalActiva_usaPlantillaDefaultI10() {
 
 This test intentionally checks the generation contract, not PDF text, because text extraction is already covered in `CertificadoPdfServiceTest`.
 
-- [ ] **Step 2: Run generation regression**
+- [x] **Step 2: Run generation regression**
 
 Run:
 
@@ -928,7 +928,7 @@ mvn test "-Dtest=GeneracionServiceTest"
 
 Expected: generation tests pass.
 
-- [ ] **Step 3: Run backend full suite**
+- [x] **Step 3: Run backend full suite**
 
 Run:
 
@@ -938,7 +938,7 @@ mvn test
 
 Expected: all backend tests pass. Record final test count in execution log.
 
-- [ ] **Step 4: Package WAR**
+- [x] **Step 4: Package WAR**
 
 Run:
 
@@ -948,7 +948,7 @@ mvn package -DskipTests
 
 Expected: `sed-esal-backend/target/sed-esal-backend.war` generated.
 
-- [ ] **Step 5: Update execution log**
+- [x] **Step 5: Update execution log**
 
 Record backend full suite and WAR result.
 
@@ -962,7 +962,7 @@ Record backend full suite and WAR result.
 - Modify: `docs/plans/2026-06-20-sed-esal-i10-execution-log.md`
 - Create: `docs/Handoff/handoff-20260620-i10-closed-retake-i11.md`
 
-- [ ] **Step 1: Update README**
+- [x] **Step 1: Update README**
 
 Update:
 
@@ -977,7 +977,7 @@ Update:
 - Update backend test count after final `mvn test`.
 - Keep Angular test limitation wording if runner remains unavailable.
 
-- [ ] **Step 2: Update ARRANQUE**
+- [x] **Step 2: Update ARRANQUE**
 
 Update:
 
@@ -991,7 +991,7 @@ Update:
 - Source artifacts table includes the six I10 templates under `Documentos_Referencia/Iteracion`.
 - Local backend test count updated from final suite.
 
-- [ ] **Step 3: Update functional guide**
+- [x] **Step 3: Update functional guide**
 
 Add section after I9:
 
@@ -1012,7 +1012,7 @@ Estado: completado.
 | I10-PDF-06 | Generar certificado cancelada por autoridad | Documento vigente `CANCELACION.ORDEN_AUTORIDAD` | PDF usa `I10-EYRL-CANCELADA-AUTORIDAD-v1` |
 ```
 
-- [ ] **Step 4: Run Angular build regression**
+- [x] **Step 4: Run Angular build regression**
 
 Run:
 
@@ -1023,7 +1023,7 @@ node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
 
 Expected: build passes. Record warnings if any.
 
-- [ ] **Step 5: Final diff checks**
+- [x] **Step 5: Final diff checks**
 
 Run:
 
@@ -1035,7 +1035,7 @@ git status --short
 
 Expected: no whitespace errors. Preserve unrelated pre-existing worktree noise.
 
-- [ ] **Step 6: Close execution log**
+- [x] **Step 6: Close execution log**
 
 Update execution log:
 
@@ -1047,7 +1047,7 @@ Update execution log:
 - List final `git diff --check` result.
 - Mention any controlled deviations.
 
-- [ ] **Step 7: Create final handoff**
+- [x] **Step 7: Create final handoff**
 
 Create `docs/Handoff/handoff-20260620-i10-closed-retake-i11.md`:
 

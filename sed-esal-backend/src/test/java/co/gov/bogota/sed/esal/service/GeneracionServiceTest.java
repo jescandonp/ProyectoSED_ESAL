@@ -91,6 +91,7 @@ class GeneracionServiceTest {
         assertThat(cert.getNumeroCertificado()).matches("ESAL-\\d{4}-\\d{6}");
         assertThat(cert.getHashSha256()).hasSize(64);
         assertThat(cert.getFirmanteNombre()).isEqualTo("Directora General Test");
+        assertThat(cert.getPlantillaVersion()).isEqualTo("I10-EYRL-DEFAULT-v1");
     }
 
     @Test

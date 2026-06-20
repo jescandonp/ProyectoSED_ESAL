@@ -1,5 +1,6 @@
 package co.gov.bogota.sed.esal.service;
 
+import co.gov.bogota.sed.esal.domain.enums.CertificadoPlantilla;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto;
 import co.gov.bogota.sed.esal.dto.CertificadoNarrativoDto.MiembroDto;
@@ -32,7 +33,7 @@ import java.util.List;
 @Service
 public class CertificadoPdfService {
 
-    static final String VERSION_PLANTILLA = "I8-EYRL-v1";
+    static final CertificadoPlantilla PLANTILLA_DEFAULT = CertificadoPlantilla.EYRL_DEFAULT;
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter FMT_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -59,6 +60,9 @@ public class CertificadoPdfService {
         PdfWriter writer = PdfWriter.getInstance(doc, out);
         writer.setPageEvent(new FooterInstitucional());
         doc.open();
+        CertificadoPlantilla plantilla = narrativo.getPlantilla() != null
+                ? narrativo.getPlantilla()
+                : PLANTILLA_DEFAULT;
 
         Font titulo = FontFactory.getFont(FUENTE_BASE, 11, Font.BOLD, COLOR_PRIMARIO);
         Font normal = FontFactory.getFont(FUENTE_BASE, 11, Color.BLACK);
@@ -227,16 +231,7 @@ public class CertificadoPdfService {
             doc.add(duracion);
         }
 
-        if (texto(narrativo.getAlertaEstado())) {
-            Paragraph pAlerta = new Paragraph(narrativo.getAlertaEstado(), alerta);
-            pAlerta.setSpacingAfter(4);
-            doc.add(pAlerta);
-            Paragraph legalEstado = parrafoLegalEstado(narrativo.getEstado(), normal);
-            if (legalEstado != null) {
-                legalEstado.setSpacingAfter(8);
-                doc.add(legalEstado);
-            }
-        }
+        agregarBloqueVariante(doc, narrativo, plantilla, normal, bold, alerta);
 
         if (fechaExpedicion != null) {
             Paragraph cierre = new Paragraph(FechaEnLetras.formatear(fechaExpedicion.toLocalDate()), normal);
@@ -261,7 +256,7 @@ public class CertificadoPdfService {
         pFirmante.setSpacingBefore(12);
         doc.add(pFirmante);
 
-        Paragraph tecnico = new Paragraph("Plantilla: " + VERSION_PLANTILLA + "  |  Generado: "
+        Paragraph tecnico = new Paragraph("Plantilla: " + plantilla.getVersion() + "  |  Generado: "
                 + (fechaExpedicion != null ? fechaExpedicion.format(FMT) : "-"), pie);
         tecnico.setAlignment(Element.ALIGN_RIGHT);
         tecnico.setSpacingBefore(10);
@@ -401,6 +396,96 @@ public class CertificadoPdfService {
         celda.setPadding(4);
         celda.setBorder(Rectangle.BOX);
         return celda;
+    }
+
+    private void agregarBloqueVariante(Document doc,
+                                       CertificadoNarrativoDto narrativo,
+                                       CertificadoPlantilla plantilla,
+                                       Font normal,
+                                       Font bold,
+                                       Font alerta) throws Exception {
+        switch (plantilla) {
+            case EYRL_SUSPENDIDA:
+                agregarParrafoJustificado(doc,
+                        "LA MENCIONADA ESAL TIENE PERSONERIA JURIDICA SUSPENDIDA por el termino no registrado, "
+                                + "de acuerdo con el acto administrativo "
+                                + referenciaDocumento(narrativo)
+                                + ".",
+                        alerta,
+                        8,
+                        8);
+                return;
+            case EYRL_LIQUIDACION_TRAMITE_CANCELACION_VOLUNTARIA:
+                agregarParrafoJustificado(doc,
+                        "LA ENTIDAD SE ENCUENTRA DISUELTA Y EN ESTADO DE LIQUIDACION segun acto administrativo "
+                                + referenciaDocumento(narrativo)
+                                + ".",
+                        bold,
+                        8,
+                        8);
+                return;
+            case EYRL_LIQUIDACION_TERMINO_DURACION:
+                agregarParrafoJustificado(doc, "ESTADO DE LIQUIDACION:", bold, 8, 4);
+                agregarParrafoJustificado(doc,
+                        "Que de acuerdo con lo establecido en sus estatutos, la entidad sin animo de lucro denominada "
+                                + nvl(narrativo.getNombre())
+                                + " se encuentra en ESTADO DE LIQUIDACION por cumplimiento del termino de duracion de la ESAL.",
+                        normal,
+                        0,
+                        8);
+                return;
+            case EYRL_CANCELADA_VOLUNTARIAMENTE:
+                agregarParrafoJustificado(doc,
+                        "LA MENCIONADA ESAL FUE LIQUIDADA Y SU PERSONERIA JURIDICA CANCELADA mediante acto administrativo "
+                                + referenciaDocumento(narrativo)
+                                + ".",
+                        bold,
+                        8,
+                        8);
+                agregarParrafoJustificado(doc,
+                        "Que a la fecha de expedicion del presente certificado, se observa que la ESAL efectuo el tramite correspondiente a su Liquidacion.",
+                        normal,
+                        0,
+                        8);
+                return;
+            case EYRL_CANCELADA_ORDEN_AUTORIDAD:
+                agregarParrafoJustificado(doc,
+                        "LA PERSONERIA JURIDICA DE LA MENCIONADA ESAL FUE CANCELADA mediante acto administrativo "
+                                + referenciaDocumento(narrativo)
+                                + ".",
+                        bold,
+                        8,
+                        8);
+                agregarParrafoJustificado(doc,
+                        "Que a la fecha de expedicion del presente certificado se observa que la ESAL no ha adelantado el tramite correspondiente a su Liquidacion.",
+                        normal,
+                        0,
+                        8);
+                return;
+            default:
+                if (texto(narrativo.getAlertaEstado())) {
+                    Paragraph pAlerta = new Paragraph(narrativo.getAlertaEstado(), alerta);
+                    pAlerta.setSpacingAfter(4);
+                    doc.add(pAlerta);
+                    Paragraph legalEstado = parrafoLegalEstado(narrativo.getEstado(), normal);
+                    if (legalEstado != null) {
+                        legalEstado.setSpacingAfter(8);
+                        doc.add(legalEstado);
+                    }
+                }
+        }
+    }
+
+    private String referenciaDocumento(CertificadoNarrativoDto narrativo) {
+        if (texto(narrativo.getDocumentoPlantillaReferencia())) {
+            if (narrativo.getDocumentoPlantillaFechaActo() != null) {
+                return narrativo.getDocumentoPlantillaReferencia()
+                        + " del "
+                        + narrativo.getDocumentoPlantillaFechaActo().format(FMT_FECHA);
+            }
+            return narrativo.getDocumentoPlantillaReferencia();
+        }
+        return "no registrado";
     }
 
     private Paragraph parrafoLegalEstado(EstadoEsal estado, Font fuente) {
