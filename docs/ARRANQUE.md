@@ -1,8 +1,8 @@
 # ARRANQUE SED_ESAL
 
-> Estado: I8 completado (backend 137 tests OK, WAR OK, Angular 5 tests OK, build Angular OK).
+> Estado: I9 completado (backend 148 tests OK, WAR OK, build Angular OK; runner Angular test no validado por restriccion sandbox/watch).
 > Metodologia: Spec-Driven Development (SDD), nivel Spec-Anchored.
-> Ultima actualizacion: 2026-06-17.
+> Ultima actualizacion: 2026-06-19.
 
 ## Orden De Documentos
 
@@ -37,11 +37,14 @@
 29. Spec I8: `docs/specs/2026-06-17-sed-esal-i8-spec.md`
 30. Plan I8: `docs/plans/2026-06-17-sed-esal-i8-plan.md`
 31. Log I8: `docs/plans/2026-06-17-sed-esal-i8-execution-log.md`
-32. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+32. Spec I9: `docs/specs/2026-06-19-sed-esal-i9-spec.md`
+33. Plan I9: `docs/plans/2026-06-19-sed-esal-i9-plan.md`
+34. Log I9: `docs/plans/2026-06-19-sed-esal-i9-execution-log.md`
+35. Guia de pruebas funcionales: `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Estado Del Proyecto
 
-`SED_ESAL` tiene I8 completado. El backend actualiza el certificado PDF para reproducir la plantilla EYRL y verifica con 137 tests en verde y WAR generado. El frontend Angular se mantiene sin cambios funcionales desde I7 y verifica con 5 tests ChromeHeadless en verde y build Angular OK.
+`SED_ESAL` tiene I9 completado. El backend agrega gestion documental administrativa transversal con version vigente, historico consultable, descarga autenticada y bloqueo de liquidacion/cancelacion sin documento vigente obligatorio. La verificacion queda en 148 tests backend en verde, WAR generado y build Angular OK.
 
 - Spec 0 de fundacion documental y arquitectura: completado.
 - Spec I1 de modelo base, carga inicial y completitud: completado.
@@ -52,6 +55,7 @@
 - Spec I6 de fidelidad del certificado PDF a la plantilla oficial: completado (136 tests backend, build Angular OK).
 - Spec I7 de alineacion UI institucional SED_ESAL: completado (5 tests Angular, build Angular OK).
 - Spec I8 de reproduccion exacta del certificado PDF desde plantilla EYRL: completado (137 tests backend, WAR OK, 5 tests Angular, build Angular OK).
+- Spec I9 de gestion documental administrativa transversal: completado (148 tests backend, WAR OK, build Angular OK).
 - Pendiente: confirmar con TI SED tenant, issuer, audience, JWKS y CORS institucional para activar perfil weblogic.
 
 ## Artefactos Fuente
@@ -63,6 +67,7 @@
 | `Documentos_Referencia/REGLAS (1).xlsx` | Reglas de negocio |
 | `Documentos_Referencia/Maqueta Buscador.xlsx` | Maqueta funcional de busqueda |
 | `Documentos_Referencia/Plantilla Certificado EYRL.docx` | Plantilla oficial de certificado |
+| `Documentos_Referencia/Iteracion/Aplicativo ESAL.docx` | Requerimiento fuente I9 de gestion documental |
 | `docs/DESIGN.md` | Sistema de diseno institucional |
 | `Documentos_Referencia/Prototipo/` | Prototipos visuales |
 
@@ -96,14 +101,14 @@ Estas coordenadas quedan aprobadas para iniciar I1. Cualquier cambio posterior p
 ```powershell
 # Backend
 Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
-mvn test                    # 137 tests, BUILD SUCCESS
+mvn test                    # 148 tests, BUILD SUCCESS
 mvn package -DskipTests     # genera target/sed-esal-backend.war
 mvn spring-boot:run -Dspring-boot.run.profiles=local-dev  # levanta en :8080
 
 # Frontend
 Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
 node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
-node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" test -- --watch=false --browsers=ChromeHeadless
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" test -- --watch=false --browsers=ChromeHeadless  # validar fuera del sandbox/watch si aplica
 node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" start
 ```
 

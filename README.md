@@ -4,9 +4,9 @@ Aplicativo interno para la Direccion de Inspeccion y Vigilancia de la Secretaria
 
 ## Estado
 
-Fase actual: I8 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
+Fase actual: I9 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchored.
 
-`SED_ESAL` cuenta con backend Spring Boot WAR y frontend Angular para busqueda, preview, generacion de certificados, seguridad por roles y mantenimiento operativo de ESAL. La carga Excel se conserva como mecanismo inicial o esporadico; el mantenimiento posterior se realiza desde el aplicativo por secciones administrativas.
+`SED_ESAL` cuenta con backend Spring Boot WAR y frontend Angular para busqueda, preview, generacion de certificados, seguridad por roles, mantenimiento operativo de ESAL y gestion documental administrativa transversal con version vigente e historico consultable. La carga Excel se conserva como mecanismo inicial o esporadico; el mantenimiento posterior se realiza desde el aplicativo por secciones administrativas.
 
 ## Orden De Lectura
 
@@ -25,7 +25,8 @@ Fase actual: I8 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchor
 13. `docs/specs/2026-05-27-sed-esal-i6-spec.md`
 14. `docs/specs/2026-05-29-sed-esal-i7-spec.md`
 15. `docs/specs/2026-06-17-sed-esal-i8-spec.md`
-16. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
+16. `docs/specs/2026-06-19-sed-esal-i9-spec.md`
+17. `docs/GUIA_PRUEBAS_FUNCIONALES.md`
 
 ## Incrementos Especificados
 
@@ -40,6 +41,7 @@ Fase actual: I8 completado bajo Spec-Driven Development (SDD), nivel Spec-Anchor
 | I6 | Completado | Fidelidad del certificado PDF a plantilla oficial |
 | I7 | Completado | Alineacion UI institucional SED_ESAL |
 | I8 | Completado | Reproduccion exacta del certificado PDF desde plantilla EYRL |
+| I9 | Completado | Gestion documental administrativa transversal |
 
 ## Coordenadas Canonicas
 
@@ -76,8 +78,8 @@ node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
 
 Resultados esperados:
 
-- Tests backend pasan (137 tests en I8).
-- Tests y build Angular pasan.
+- Tests backend pasan (148 tests en I9).
+- Build Angular pasa; el runner de tests Angular puede requerir ejecucion local fuera del sandbox/watch.
 - Health expone `/actuator/health`.
 - OpenAPI expone `BearerAuth`.
 - El WAR se genera como `target/sed-esal-backend.war`.

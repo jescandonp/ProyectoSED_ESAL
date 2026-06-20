@@ -1,15 +1,20 @@
 package co.gov.bogota.sed.esal.security;
 
+import co.gov.bogota.sed.esal.domain.Esal;
+import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.repository.EsalRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +40,9 @@ class SecurityConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private EsalRepository esalRepository;
 
     // =========================================================================
     // 1. Endpoints públicos — sin autenticación
@@ -136,5 +144,46 @@ class SecurityConfigTest {
                         .with(httpBasic(ADMIN_USER, ADMIN_PASS))
                         .contentType("multipart/form-data"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void expedidorCannotUploadEsalDocument() throws Exception {
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo", "soporte.pdf", "application/pdf", "%PDF-1.4".getBytes());
+
+        mockMvc.perform(multipart("/api/esales/999/documentos")
+                        .file(archivo)
+                        .param("tipoDocumento", "CREACION_FORMACION")
+                        .param("referencia", "Resolucion 001")
+                        .param("fechaActo", "2026-06-19")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCanReachEsalDocumentUploadContract() throws Exception {
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo", "soporte.pdf", "application/pdf", "%PDF-1.4".getBytes());
+
+        mockMvc.perform(multipart("/api/esales/999/documentos")
+                        .file(archivo)
+                        .param("tipoDocumento", "CREACION_FORMACION")
+                        .param("referencia", "Resolucion 001")
+                        .param("fechaActo", "2026-06-19")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void expedidorCanListEsalDocuments() throws Exception {
+        Esal esal = new Esal();
+        esal.setNombre("ESAL Documentos Seguridad");
+        esal.setIdSipej("SEC-DOC-001");
+        esal.setEstado(EstadoEsal.ACTIVO);
+        esal = esalRepository.save(esal);
+
+        mockMvc.perform(get("/api/esales/" + esal.getId() + "/documentos")
+                        .with(httpBasic(EXPID_USER, EXPID_PASS)))
+                .andExpect(status().isOk());
     }
 }

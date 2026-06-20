@@ -24,9 +24,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -352,8 +355,11 @@ public class EsalController {
      *
      * @param id             ID de la ESAL
      * @param archivo        archivo multipart a registrar
-     * @param tipoProceso    tipo de proceso asociado (opcional)
-     * @param tipoDocumento  tipo de documento (opcional)
+     * @param tipoDocumento  tipo documental I9
+     * @param subtipoDocumento subtipo documental I9, cuando aplique
+     * @param referencia     referencia del acto administrativo
+     * @param fechaActo      fecha del acto administrativo
+     * @param observacion    observacion opcional
      * @param authentication autenticacion del usuario en sesion
      * @return DTO con los datos del documento registrado, HTTP 201
      * @throws IOException si ocurre un error de I/O al guardar el archivo
@@ -364,8 +370,11 @@ public class EsalController {
     public ResponseEntity<DocumentoSoporteDto> registrarDocumento(
             @PathVariable Long id,
             @RequestParam("archivo") MultipartFile archivo,
-            @RequestParam(value = "tipoProceso", required = false) String tipoProceso,
-            @RequestParam(value = "tipoDocumento", required = false) String tipoDocumento,
+            @RequestParam("tipoDocumento") String tipoDocumento,
+            @RequestParam(value = "subtipoDocumento", required = false) String subtipoDocumento,
+            @RequestParam("referencia") String referencia,
+            @RequestParam("fechaActo") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaActo,
+            @RequestParam(value = "observacion", required = false) String observacion,
             Authentication authentication) throws IOException {
         String usuario = authentication != null ? authentication.getName() : "sistema";
         DocumentoSoporteDto result = documentoSoporteService.registrar(
@@ -374,8 +383,11 @@ public class EsalController {
                 archivo.getContentType(),
                 archivo.getSize(),
                 archivo.getInputStream(),
-                tipoProceso,
                 tipoDocumento,
+                subtipoDocumento,
+                referencia,
+                fechaActo,
+                observacion,
                 usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -392,5 +404,23 @@ public class EsalController {
                description = "Devuelve todos los documentos soporte asociados a la ESAL.")
     public ResponseEntity<List<DocumentoSoporteDto>> listarDocumentos(@PathVariable Long id) {
         return ResponseEntity.ok(documentoSoporteService.listar(id));
+    }
+
+    @GetMapping("/{id}/documentos/{documentoId}/descarga")
+    @Operation(summary = "Descargar documento soporte",
+               description = "Descarga autenticada por backend. ADMINISTRADOR y EXPEDIDOR.")
+    public ResponseEntity<byte[]> descargarDocumento(
+            @PathVariable Long id,
+            @PathVariable Long documentoId,
+            Authentication authentication) throws IOException {
+        String usuario = authentication != null ? authentication.getName() : "sistema";
+        DocumentoSoporteService.DocumentoDescarga descarga =
+                documentoSoporteService.descargar(id, documentoId, usuario);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + descarga.getNombreArchivo() + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, max-age=0, must-revalidate")
+                .body(descarga.getContenido());
     }
 }

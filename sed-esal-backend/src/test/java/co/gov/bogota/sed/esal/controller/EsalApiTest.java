@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -403,6 +405,7 @@ class EsalApiTest {
                 .andReturn();
 
         Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+        registrarDocumentoCancelacion(id);
 
         Map<String, Object> cancelacionBody = new HashMap<>();
         cancelacionBody.put("resolucion", "Resolucion API Cancelacion 001");
@@ -431,6 +434,7 @@ class EsalApiTest {
                 .andReturn();
 
         Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+        registrarDocumentoCancelacion(id);
 
         Map<String, Object> cancelacionBody = new HashMap<>();
         cancelacionBody.put("fechaResolucion", "2026-05-20");
@@ -457,6 +461,7 @@ class EsalApiTest {
                 .andReturn();
 
         Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+        registrarDocumentoCancelacion(id);
 
         Map<String, Object> cancelacionBody = new HashMap<>();
         cancelacionBody.put("resolucion", "Resolucion Bloqueada");
@@ -484,6 +489,7 @@ class EsalApiTest {
                 .andReturn();
 
         Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+        registrarDocumentoCancelacion(id);
 
         Map<String, Object> cancelacionBody = new HashMap<>();
         cancelacionBody.put("resolucion", "Resolucion Reactivacion API 001");
@@ -596,5 +602,19 @@ class EsalApiTest {
         mockMvc.perform(post("/api/esales/" + id + "/completitud/recalcular")
                         .with(httpBasic(ADMIN_USER, ADMIN_PASS)))
                 .andExpect(status().isOk());
+    }
+
+    private void registrarDocumentoCancelacion(Long esalId) throws Exception {
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo", "cancelacion.pdf", "application/pdf", "%PDF-1.4".getBytes());
+
+        mockMvc.perform(multipart("/api/esales/" + esalId + "/documentos")
+                        .file(archivo)
+                        .param("tipoDocumento", "CANCELACION")
+                        .param("subtipoDocumento", "CANCELACION_VOLUNTARIA")
+                        .param("referencia", "Resolucion soporte cancelacion")
+                        .param("fechaActo", "2026-05-20")
+                        .with(httpBasic(ADMIN_USER, ADMIN_PASS)))
+                .andExpect(status().isCreated());
     }
 }

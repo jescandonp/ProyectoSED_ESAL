@@ -9,6 +9,7 @@ import co.gov.bogota.sed.esal.domain.AdvertenciaCompletitud;
 import co.gov.bogota.sed.esal.domain.DocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
 import co.gov.bogota.sed.esal.domain.enums.TipoActuacion;
+import co.gov.bogota.sed.esal.domain.enums.TipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoAdvertencia;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
 import co.gov.bogota.sed.esal.dto.CancelacionEsalDto;
@@ -105,6 +106,14 @@ public class EsalMaintenanceService {
                                                                String usuario) {
         Esal esal = obtenerEsal(esalId);
         validarIdSipejUnico(dto.getIdSipej(), esal.getId());
+        if (EstadoEsal.EN_LIQUIDACION.equals(dto.getEstado())
+                && !existeDocumentoVigente(esalId, TipoDocumentoSoporte.LIQUIDACION)) {
+            registrarBloqueoDocumentoObligatorio(usuario, esal,
+                    AuditoriaAcciones.ESAL_LIQUIDACION_BLOQUEADA_SIN_DOCUMENTO,
+                    "No se puede pasar a EN_LIQUIDACION sin documento vigente de liquidacion.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No se puede pasar a EN_LIQUIDACION sin documento vigente de liquidacion.");
+        }
         aplicarInformacionPrincipal(esal, dto, false);
         esal.setUpdatedAt(LocalDateTime.now());
         esal.setUpdatedBy(usuario);
@@ -238,6 +247,13 @@ public class EsalMaintenanceService {
     public MantenimientoEsalDto cancelar(Long esalId, CancelacionEsalDto dto, String usuario) {
         validarCancelacion(dto);
         Esal esal = obtenerEsal(esalId);
+        if (!existeDocumentoVigente(esalId, TipoDocumentoSoporte.CANCELACION)) {
+            registrarBloqueoDocumentoObligatorio(usuario, esal,
+                    AuditoriaAcciones.ESAL_CANCELACION_BLOQUEADA_SIN_DOCUMENTO,
+                    "No se puede cancelar la ESAL sin documento vigente de cancelacion.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No se puede cancelar la ESAL sin documento vigente de cancelacion.");
+        }
 
         ActuacionAdministrativa actuacion = new ActuacionAdministrativa();
         actuacion.setEsalId(esalId);
@@ -260,7 +276,6 @@ public class EsalMaintenanceService {
                 "Actuacion cancelacion: " + saved.getId());
 
         completitudService.calcular(esalId);
-        registrarAdvertenciaSoporteCancelacionSiFalta(esalId);
 
         return obtenerMantenimiento(esalId);
     }
@@ -491,6 +506,21 @@ public class EsalMaintenanceService {
                 esal.getId(), esal.getIdSipej(),
                 AuditoriaAcciones.RESULTADO_EXITO,
                 "OrganoAdministracion: " + organo.getId());
+    }
+
+    private boolean existeDocumentoVigente(Long esalId, TipoDocumentoSoporte tipoDocumental) {
+        return documentoRepository.findByEsalId(esalId).stream()
+                .anyMatch(documento -> tipoDocumental.equals(documento.getTipoDocumental())
+                        && Boolean.TRUE.equals(documento.getVigente()));
+    }
+
+    private void registrarBloqueoDocumentoObligatorio(String usuario, Esal esal, String accion, String detalle) {
+        auditoriaService.registrar(usuario, auditoriaService.obtenerRolActual(),
+                accion,
+                AuditoriaAcciones.ENTIDAD_ESAL,
+                esal.getId(), esal.getIdSipej(),
+                AuditoriaAcciones.RESULTADO_ERROR,
+                detalle);
     }
 
     private void registrarAdvertenciaSoporteCancelacionSiFalta(Long esalId) {

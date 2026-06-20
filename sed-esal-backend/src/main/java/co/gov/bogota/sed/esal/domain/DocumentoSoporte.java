@@ -1,8 +1,11 @@
 package co.gov.bogota.sed.esal.domain;
 
 import co.gov.bogota.sed.esal.domain.enums.EstadoValidacionDocumento;
+import co.gov.bogota.sed.esal.domain.enums.SubtipoDocumentoSoporte;
+import co.gov.bogota.sed.esal.domain.enums.TipoDocumentoSoporte;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -40,6 +43,26 @@ public class DocumentoSoporte {
     private String rutaAlmacenamiento;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "TIPO_DOCUMENTAL", length = 50)
+    private TipoDocumentoSoporte tipoDocumental;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "SUBTIPO_DOCUMENTAL", length = 50)
+    private SubtipoDocumentoSoporte subtipoDocumental;
+
+    @Column(name = "REFERENCIA_ACTO", length = 255)
+    private String referenciaActo;
+
+    @Column(name = "FECHA_ACTO")
+    private LocalDate fechaActo;
+
+    @Column(name = "OBSERVACION", length = 1000)
+    private String observacion;
+
+    @Column(name = "VIGENTE")
+    private Boolean vigente = Boolean.TRUE;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "ESTADO_VALIDACION", length = 20)
     private EstadoValidacionDocumento estadoValidacion = EstadoValidacionDocumento.PENDIENTE;
 
@@ -75,6 +98,24 @@ public class DocumentoSoporte {
 
     public String getRutaAlmacenamiento() { return rutaAlmacenamiento; }
     public void setRutaAlmacenamiento(String rutaAlmacenamiento) { this.rutaAlmacenamiento = rutaAlmacenamiento; }
+
+    public TipoDocumentoSoporte getTipoDocumental() { return tipoDocumental; }
+    public void setTipoDocumental(TipoDocumentoSoporte tipoDocumental) { this.tipoDocumental = tipoDocumental; }
+
+    public SubtipoDocumentoSoporte getSubtipoDocumental() { return subtipoDocumental; }
+    public void setSubtipoDocumental(SubtipoDocumentoSoporte subtipoDocumental) { this.subtipoDocumental = subtipoDocumental; }
+
+    public String getReferenciaActo() { return referenciaActo; }
+    public void setReferenciaActo(String referenciaActo) { this.referenciaActo = referenciaActo; }
+
+    public LocalDate getFechaActo() { return fechaActo; }
+    public void setFechaActo(LocalDate fechaActo) { this.fechaActo = fechaActo; }
+
+    public String getObservacion() { return observacion; }
+    public void setObservacion(String observacion) { this.observacion = observacion; }
+
+    public Boolean getVigente() { return vigente; }
+    public void setVigente(Boolean vigente) { this.vigente = vigente; }
 
     public EstadoValidacionDocumento getEstadoValidacion() { return estadoValidacion; }
     public void setEstadoValidacion(EstadoValidacionDocumento estadoValidacion) { this.estadoValidacion = estadoValidacion; }

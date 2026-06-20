@@ -69,4 +69,11 @@ public final class AuditoriaAcciones {
     public static final String ESAL_ORGANO_MIEMBRO_ACTUALIZADO        = "ESAL_ORGANO_MIEMBRO_ACTUALIZADO";
     public static final String ESAL_CANCELADA                         = "ESAL_CANCELADA";
     public static final String ESAL_REACTIVADA                        = "ESAL_REACTIVADA";
+
+    // ── I9 ───────────────────────────────────────────────────────────────────
+    public static final String DOCUMENTO_SOPORTE_CREADO = "DOCUMENTO_SOPORTE_CREADO";
+    public static final String DOCUMENTO_SOPORTE_VIGENCIA_REEMPLAZADA = "DOCUMENTO_SOPORTE_VIGENCIA_REEMPLAZADA";
+    public static final String DOCUMENTO_SOPORTE_DESCARGADO = "DOCUMENTO_SOPORTE_DESCARGADO";
+    public static final String ESAL_LIQUIDACION_BLOQUEADA_SIN_DOCUMENTO = "ESAL_LIQUIDACION_BLOQUEADA_SIN_DOCUMENTO";
+    public static final String ESAL_CANCELACION_BLOQUEADA_SIN_DOCUMENTO = "ESAL_CANCELACION_BLOQUEADA_SIN_DOCUMENTO";
 }

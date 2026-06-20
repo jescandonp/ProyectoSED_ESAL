@@ -160,21 +160,29 @@ type TabActiva = 'info' | 'completitud' | 'documentos';
               <table class="sed-table">
                 <thead>
                   <tr>
+                    <th>Vigencia</th>
                     <th>Nombre</th>
                     <th>Tipo</th>
+                    <th>Subtipo</th>
+                    <th>Referencia</th>
+                    <th>Fecha acto</th>
                     <th>Tamaño</th>
                     <th>Estado</th>
-                    <th>Fecha</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (doc of documentos(); track doc.id) {
                     <tr>
+                      <td><span [class]="'sed-chip ' + (doc.vigente ? 'sed-chip--activo' : 'sed-chip--suspendido')">{{ doc.vigente ? 'Vigente' : 'Histórico' }}</span></td>
                       <td>{{ doc.nombreArchivo }}</td>
-                      <td>{{ doc.tipoDocumento ?? '—' }}</td>
+                      <td>{{ labelTipoDocumento(doc) }}</td>
+                      <td>{{ labelSubtipoDocumento(doc.subtipoDocumental) }}</td>
+                      <td>{{ doc.referenciaActo ?? '—' }}</td>
+                      <td>{{ doc.fechaActo ?? '—' }}</td>
                       <td>{{ formatBytes(doc.tamanoBytes) }}</td>
                       <td>{{ doc.estadoValidacion }}</td>
-                      <td>{{ doc.createdAt | date:'dd/MM/yyyy' }}</td>
+                      <td><button class="sed-btn-secondary" style="padding: 4px 10px; font-size: 12px;" (click)="descargarDocumento(doc)">Descargar</button></td>
                     </tr>
                   }
                 </tbody>
@@ -294,6 +302,20 @@ export class EsalesDetailComponent implements OnInit {
     });
   }
 
+  descargarDocumento(doc: DocumentoSoporte): void {
+    this.api.download(`/api/esales/${this.id}/documentos/${doc.id}/descarga`).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = doc.nombreArchivo || 'documento-soporte.pdf';
+        enlace.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {},
+    });
+  }
+
   volver(): void {
     this.router.navigate(['/esales']);
   }
@@ -350,5 +372,27 @@ export class EsalesDetailComponent implements OnInit {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  labelTipoDocumento(doc: DocumentoSoporte): string {
+    const tipo = doc.tipoDocumental ?? doc.tipoDocumento;
+    const map: Record<string, string> = {
+      CREACION_FORMACION: 'Creación / formación',
+      DIGNATARIOS: 'Dignatarios',
+      LIQUIDACION: 'Liquidación',
+      CANCELACION: 'Cancelación',
+    };
+    return tipo ? map[tipo] ?? tipo : '—';
+  }
+
+  labelSubtipoDocumento(subtipo: string | null): string {
+    if (!subtipo) return '—';
+    const map: Record<string, string> = {
+      TRAMITE_CANCELACION_VOLUNTARIA: 'Trámite cancelación voluntaria',
+      TERMINO_DURACION: 'Término de duración',
+      CANCELACION_VOLUNTARIA: 'Cancelación voluntaria',
+      ORDEN_AUTORIDAD: 'Orden de autoridad',
+    };
+    return map[subtipo] ?? subtipo;
   }
 }

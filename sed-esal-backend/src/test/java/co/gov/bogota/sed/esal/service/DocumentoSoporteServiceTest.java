@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -199,6 +200,148 @@ class DocumentoSoporteServiceTest {
                     ResponseStatusException rse = (ResponseStatusException) ex;
                     assertThat(rse.getStatus().value()).isEqualTo(404);
                 });
+    }
+
+    // =========================================================================
+    // I9. Validaciones documentales transversales
+    // =========================================================================
+
+    @Test
+    void cargaSinReferencia_esRechazada() {
+        Esal esal = crearEsal("Fundacion Sin Referencia I9");
+        byte[] contenidoPdf = "%PDF-1.4 test content".getBytes();
+
+        assertThatThrownBy(() -> documentoSoporteService.registrar(
+                esal.getId(),
+                "creacion.pdf",
+                "application/pdf",
+                contenidoPdf.length,
+                new ByteArrayInputStream(contenidoPdf),
+                "CREACION_FORMACION",
+                null,
+                "   ",
+                LocalDate.now(),
+                "Observacion",
+                "admin@educacionbogota.edu.co"))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatus().value()).isEqualTo(400);
+                });
+    }
+
+    @Test
+    void cargaSinFechaActo_esRechazada() {
+        Esal esal = crearEsal("Fundacion Sin Fecha I9");
+        byte[] contenidoPdf = "%PDF-1.4 test content".getBytes();
+
+        assertThatThrownBy(() -> documentoSoporteService.registrar(
+                esal.getId(),
+                "dignatarios.pdf",
+                "application/pdf",
+                contenidoPdf.length,
+                new ByteArrayInputStream(contenidoPdf),
+                "DIGNATARIOS",
+                null,
+                "ACTO-001",
+                null,
+                null,
+                "admin@educacionbogota.edu.co"))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatus().value()).isEqualTo(400);
+                });
+    }
+
+    @Test
+    void pdfMayorA10Mb_esRechazado() {
+        Esal esal = crearEsal("Fundacion Archivo Grande I9");
+        byte[] contenidoPdf = "%PDF-1.4 test content".getBytes();
+
+        assertThatThrownBy(() -> documentoSoporteService.registrar(
+                esal.getId(),
+                "grande.pdf",
+                "application/pdf",
+                10L * 1024L * 1024L + 1L,
+                new ByteArrayInputStream(contenidoPdf),
+                "CREACION_FORMACION",
+                null,
+                "RES-001",
+                LocalDate.now(),
+                null,
+                "admin@educacionbogota.edu.co"))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatus().value()).isEqualTo(400);
+                });
+    }
+
+    @Test
+    void subtipoIncompatible_esRechazado() {
+        Esal esal = crearEsal("Fundacion Subtipo Incompatible I9");
+        byte[] contenidoPdf = "%PDF-1.4 test content".getBytes();
+
+        assertThatThrownBy(() -> documentoSoporteService.registrar(
+                esal.getId(),
+                "creacion.pdf",
+                "application/pdf",
+                contenidoPdf.length,
+                new ByteArrayInputStream(contenidoPdf),
+                "CREACION_FORMACION",
+                "CANCELACION_VOLUNTARIA",
+                "RES-001",
+                LocalDate.now(),
+                null,
+                "admin@educacionbogota.edu.co"))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatus().value()).isEqualTo(400);
+                });
+    }
+
+    @Test
+    void nuevaCargaMismoTipoSubtipo_reemplazaVigenteYConservaHistorico() throws IOException {
+        Esal esal = crearEsal("Fundacion Historico I9");
+        byte[] contenidoPdf = "%PDF-1.4 test content".getBytes();
+
+        DocumentoSoporteDto primero = documentoSoporteService.registrar(
+                esal.getId(), "liquidacion-1.pdf", "application/pdf", contenidoPdf.length,
+                new ByteArrayInputStream(contenidoPdf), "LIQUIDACION", "TERMINO_DURACION",
+                "OF-001", LocalDate.of(2026, 6, 1), "Primera version", "admin@educacionbogota.edu.co");
+
+        DocumentoSoporteDto segundo = documentoSoporteService.registrar(
+                esal.getId(), "liquidacion-2.pdf", "application/pdf", contenidoPdf.length,
+                new ByteArrayInputStream(contenidoPdf), "LIQUIDACION", "TERMINO_DURACION",
+                "OF-002", LocalDate.of(2026, 6, 2), "Segunda version", "admin@educacionbogota.edu.co");
+
+        List<DocumentoSoporteDto> documentos = documentoSoporteService.listar(esal.getId());
+
+        assertThat(documentos).hasSize(2);
+        assertThat(documentos).filteredOn(DocumentoSoporteDto::isVigente).extracting(DocumentoSoporteDto::getId)
+                .containsExactly(segundo.getId());
+        assertThat(documentos).filteredOn(d -> !d.isVigente()).extracting(DocumentoSoporteDto::getId)
+                .containsExactly(primero.getId());
+    }
+
+    @Test
+    void descargarDocumento_validaPertenenciaYRetornaBytes() throws IOException {
+        Esal esal = crearEsal("Fundacion Descarga I9");
+        byte[] contenidoPdf = "%PDF-1.4 descarga".getBytes();
+
+        DocumentoSoporteDto documento = documentoSoporteService.registrar(
+                esal.getId(), "descarga.pdf", "application/pdf", contenidoPdf.length,
+                new ByteArrayInputStream(contenidoPdf), "CREACION_FORMACION", null,
+                "RES-100", LocalDate.now(), null, "admin@educacionbogota.edu.co");
+
+        DocumentoSoporteService.DocumentoDescarga descarga =
+                documentoSoporteService.descargar(esal.getId(), documento.getId(), "expedidor@educacionbogota.edu.co");
+
+        assertThat(descarga.getNombreArchivo()).isEqualTo("descarga.pdf");
+        assertThat(descarga.getContentType()).isEqualTo("application/pdf");
+        assertThat(descarga.getContenido()).containsExactly(contenidoPdf);
     }
 
     // =========================================================================

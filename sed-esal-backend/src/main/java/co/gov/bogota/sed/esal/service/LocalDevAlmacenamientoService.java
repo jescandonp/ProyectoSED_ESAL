@@ -58,6 +58,11 @@ public class LocalDevAlmacenamientoService implements AlmacenamientoService {
         return destino.toString();
     }
 
+    @Override
+    public byte[] leer(String rutaAlmacenamiento) throws IOException {
+        return Files.readAllBytes(Paths.get(rutaAlmacenamiento));
+    }
+
     /**
      * Elimina el archivo en la ruta indicada si existe.
      *

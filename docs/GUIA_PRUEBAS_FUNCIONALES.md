@@ -1,8 +1,8 @@
 # SED_ESAL - Guia De Pruebas Funcionales
 
-> Estado: I7 completado.
-> Tests backend: 136 (BUILD SUCCESS en I6, sin cambios backend en I7). Frontend Angular: 5 tests ChromeHeadless y build en verde.
-> Fecha: 2026-05-29.
+> Estado: I9 completado.
+> Tests backend: 148, WAR OK. Frontend Angular: build en verde; runner Angular test requiere validacion local fuera de la restriccion sandbox/watch si aplica.
+> Fecha: 2026-06-19.
 > Marco: SDD Spec-Anchored por incrementos.
 
 ## 1. Objetivo
@@ -53,9 +53,9 @@ Requisito: backend levantado en `http://localhost:8080` y frontend en `http://lo
 | T-00-03 | Abrir frontend | `http://localhost:4200` | Pantalla login carga |
 | T-00-04 | Login ADMINISTRADOR | Usuario `admin@educacionbogota.edu.co` / `admin123` | Sidebar con modulos admin visibles |
 | T-00-05 | Login EXPEDIDOR | Usuario `expedidor@educacionbogota.edu.co` / `expedidor123` | Sidebar solo con busqueda/consulta |
-| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 136 tests, BUILD SUCCESS |
+| T-00-06 | Verificar tests backend | `mvn test` en `sed-esal-backend` | 148 tests, BUILD SUCCESS |
 | T-00-07 | Verificar build frontend | `npm run build` en `sed-esal-angular` | BUILD SUCCESS sin errores |
-| T-00-08 | Verificar tests frontend | `npm test -- --watch=false --browsers=ChromeHeadless` en `sed-esal-angular` | 5 tests, TOTAL SUCCESS |
+| T-00-08 | Verificar tests frontend | `npm test -- --watch=false --browsers=ChromeHeadless` en `sed-esal-angular` | Ejecutar en ambiente local con browser disponible; registrar si hay restriccion sandbox/watch |
 
 ## 5. Incremento 0 - Base Documental Y Arquitectura
 
@@ -415,7 +415,71 @@ Resultado registrado:
 - Angular ChromeHeadless: `TOTAL: 5 SUCCESS`.
 - Angular build: exitoso con advertencias NG8102/NG8107 preexistentes.
 
-## 16. Incrementos Posteriores
+## 16. Incremento 9 - Gestion Documental Administrativa Transversal
+
+Fuente de especificacion: `docs/specs/2026-06-19-sed-esal-i9-spec.md`.
+
+Estado: completado. Implementacion backend/frontend verificada con suites enfocadas, suite backend completa, WAR y build Angular.
+
+### I9 - Catalogo, Carga Y Vigencia
+
+| ID | Accion | Endpoint / URL | Datos | Esperado |
+|---|---|---|---|---|
+| I9-DOC-01 | Cargar documento de creacion/formacion | `POST /api/esales/{id}/documentos` o `/admin/esales/{id}/mantenimiento` seccion Documentos | PDF `application/pdf`, `tipoDocumento=CREACION_FORMACION`, referencia y fecha | 200, documento queda `vigente=true` y visible en la lista |
+| I9-DOC-02 | Cargar documento de dignatarios | Mismo endpoint | PDF, `tipoDocumento=DIGNATARIOS`, sin subtipo | 200, sin subtipo y con metadatos visibles |
+| I9-DOC-03 | Cargar liquidacion con subtipo valido | Mismo endpoint | `tipoDocumento=LIQUIDACION`, subtipo `TRAMITE_CANCELACION_VOLUNTARIA` o `TERMINO_DURACION` | 200, documento vigente para regla de liquidacion |
+| I9-DOC-04 | Cargar cancelacion con subtipo valido | Mismo endpoint | `tipoDocumento=CANCELACION`, subtipo `CANCELACION_VOLUNTARIA` u `ORDEN_AUTORIDAD` | 200, documento vigente para regla de cancelacion |
+| I9-DOC-05 | Reemplazar documento mismo tipo/subtipo | Cargar dos PDFs con igual tipo/subtipo | Segunda referencia y fecha | Ultimo documento queda `Vigente`; anterior queda `Historico` consultable |
+| I9-DOC-06 | Listar historico documental | `GET /api/esales/{id}/documentos` | ESAL con varias versiones | Lista ordenada con vigente primero e historicos despues |
+| I9-DOC-07 | Descargar documento | `GET /api/esales/{id}/documentos/{documentoId}/descarga` | Documento existente | Descarga PDF, sin exponer ruta fisica, con auditoria de descarga |
+
+### I9 - Validaciones Y Seguridad
+
+| ID | Accion | Endpoint / URL | Datos | Esperado |
+|---|---|---|---|---|
+| I9-VAL-01 | Cargar sin referencia | `POST /api/esales/{id}/documentos` | Referencia vacia | 400 Bad Request |
+| I9-VAL-02 | Cargar sin fecha de acto | Mismo endpoint | `fechaActo` ausente | 400 Bad Request |
+| I9-VAL-03 | Cargar archivo no PDF | Mismo endpoint | `.png`, `.docx` o content-type distinto a `application/pdf` | 400 Bad Request |
+| I9-VAL-04 | Cargar PDF mayor a 10 MB | Mismo endpoint | Archivo superior a 10 MB | 400 Bad Request |
+| I9-VAL-05 | Subtipo incompatible | Mismo endpoint | `CREACION_FORMACION` con subtipo de cancelacion | 400 Bad Request |
+| I9-SEG-01 | EXPEDIDOR intenta cargar documento | Mismo endpoint | Usuario `expedidor@educacionbogota.edu.co` | 403 Forbidden |
+| I9-SEG-02 | EXPEDIDOR consulta documentos | `GET /api/esales/{id}/documentos` | Usuario expedidor | 200 y lista visible |
+| I9-SEG-03 | EXPEDIDOR descarga documento | Endpoint de descarga | Documento existente | 200 y PDF descargado |
+
+### I9 - Bloqueo De Estados
+
+| ID | Accion | Endpoint / URL | Datos | Esperado |
+|---|---|---|---|---|
+| I9-EST-01 | Pasar a `EN_LIQUIDACION` sin documento vigente | `PUT /api/esales/{id}/informacion-principal` | Estado destino `EN_LIQUIDACION`, sin documento `LIQUIDACION` vigente | 400 Bad Request y auditoria de bloqueo |
+| I9-EST-02 | Pasar a `EN_LIQUIDACION` con documento vigente | Mismo endpoint | Documento `LIQUIDACION` vigente previo | 200, estado actualizado |
+| I9-EST-03 | Cancelar sin documento vigente | `POST /api/esales/{id}/cancelacion` | Datos completos de cancelacion, sin documento `CANCELACION` vigente | 400 Bad Request y auditoria de bloqueo |
+| I9-EST-04 | Cancelar con documento vigente | Mismo endpoint | Documento `CANCELACION` vigente previo | 200, estado `CANCELADO`, actuacion y auditoria registradas |
+
+### I9 - Evidencia Tecnica
+
+```powershell
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-backend
+mvn test "-Dtest=DocumentoSoporteServiceTest,EsalMaintenanceServiceTest"
+mvn test "-Dtest=SecurityConfigTest,DocumentoSoporteServiceTest"
+mvn test "-Dtest=EsalApiTest"
+mvn test
+mvn package -DskipTests
+
+Set-Location C:\Users\jmep2\Downloads\SED\ProyectoESAL\sed-esal-angular
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
+```
+
+Resultado registrado:
+
+- `DocumentoSoporteServiceTest` + `EsalMaintenanceServiceTest`: 24 tests, BUILD SUCCESS.
+- `SecurityConfigTest` + `DocumentoSoporteServiceTest`: 23 tests, BUILD SUCCESS.
+- `EsalApiTest`: 20 tests, BUILD SUCCESS.
+- Suite backend completa: 148 tests, BUILD SUCCESS.
+- WAR generado: `sed-esal-backend/target/sed-esal-backend.war`.
+- Angular build: exitoso con advertencias NG8102/NG8107 no bloqueantes.
+- `npm test -- --watch=false` no fue evidencia util en sandbox/watch; validar manualmente fuera de esa restriccion si se requiere evidencia ChromeHeadless.
+
+## 17. Incrementos Posteriores
 
 ### Verificacion Externa Futura
 

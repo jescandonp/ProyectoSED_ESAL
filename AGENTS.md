@@ -1,34 +1,19 @@
 <claude-mem-context>
 # Memory Context
 
-# [ProyectoESAL] recent context, 2026-05-29 11:15am GMT-5
+# [ProyectoESAL] recent context, 2026-06-19 6:40pm GMT-5
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (19.831t read) | 471.349t work | 96% savings
+Stats: 50 obs (20.105t read) | 433.648t work | 95% savings
 
 ### May 27, 2026
-599 5:15p 🟣 Iteration I6 Spec Authoring Started — New Directory docs/superpowers/specs/ Created
-600 5:16p 🟣 I6 Spec Formally Written: PDF Certificate Narrative Format to Match EYRL Template
 S131 I6 ProyectoESAL — Cierre de GAPs entre PDF generado y Plantilla Certificado EYRL: creación del plan de implementación completo (May 27, 5:16 PM)
 S130 I6 Iteration Kickoff: GAP Analysis Between Current PDF Generation and EYRL Certificate Template — Formal Spec Written (May 27, 5:16 PM)
-601 5:40p 🔵 ESAL Backend Service Layer Test Coverage Discovered
-602 5:41p 🔵 GeneracionService Certificate Generation Pipeline Documented
-603 5:44p ⚖️ Nueva Iteración ProyectoESAL: Cierre de GAPs entre PDF generado y Plantilla EYRL
-604 5:46p 🔵 I5 Execution Log confirma estado final del proyecto antes de I6
-605 " 🟣 Execution Log I6 creado para tracking de la iteración en curso
-606 5:48p 🟣 CertificadoNarrativoDto creado en el backend (T1 I6)
-607 " 🟣 T1 completado: CertificadoNarrativoDto compila sin errores
-608 5:49p 🟣 Commit T1: CertificadoNarrativoDto commiteado a main (SHA 1677159)
-609 " 🔵 Metodología SDD confirmada: subagente Haiku ejecuta cada tarea I6 de forma autónoma
 ### May 29, 2026
-610 10:39a 🔵 Windows Sandbox CreateProcessWithLogonW Error on Shell Command
-611 " 🔵 SED_ESAL Project Memory Context Retrieved Successfully
-612 " 🔵 I6 Execution Log Confirms Partial Closure State as of 2026-05-27
 613 10:40a 🔵 I6 Git State: 2 Commits Ahead of origin/main, Tasks 6–7 Pending
-614 " 🟣 CertificadoPdfService Rewritten with Full Narrative I6 Layout
 615 " 🟣 CertificadoPdfServiceTest Upgraded to Full PDF Content Verification
 616 " 🔵 PdfTextExtractor Wraps "ACTA NOMBRAMIENTO" Across Lines — Test Assertion Needs Adjustment
 617 10:41a 🔴 Fixed "ACTA NOMBRAMIENTO" Assertion Split Across PDF Extraction Lines
@@ -64,6 +49,21 @@ S132 SIGCON new design iteration SPECs + ProyectoESAL I6 iteration closure and g
 655 11:05a 🔵 Contexto Previo I7 Confirmado — DESIGN.md y CONSTITUTION.md Revisados
 656 " ✅ README.md Actualizado — I7 Registrado como "Especificado" en Tabla de Iteraciones
 657 " 🔵 Artefactos I7 Sin Commit — Pendientes de Stagear en Git
+658 11:16a 🟣 I7 Spec: Alineación UI Institucional SED_ESAL definida y planificada
+659 " 🔵 app.css está vacío en sed-esal-angular
+660 " 🔵 Sistema de design tokens ya existe en styles.css, no en app.css
+661 " ✅ docs/DESIGN.md actualizado con sección I7 - Adaptación Referencia SIGCON
+662 11:17a ✅ Plan I7 corregido: styles.css reemplaza app.css como target de estilos globales
+663 " 🔵 Componentes Angular que ya usan PrimeIcons y tokens sed-* identificados
+664 " 🔵 Shell usa emojis como iconografía de navegación; login carece de marca institucional
+665 11:18a 🟣 styles.css expandido con sistema completo de utilidades institucionales I7
+666 " 🔵 Build Angular exitoso tras actualizar styles.css; warnings NG8107/NG8102 son pre-existentes
+667 11:19a 🔵 Login ya tiene marca institucional básica; shell y login usan emojis como iconografía
+668 " 🟣 LoginComponent expone versión y datos de contacto institucional SED
+669 " 🟣 Login rediseñado con identidad institucional SED: versión, PrimeIcons, Office 365 y bloque de contacto
+670 " 🔄 login.component.css eliminado: login migra a clases utilitarias globales de styles.css
+671 " 🟣 login.component.css reconstruido: layout split-panel institucional con gradiente y responsive 760px
+672 11:20a ✅ Gradiente decorativo del login eliminado; reemplazado por fondo sólido azul institucional
 
-Access 471k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 434k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

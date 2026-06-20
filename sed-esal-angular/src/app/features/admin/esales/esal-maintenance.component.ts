@@ -2,15 +2,17 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import {
+  DocumentoSoporte,
   EstadoEsal,
   MantenimientoEsalDto,
   NombramientoDto,
   OrganoAdministracionDto,
 } from '../../../core/models/esal.model';
 
-type Seccion = 'principal' | 'personeria' | 'representantes' | 'organo' | 'estado';
+type Seccion = 'principal' | 'personeria' | 'representantes' | 'organo' | 'estado' | 'documentos';
 
 @Component({
   selector: 'app-esal-maintenance',
@@ -49,6 +51,7 @@ type Seccion = 'principal' | 'personeria' | 'representantes' | 'organo' | 'estad
             <button type="button" [class.active]="seccion() === 'representantes'" (click)="seccion.set('representantes')">Representante legal</button>
             <button type="button" [class.active]="seccion() === 'organo'" (click)="seccion.set('organo')">Órgano de administración</button>
             <button type="button" [class.active]="seccion() === 'estado'" (click)="seccion.set('estado')">Estado y cancelación</button>
+            <button type="button" [class.active]="seccion() === 'documentos'" (click)="seccion.set('documentos')">Documentos</button>
           </nav>
 
           <section class="maintenance__content">
@@ -194,6 +197,77 @@ type Seccion = 'principal' | 'personeria' | 'representantes' | 'organo' | 'estad
                 }
               </div>
             }
+
+            @if (seccion() === 'documentos') {
+              <div class="sed-card maintenance__section">
+                <div class="maintenance__section-head">
+                  <h3>Documentos administrativos</h3>
+                  <button class="sed-btn-secondary compact" type="button" (click)="cargarDocumentos()" [disabled]="cargandoDocumentos()">Actualizar</button>
+                </div>
+
+                @if (errorDocumento()) {
+                  <div class="maintenance__error">{{ errorDocumento() }}</div>
+                }
+
+                @if (esAdministrador()) {
+                  <form class="maintenance__subform" [formGroup]="documentoForm" (ngSubmit)="subirDocumento()">
+                    <div class="maintenance__grid">
+                      <label class="sed-field">Tipo documental
+                        <select class="sed-input" formControlName="tipoDocumento" (change)="documentoForm.patchValue({ subtipoDocumento: '' })">
+                          <option value="CREACION_FORMACION">Creación / formación</option>
+                          <option value="DIGNATARIOS">Dignatarios</option>
+                          <option value="LIQUIDACION">Liquidación</option>
+                          <option value="CANCELACION">Cancelación</option>
+                        </select>
+                      </label>
+                      <label class="sed-field">Subtipo
+                        <select class="sed-input" formControlName="subtipoDocumento">
+                          <option value="">No aplica</option>
+                          @if (documentoForm.value.tipoDocumento === 'LIQUIDACION') {
+                            <option value="TRAMITE_CANCELACION_VOLUNTARIA">Trámite cancelación voluntaria</option>
+                            <option value="TERMINO_DURACION">Término de duración</option>
+                          }
+                          @if (documentoForm.value.tipoDocumento === 'CANCELACION') {
+                            <option value="CANCELACION_VOLUNTARIA">Cancelación voluntaria</option>
+                            <option value="ORDEN_AUTORIDAD">Orden de autoridad</option>
+                          }
+                        </select>
+                      </label>
+                      <label class="sed-field">Referencia acto<input class="sed-input" formControlName="referencia" /></label>
+                      <label class="sed-field">Fecha acto<input class="sed-input" type="date" formControlName="fechaActo" /></label>
+                    </div>
+                    <label class="sed-field">Observación<textarea class="sed-input" formControlName="observacion" rows="2"></textarea></label>
+                    <label class="sed-field">Archivo PDF<input class="sed-input" type="file" accept="application/pdf" (change)="seleccionarDocumento($event)" /></label>
+                    <button class="sed-btn-primary" type="submit" [disabled]="guardando() || !archivoDocumento()">Cargar documento</button>
+                  </form>
+                }
+
+                @if (cargandoDocumentos()) {
+                  <div class="maintenance__empty">Cargando documentos...</div>
+                } @else if (documentos().length === 0) {
+                  <div class="maintenance__empty">No hay documentos administrativos registrados.</div>
+                } @else {
+                  <table class="sed-table">
+                    <thead>
+                      <tr><th>Vigencia</th><th>Tipo</th><th>Subtipo</th><th>Referencia</th><th>Fecha</th><th>Archivo</th><th>Acción</th></tr>
+                    </thead>
+                    <tbody>
+                      @for (doc of documentos(); track doc.id) {
+                        <tr>
+                          <td><span [class]="'sed-chip ' + (doc.vigente ? 'sed-chip--activo' : 'sed-chip--suspendido')">{{ doc.vigente ? 'Vigente' : 'Histórico' }}</span></td>
+                          <td>{{ labelTipoDocumento(doc) }}</td>
+                          <td>{{ labelSubtipoDocumento(doc.subtipoDocumental) }}</td>
+                          <td>{{ doc.referenciaActo || '—' }}</td>
+                          <td>{{ doc.fechaActo || '—' }}</td>
+                          <td>{{ doc.nombreArchivo }}</td>
+                          <td><button class="sed-btn-secondary compact" type="button" (click)="descargarDocumento(doc)">Descargar</button></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+            }
           </section>
         </div>
       }
@@ -228,6 +302,7 @@ type Seccion = 'principal' | 'personeria' | 'representantes' | 'organo' | 'estad
 })
 export class EsalMaintenanceComponent implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
@@ -242,6 +317,10 @@ export class EsalMaintenanceComponent implements OnInit {
   seccion = signal<Seccion>('principal');
   representanteEditando = signal<number | null>(null);
   organoEditando = signal<number | null>(null);
+  documentos = signal<DocumentoSoporte[]>([]);
+  cargandoDocumentos = signal(false);
+  errorDocumento = signal<string | null>(null);
+  archivoDocumento = signal<File | null>(null);
 
   principalForm = this.fb.group({
     nombre: [''],
@@ -298,6 +377,14 @@ export class EsalMaintenanceComponent implements OnInit {
     motivo: [''],
   });
 
+  documentoForm = this.fb.group({
+    tipoDocumento: ['CREACION_FORMACION'],
+    subtipoDocumento: [''],
+    referencia: [''],
+    fechaActo: [''],
+    observacion: [''],
+  });
+
   ngOnInit(): void {
     this.cargar();
   }
@@ -309,6 +396,7 @@ export class EsalMaintenanceComponent implements OnInit {
       next: (data) => {
         this.mantenimiento.set(data);
         this.hidratarFormularios(data);
+        this.cargarDocumentos();
         this.cargando.set(false);
       },
       error: () => {
@@ -360,6 +448,90 @@ export class EsalMaintenanceComponent implements OnInit {
 
   reactivar(): void {
     this.mutar(() => this.api.post<MantenimientoEsalDto>(`/api/esales/${this.id}/reactivacion`, this.reactivacionForm.value), 'ESAL reactivada.');
+  }
+
+  cargarDocumentos(): void {
+    this.cargandoDocumentos.set(true);
+    this.errorDocumento.set(null);
+    this.api.get<DocumentoSoporte[]>(`/api/esales/${this.id}/documentos`).subscribe({
+      next: (docs) => {
+        this.documentos.set(docs);
+        this.cargandoDocumentos.set(false);
+      },
+      error: () => {
+        this.errorDocumento.set('No se pudieron cargar los documentos administrativos.');
+        this.cargandoDocumentos.set(false);
+      },
+    });
+  }
+
+  seleccionarDocumento(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0] ?? null;
+    if (archivo && archivo.type !== 'application/pdf') {
+      this.errorDocumento.set('Solo se aceptan archivos PDF.');
+      this.archivoDocumento.set(null);
+      input.value = '';
+      return;
+    }
+    this.errorDocumento.set(null);
+    this.archivoDocumento.set(archivo);
+  }
+
+  subirDocumento(): void {
+    const archivo = this.archivoDocumento();
+    if (!archivo) {
+      this.errorDocumento.set('Seleccione un archivo PDF.');
+      return;
+    }
+    const form = this.documentoForm.value;
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    formData.append('tipoDocumento', form.tipoDocumento ?? '');
+    if (form.subtipoDocumento) {
+      formData.append('subtipoDocumento', form.subtipoDocumento);
+    }
+    formData.append('referencia', form.referencia ?? '');
+    formData.append('fechaActo', form.fechaActo ?? '');
+    if (form.observacion) {
+      formData.append('observacion', form.observacion);
+    }
+
+    this.guardando.set(true);
+    this.errorDocumento.set(null);
+    this.api.postForm<DocumentoSoporte>(`/api/esales/${this.id}/documentos`, formData).subscribe({
+      next: () => {
+        this.guardando.set(false);
+        this.archivoDocumento.set(null);
+        this.documentoForm.reset({
+          tipoDocumento: 'CREACION_FORMACION',
+          subtipoDocumento: '',
+          referencia: '',
+          fechaActo: '',
+          observacion: '',
+        });
+        this.mensaje.set('Documento administrativo cargado.');
+        this.cargarDocumentos();
+      },
+      error: (err: any) => {
+        this.errorDocumento.set(err?.error?.message ?? 'No se pudo cargar el documento.');
+        this.guardando.set(false);
+      },
+    });
+  }
+
+  descargarDocumento(doc: DocumentoSoporte): void {
+    this.api.download(`/api/esales/${this.id}/documentos/${doc.id}/descarga`).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = doc.nombreArchivo || 'documento-soporte.pdf';
+        enlace.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.errorDocumento.set('No se pudo descargar el documento.'),
+    });
   }
 
   nuevoRepresentante(): void {
@@ -442,5 +614,33 @@ export class EsalMaintenanceComponent implements OnInit {
       CANCELADO: 'Cancelado',
     };
     return map[estado] ?? estado;
+  }
+
+  esAdministrador(): boolean {
+    return this.auth.isAdmin();
+  }
+
+  labelTipoDocumento(doc: DocumentoSoporte): string {
+    const tipo = doc.tipoDocumental ?? doc.tipoDocumento;
+    const map: Record<string, string> = {
+      CREACION_FORMACION: 'Creación / formación',
+      DIGNATARIOS: 'Dignatarios',
+      LIQUIDACION: 'Liquidación',
+      CANCELACION: 'Cancelación',
+    };
+    return tipo ? map[tipo] ?? tipo : '—';
+  }
+
+  labelSubtipoDocumento(subtipo: string | null): string {
+    if (!subtipo) {
+      return '—';
+    }
+    const map: Record<string, string> = {
+      TRAMITE_CANCELACION_VOLUNTARIA: 'Trámite cancelación voluntaria',
+      TERMINO_DURACION: 'Término de duración',
+      CANCELACION_VOLUNTARIA: 'Cancelación voluntaria',
+      ORDEN_AUTORIDAD: 'Orden de autoridad',
+    };
+    return map[subtipo] ?? subtipo;
   }
 }

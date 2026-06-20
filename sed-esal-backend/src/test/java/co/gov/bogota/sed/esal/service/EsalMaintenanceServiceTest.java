@@ -1,13 +1,16 @@
 package co.gov.bogota.sed.esal.service;
 
 import co.gov.bogota.sed.esal.domain.Esal;
+import co.gov.bogota.sed.esal.domain.DocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.Nombramiento;
 import co.gov.bogota.sed.esal.domain.OrganoAdministracion;
 import co.gov.bogota.sed.esal.domain.PersoneriaJuridica;
+import co.gov.bogota.sed.esal.domain.enums.EstadoValidacionDocumento;
+import co.gov.bogota.sed.esal.domain.enums.SubtipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoActuacion;
 import co.gov.bogota.sed.esal.domain.enums.EstadoEsal;
+import co.gov.bogota.sed.esal.domain.enums.TipoDocumentoSoporte;
 import co.gov.bogota.sed.esal.domain.enums.TipoNombramiento;
-import co.gov.bogota.sed.esal.domain.enums.TipoAdvertencia;
 import co.gov.bogota.sed.esal.dto.CancelacionEsalDto;
 import co.gov.bogota.sed.esal.dto.EsalInformacionPrincipalDto;
 import co.gov.bogota.sed.esal.dto.MantenimientoEsalDto;
@@ -17,17 +20,21 @@ import co.gov.bogota.sed.esal.dto.PersoneriaJuridicaDto;
 import co.gov.bogota.sed.esal.dto.ReactivacionEsalDto;
 import co.gov.bogota.sed.esal.repository.ActuacionAdministrativaRepository;
 import co.gov.bogota.sed.esal.repository.AdvertenciaCompletitudRepository;
+import co.gov.bogota.sed.esal.repository.DocumentoSoporteRepository;
 import co.gov.bogota.sed.esal.repository.EsalRepository;
 import co.gov.bogota.sed.esal.repository.NombramientoRepository;
 import co.gov.bogota.sed.esal.repository.OrganoAdministracionRepository;
 import co.gov.bogota.sed.esal.repository.PersoneriaJuridicaRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +65,14 @@ class EsalMaintenanceServiceTest {
 
     @Autowired
     private AdvertenciaCompletitudRepository advertenciaRepository;
+
+    @Autowired
+    private DocumentoSoporteRepository documentoRepository;
+
+    @BeforeEach
+    void limpiarDocumentos() {
+        documentoRepository.deleteAll();
+    }
 
     @Test
     void crearEsalDesdeMantenimientoGuardaInformacionPrincipalYRecalculaCompletitud() {
@@ -251,12 +266,51 @@ class EsalMaintenanceServiceTest {
     }
 
     @Test
-    void cancelarEsalCreaActuacionCambiaEstadoYAdvierteSiFaltaPdf() {
+    void actualizarInformacionPrincipalAEnLiquidacionSinDocumentoVigenteEsBloqueado() {
+        Esal esal = new Esal();
+        esal.setNombre("Fundacion Liquidacion Sin Documento");
+        esal.setIdSipej("I9-LIQ-001");
+        esal.setEstado(EstadoEsal.ACTIVO);
+        esal = esalRepository.save(esal);
+
+        EsalInformacionPrincipalDto dto = new EsalInformacionPrincipalDto();
+        dto.setEstado(EstadoEsal.EN_LIQUIDACION);
+
+        Long esalId = esal.getId();
+        assertThatThrownBy(() -> maintenanceService.actualizarInformacionPrincipal(esalId, dto, "admin-i9"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("documento vigente de liquidacion");
+    }
+
+    @Test
+    void cancelarSinDocumentoVigenteEsBloqueado() {
+        Esal esal = new Esal();
+        esal.setNombre("Fundacion Cancelacion Sin Documento");
+        esal.setIdSipej("I9-CAN-001");
+        esal.setEstado(EstadoEsal.ACTIVO);
+        esal = esalRepository.save(esal);
+
+        CancelacionEsalDto dto = new CancelacionEsalDto();
+        dto.setResolucion("Resolucion Cancelacion 000");
+        dto.setFechaResolucion(LocalDate.of(2026, 5, 20));
+        dto.setMotivo("Cancelacion sin soporte");
+
+        Long esalId = esal.getId();
+        assertThatThrownBy(() -> maintenanceService.cancelar(esalId, dto, "admin-i9"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("documento vigente de cancelacion");
+    }
+
+    @Test
+    void cancelarEsalConDocumentoVigenteCreaActuacionYCambiaEstado() {
         Esal esal = new Esal();
         esal.setNombre("Fundacion Cancelacion");
         esal.setIdSipej("I5-009");
         esal.setEstado(EstadoEsal.ACTIVO);
         esal = esalRepository.save(esal);
+        crearDocumentoVigente(esal.getId(),
+                TipoDocumentoSoporte.CANCELACION,
+                SubtipoDocumentoSoporte.CANCELACION_VOLUNTARIA);
 
         CancelacionEsalDto dto = new CancelacionEsalDto();
         dto.setResolucion("Resolucion Cancelacion 001");
@@ -277,11 +331,7 @@ class EsalMaintenanceServiceTest {
                     assertThat(actuacion.getMotivo()).isEqualTo("Cancelacion por solicitud formal");
                 });
         assertThat(advertenciaRepository.findByEsalId(esal.getId()))
-                .anySatisfy(advertencia -> {
-                    assertThat(advertencia.getTipo()).isEqualTo(TipoAdvertencia.DOCUMENTO_REQUERIDO_FALTANTE);
-                    assertThat(advertencia.getCampo()).isEqualTo("PDF SOPORTE CANCELACION");
-                    assertThat(advertencia.getBloqueante()).isFalse();
-                });
+                .noneMatch(advertencia -> "PDF SOPORTE CANCELACION".equals(advertencia.getCampo()));
     }
 
     @Test
@@ -325,6 +375,9 @@ class EsalMaintenanceServiceTest {
         cancelacion.setResolucion("Resolucion Reactivacion 001");
         cancelacion.setFechaResolucion(LocalDate.of(2026, 5, 20));
         cancelacion.setMotivo("Cancelacion previa");
+        crearDocumentoVigente(esal.getId(),
+                TipoDocumentoSoporte.CANCELACION,
+                SubtipoDocumentoSoporte.CANCELACION_VOLUNTARIA);
         maintenanceService.cancelar(esal.getId(), cancelacion, "admin-i5");
 
         ReactivacionEsalDto reactivacion = new ReactivacionEsalDto();
@@ -377,5 +430,25 @@ class EsalMaintenanceServiceTest {
                 .hasMessageContaining("motivo");
         assertThatThrownBy(() -> maintenanceService.reactivar(canceladaId, destinoCancelado, "admin-i5"))
                 .hasMessageContaining("estadoDestino");
+    }
+
+    private void crearDocumentoVigente(Long esalId,
+                                       TipoDocumentoSoporte tipo,
+                                       SubtipoDocumentoSoporte subtipo) {
+        DocumentoSoporte documento = new DocumentoSoporte();
+        documento.setEsalId(esalId);
+        documento.setNombreArchivo("soporte.pdf");
+        documento.setContentType("application/pdf");
+        documento.setTamanoBytes(128L);
+        documento.setRutaAlmacenamiento("test://soporte-" + esalId + ".pdf");
+        documento.setTipoDocumental(tipo);
+        documento.setSubtipoDocumental(subtipo);
+        documento.setReferenciaActo("Resolucion soporte");
+        documento.setFechaActo(LocalDate.of(2026, 5, 20));
+        documento.setVigente(Boolean.TRUE);
+        documento.setEstadoValidacion(EstadoValidacionDocumento.PENDIENTE);
+        documento.setCreatedAt(LocalDateTime.now());
+        documento.setCreatedBy("admin-i9");
+        documentoRepository.save(documento);
     }
 }

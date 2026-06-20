@@ -1,7 +1,10 @@
 package co.gov.bogota.sed.esal.dto;
 
 import co.gov.bogota.sed.esal.domain.enums.EstadoValidacionDocumento;
+import co.gov.bogota.sed.esal.domain.enums.SubtipoDocumentoSoporte;
+import co.gov.bogota.sed.esal.domain.enums.TipoDocumentoSoporte;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -17,6 +20,12 @@ public class DocumentoSoporteDto {
     private String nombreArchivo;
     private String contentType;
     private Long tamanoBytes;
+    private TipoDocumentoSoporte tipoDocumental;
+    private SubtipoDocumentoSoporte subtipoDocumental;
+    private String referenciaActo;
+    private LocalDate fechaActo;
+    private String observacion;
+    private boolean vigente;
     private EstadoValidacionDocumento estadoValidacion;
     private LocalDateTime createdAt;
     private String createdBy;
@@ -44,6 +53,24 @@ public class DocumentoSoporteDto {
 
     public Long getTamanoBytes() { return tamanoBytes; }
     public void setTamanoBytes(Long tamanoBytes) { this.tamanoBytes = tamanoBytes; }
+
+    public TipoDocumentoSoporte getTipoDocumental() { return tipoDocumental; }
+    public void setTipoDocumental(TipoDocumentoSoporte tipoDocumental) { this.tipoDocumental = tipoDocumental; }
+
+    public SubtipoDocumentoSoporte getSubtipoDocumental() { return subtipoDocumental; }
+    public void setSubtipoDocumental(SubtipoDocumentoSoporte subtipoDocumental) { this.subtipoDocumental = subtipoDocumental; }
+
+    public String getReferenciaActo() { return referenciaActo; }
+    public void setReferenciaActo(String referenciaActo) { this.referenciaActo = referenciaActo; }
+
+    public LocalDate getFechaActo() { return fechaActo; }
+    public void setFechaActo(LocalDate fechaActo) { this.fechaActo = fechaActo; }
+
+    public String getObservacion() { return observacion; }
+    public void setObservacion(String observacion) { this.observacion = observacion; }
+
+    public boolean isVigente() { return vigente; }
+    public void setVigente(boolean vigente) { this.vigente = vigente; }
 
     public EstadoValidacionDocumento getEstadoValidacion() { return estadoValidacion; }
     public void setEstadoValidacion(EstadoValidacionDocumento estadoValidacion) {

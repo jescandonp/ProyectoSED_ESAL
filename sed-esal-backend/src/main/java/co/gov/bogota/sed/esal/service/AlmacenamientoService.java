@@ -25,6 +25,15 @@ public interface AlmacenamientoService {
     String guardar(Long esalId, String nombreArchivo, InputStream contenido, long tamanoBytes) throws IOException;
 
     /**
+     * Lee el contenido de un archivo almacenado.
+     *
+     * @param rutaAlmacenamiento ruta o identificador interno del archivo
+     * @return bytes del archivo
+     * @throws IOException si ocurre un error de I/O al leer
+     */
+    byte[] leer(String rutaAlmacenamiento) throws IOException;
+
+    /**
      * Elimina un archivo por su ruta de almacenamiento.
      *
      * @param rutaAlmacenamiento ruta del archivo a eliminar

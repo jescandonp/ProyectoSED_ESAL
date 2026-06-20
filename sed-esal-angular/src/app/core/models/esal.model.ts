@@ -118,6 +118,12 @@ export interface DocumentoSoporte {
   esalId: number;
   tipoProceso: string | null;
   tipoDocumento: string | null;
+  tipoDocumental: string | null;
+  subtipoDocumental: string | null;
+  referenciaActo: string | null;
+  fechaActo: string | null;
+  observacion: string | null;
+  vigente: boolean;
   nombreArchivo: string;
   contentType: string;
   tamanoBytes: number;

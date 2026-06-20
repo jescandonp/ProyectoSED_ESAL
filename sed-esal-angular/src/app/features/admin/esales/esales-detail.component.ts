@@ -246,16 +246,7 @@ type TabActiva = 'info' | 'estado' | 'completitud' | 'documentos';
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h4 style="font-size: 15px; font-weight: 600;">Documentos Soporte</h4>
               <div>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  #fileInput
-                  style="display: none;"
-                  (change)="subirDocumento($event)"
-                />
-                <button class="sed-btn-primary" (click)="fileInput.click()" [disabled]="subiendoDoc()">
-                  @if (subiendoDoc()) { Subiendo... } @else { 📎 Subir PDF }
-                </button>
+                <button class="sed-btn-primary" (click)="irAMantenimiento()">Gestionar documentos</button>
               </div>
             </div>
 
@@ -271,23 +262,31 @@ type TabActiva = 'info' | 'estado' | 'completitud' | 'documentos';
               <table class="sed-table">
                 <thead>
                   <tr>
+                    <th>Vigencia</th>
                     <th>Nombre</th>
                     <th>Tipo</th>
+                    <th>Subtipo</th>
+                    <th>Referencia</th>
+                    <th>Fecha acto</th>
                     <th>Tamaño</th>
                     <th>Estado</th>
                     <th>Subido por</th>
-                    <th>Fecha</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (doc of documentos(); track doc.id) {
                     <tr>
+                      <td><span [class]="'sed-chip ' + (doc.vigente ? 'sed-chip--activo' : 'sed-chip--suspendido')">{{ doc.vigente ? 'Vigente' : 'Histórico' }}</span></td>
                       <td>{{ doc.nombreArchivo }}</td>
-                      <td>{{ doc.tipoDocumento ?? '—' }}</td>
+                      <td>{{ labelTipoDocumento(doc) }}</td>
+                      <td>{{ labelSubtipoDocumento(doc.subtipoDocumental) }}</td>
+                      <td>{{ doc.referenciaActo ?? '—' }}</td>
+                      <td>{{ doc.fechaActo ?? '—' }}</td>
                       <td>{{ formatBytes(doc.tamanoBytes) }}</td>
                       <td>{{ doc.estadoValidacion }}</td>
                       <td>{{ doc.createdBy }}</td>
-                      <td>{{ doc.createdAt | date:'dd/MM/yyyy' }}</td>
+                      <td><button class="sed-btn-secondary" style="padding: 4px 10px; font-size: 12px;" (click)="descargarDocumento(doc)">Descargar</button></td>
                     </tr>
                   }
                 </tbody>
@@ -407,7 +406,6 @@ export class AdminEsalesDetailComponent implements OnInit {
 
   // Documentos
   documentos = signal<DocumentoSoporte[]>([]);
-  subiendoDoc = signal(false);
   errorDocumento = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -528,32 +526,17 @@ export class AdminEsalesDetailComponent implements OnInit {
     });
   }
 
-  subirDocumento(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const archivo = input.files?.[0];
-    if (!archivo) return;
-
-    if (archivo.type !== 'application/pdf') {
-      this.errorDocumento.set('Solo se aceptan archivos PDF.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('archivo', archivo);
-
-    this.subiendoDoc.set(true);
-    this.errorDocumento.set(null);
-
-    this.api.postForm<DocumentoSoporte>(`/api/esales/${this.id}/documentos`, formData).subscribe({
-      next: (doc) => {
-        this.documentos.update((docs) => [...docs, doc]);
-        this.subiendoDoc.set(false);
-        input.value = '';
+  descargarDocumento(doc: DocumentoSoporte): void {
+    this.api.download(`/api/esales/${this.id}/documentos/${doc.id}/descarga`).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = doc.nombreArchivo || 'documento-soporte.pdf';
+        enlace.click();
+        URL.revokeObjectURL(url);
       },
-      error: (err) => {
-        this.errorDocumento.set(err?.error?.message ?? 'Error al subir el documento.');
-        this.subiendoDoc.set(false);
-      },
+      error: () => this.errorDocumento.set('No se pudo descargar el documento.'),
     });
   }
 
@@ -595,5 +578,27 @@ export class AdminEsalesDetailComponent implements OnInit {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  labelTipoDocumento(doc: DocumentoSoporte): string {
+    const tipo = doc.tipoDocumental ?? doc.tipoDocumento;
+    const map: Record<string, string> = {
+      CREACION_FORMACION: 'Creación / formación',
+      DIGNATARIOS: 'Dignatarios',
+      LIQUIDACION: 'Liquidación',
+      CANCELACION: 'Cancelación',
+    };
+    return tipo ? map[tipo] ?? tipo : '—';
+  }
+
+  labelSubtipoDocumento(subtipo: string | null): string {
+    if (!subtipo) return '—';
+    const map: Record<string, string> = {
+      TRAMITE_CANCELACION_VOLUNTARIA: 'Trámite cancelación voluntaria',
+      TERMINO_DURACION: 'Término de duración',
+      CANCELACION_VOLUNTARIA: 'Cancelación voluntaria',
+      ORDEN_AUTORIDAD: 'Orden de autoridad',
+    };
+    return map[subtipo] ?? subtipo;
   }
 }
